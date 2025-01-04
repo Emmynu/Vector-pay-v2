@@ -30,7 +30,7 @@ export async function verifyToken( token ) {
       
     }
    } catch (error) {
-    return {error: error}
+    return {error: error?.message}
    }
 }
 
@@ -45,7 +45,7 @@ export const findUser = async(email) => {
     const user = await adminAuth.getUserByEmail(email)
 
     if(user){
-      return {
+      const data = {
         uid:user?.uid,
         name:user?.displayName,
         email:user?.email,
@@ -54,11 +54,12 @@ export const findUser = async(email) => {
         metadata:user?.metadata,
         emailVerified: user?.emailVerified
       }
+      return data
     }else{
       return { error: "No user found"}
     }
   } catch (error) {
-    return { error:error}
+    return { error:error?.message}
     
   }
   
@@ -72,9 +73,10 @@ export const updateUser = async(uid, newPassword) =>{
       password: newPassword
     })
     cookie.delete("token")
+    return user
     
   } catch (error) {
-    return { error:error}
+    return { error:error?.message}
     
   }
 }
