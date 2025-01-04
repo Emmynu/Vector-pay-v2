@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+
+@layer base{
+    .main-form-container{
+        @apply border border-black  w-[85%] md:w-[50%] lg:w-[25%] p-5 flex flex-col m-[10%_auto] rounded-md
+    }
+    .logo-container{ 
+        @apply cursor-pointer select-none flex items-center  justify-center
+    }
+    .logo-container > img {
+        @apply w-[43px] h-[43px] mr-1
+    }
+    /* .logo-container > h2{
+        @apply text-[25px] font-bold tracking-wider mt-1;
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    } */
+    .main-form{
+        @apply mt-4
+    }
+    .main-form > section {
+        @apply flex flex-col
+    }
+    .main-form > section > label {
+        @apply mt-2 tracking-wider font-bold  text-sm md:text-base
+    }
+    .main-form > section >input {
+        @apply mt-1.5 w-full rounded-[5px] p-2 font-[arial] text-sm tracking-widest outline-none
+    }
+    .main-form > section > input::placeholder{
+        @apply text-black text-sm md:text-base
+    }
+    .auth-button {
+        @apply bg-black text-white text-center w-full my-2 p-3 rounded-md font-bold tracking-wider text-sm md:text-[17px]
+    }
+    .auth-button:disabled{
+        @apply opacity-55
+    }
+    .auth-container{
+        @apply flex items-center justify-center
+    }
+    .auth-container > button{
+        @apply border border-slate-500 px-11 lg:px-10 py-3 mt-5 rounded-lg  hover:bg-slate-100;
+        transition: all .6s linear;
+    }
+    .auth-container > button:nth-child(1){
+        @apply mr-5
+    }
+    .auth-link{
+        @apply mt-3 font-bold hover:underline text-base ;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    }
+    .status{
+        @apply text-[13px] tracking-wider bg-green-400  p-3 my-4 rounded-md  font-bold;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    }
+}
