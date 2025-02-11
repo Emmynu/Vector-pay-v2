@@ -29,7 +29,7 @@ function CredentialsAuth() {
               const updateName = await updateProfile(user,{ displayName: newData?.data?.name })
               const token = await getIdToken(user)
               if (token) {
-                  const authUser =   await verifyToken(token)
+                  const authUser =   await verifyToken(token, data?.name)
                   if (!authUser?.error ) {
                     await sendEmailVerification(user);
                     setStatus("We sent a verfication link to your email!")
@@ -58,7 +58,7 @@ function CredentialsAuth() {
       setIsLoading(false)
   }
 
-  console.log(isLoading);
+
   
     return ( 
       <main>

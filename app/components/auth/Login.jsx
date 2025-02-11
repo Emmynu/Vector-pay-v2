@@ -27,8 +27,9 @@ export function LoginAuth() {
                 const { user } = await signInWithEmailAndPassword(auth,email,password)
                 const idToken =  await getIdToken(user)
                 if (idToken) {
-                    const authUser = await verifyToken(idToken)
+                    const authUser = await verifyToken(idToken, "")
                     if (!authUser?.error) {
+                        window.location = "/"
                         toast.success("Sucessfully loggedIn!")
                     } else {
                         toast.error(authUser?.error)
