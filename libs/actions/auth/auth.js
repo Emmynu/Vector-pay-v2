@@ -1,13 +1,14 @@
 "use server"
 
+import prisma from "../../../app/db"
 import { adminAuth } from "../../../firebase/firebase-admin-config"
 import { cookies } from "next/headers"
 
-export async function verifyToken( token ) { 
+export async function verifyToken( token, name ) { 
    
    try {
     const isVerified = await adminAuth.verifyIdToken(token) // return the  user if its true
-    // console.log(isVerified);
+
     
     
     if (isVerified) {
@@ -22,9 +23,30 @@ export async function verifyToken( token ) {
          
       })
   
-
-      return isVerified
+      const newUser = {
+        id:isVerified.uid,
+        name,
+        email:  isVerified?.email,
+        verified: isVerified?.email_verified,
+        token: token
+      }
       
+      const user = await getUserDb(isVerified?.uid)
+      if (!user) {
+        await saveUserToDb(newUser)
+      } 
+      else{
+        await prisma.user.update({
+          where:{
+            uid: isVerified?.uid
+          },
+          data: {
+            token,
+          }
+        })
+      }
+      
+      return isVerified
     } else {
       return {error: "An error occured"}
       
@@ -34,6 +56,38 @@ export async function verifyToken( token ) {
    }
 }
 
+export  async function saveUserToDb(data) {
+  try {
+    await prisma.user.create({
+      data:{
+        uid: data?.id,
+        name:data?.name,
+        email:data?.email,
+        isVerfied: data?.verified,
+        token: data?.token,
+        todos: {
+          create: []
+        }
+      }
+    })
+  } catch (error) {
+       return {error: error?.message}
+
+  }
+} 
+
+export async function getUserDb (uid){
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        uid: uid
+      }
+    })
+    return user 
+  } catch (error) {
+      return {error: error?.message}
+  }
+}
 
 export async function removeUser(id){
   const user = await adminAuth.deleteUser(id)
@@ -80,3 +134,5 @@ export const updateUser = async(uid, newPassword) =>{
     
   }
 }
+
+

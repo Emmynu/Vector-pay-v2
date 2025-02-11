@@ -19,9 +19,16 @@ function GoogleAuth() {
             
             
             if (idToken) {
-               const isVerified =  await verifyToken(idToken) 
-               !isVerified?.error ? toast.success("Authentication sucessful!")
-               : await  removeUser(user?.user?.uid); toast.error(isVerified?.error)
+               const isVerified =  await verifyToken(idToken, user?.user?.displayName) 
+               if (  !isVerified?.error ) {
+                  toast.success("Authentication sucessful!")
+               
+               } else {
+                await  removeUser(user?.user?.uid); toast.error(isVerified?.error)
+                  
+               }
+             
+                
             }
              else {
                   // idToken is not gotten
