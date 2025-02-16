@@ -1,9 +1,12 @@
+"use client"
 
 
 export default function Home() {
+
+ 
   return (
     <>
-      Vector Pay
+     <h1> Vector Pay</h1><br />
     </>
   );
 }
