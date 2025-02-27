@@ -8,9 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        main: "#03457C"
       },
+      borderColor: {
+        success: "green",
+        error: "red"
+      }
     },
   },
   plugins: [],

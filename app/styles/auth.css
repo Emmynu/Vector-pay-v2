@@ -4,6 +4,70 @@
 
 @layer base {
     .auth-container{
-        
+        @apply grid grid-cols-4 lg:grid-cols-5 items-center overflow-hidden gap-10
+    }
+    .auth-img-container{
+        @apply hidden md:flex col-span-2 lg:col-span-3  w-full h-[100vh]  flex-col items-center justify-center;
+        background: rgb(203, 231, 241)
+    }
+    .auth-img-container > img {
+        @apply w-[90%]
+    }
+    .auth-form-container{
+        @apply col-span-4 md:col-span-2  mt-[10%] md:mt-0
+    }
+    .auth-logo-container{
+        @apply flex items-center cursor-pointer select-none justify-center mb-7
+    }
+    .auth-logo-container > h2 {
+        @apply text-main text-[22px] leading-4 
+    }
+    .form-container{
+        @apply border px-8 md:px-16 py-10 text-left mx-[5%] md:mx-[10%] mb-[10%] mt-[5%] border-slate-300
+    }
+    .auth-label-container > h2{
+        @apply text-xl mb-1
+    }
+    .step-container > h2{
+        @apply mb-2 text-slate-600 text-[15px]
+    }
+    .step-container > label {
+        @apply border border-slate-300 px-2 py-2.5
+    }
+    .step-container > label > input {
+        @apply border-none outline-none text-sm font-medium tracking-wide;
+        font-family: Arial, Helvetica, sans-serif
+    }
+    .render-container{
+        @apply mt-8
+    }
+    .render-container  button {
+        @apply bg-main text-white py-2.5 mt-5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[17px] ;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        transition: all 0.5s linear;
+    }
+    .render-container  button:hover{
+        @apply opacity-85 
+    }
+  
+    .render-container input[type="email"] , .render-container input[type="password"]{
+        @apply border-none outline-none w-full
+    }
+   .auth-footer-container{
+       @apply text-center
+    }
+    .auth-footer-container > h2 {
+        @apply font-semibold mt-3 text-[14px] ;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .auth-footer-container a {
+        @apply text-main underline underline-offset-1
+    }
+
+    .alert-container{
+        @apply flex items-center bg-yellow-200 px-4 py-2 mb-4 rounded-[3px] cursor-pointer select-none
+    }
+    .alert-container > h2{
+        @apply ml-3 text-[14px] font-medium text-slate-800;
     }
 }
