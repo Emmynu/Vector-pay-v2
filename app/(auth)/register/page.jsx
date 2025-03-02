@@ -14,7 +14,7 @@ import { createUserWithEmailAndPassword, deleteUser, getIdToken, sendEmailVerifi
 import { toast, Toaster } from "sonner";
 import { auth } from "@/firebase/firebase-client";
 import { verifyToken } from "@/app/actions/auth";
-
+// import { useRouter } from "next/router";
 const poppins = Poppins({
     subsets: ["latin"],
     weight: "800"
@@ -30,7 +30,8 @@ function Register() {
     const [steps, setSteps] = useState(1)
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({email: "", password: "", firstName: "", lastName: ""})
-
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     function handleInputChange(e) {
         setFormData({...formData, [e.target.name]: e.target.value})
@@ -61,6 +62,7 @@ function Register() {
     }
 
     async function handleRegister() {
+        setIsLoading(true)
         const res = nameSchema.safeParse(formData)
         const { email , password, lastName, firstName} = formData
         if (!formData.lastName || !formData.firstName) {
@@ -81,10 +83,13 @@ function Register() {
                         toast.error(result?.error)
                         await deleteUser(user)
                     } else {
-                        // next step
-                        console.log(result);
+                        //send verification link
+                        await sendEmailVerification(user)
+                        setIsLoggedIn(true)
                         toast.success("Authentication sucessful");
-                        
+                        setTimeout(() => {
+                            window.location = ("/login")
+                        }, 2000);
                     }
                 } catch (error) {
                     toast.error(error?.message)
@@ -95,7 +100,7 @@ function Register() {
                 })
             }   
         }        
-        
+        setIsLoading(false)
     }
 
     const render = () => {
@@ -127,7 +132,7 @@ function Register() {
                         <h2> Password should contain 6 numerical characters</h2>
                     </div>
                     <h2>Password: </h2>
-                    <label className="input input-bordered flex items-center gap-2">
+                    <label className=" flex items-center gap-2">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
@@ -150,6 +155,10 @@ function Register() {
             return (
                 <div >
                    <section className="step-container">
+                  {isLoggedIn &&  <div className="alert-container">
+                        <Image src={alertIcon} alt="alert-image"/>
+                        <h2>An email verification link has been sent to your inbox.</h2>
+                    </div>}
                     <label className=" flex items-center gap-2">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -177,7 +186,7 @@ function Register() {
                         </label>
                    </section>
 
-                   <button onClick={handleRegister}>Finish</button>
+                   <button onClick={handleRegister} disabled={isLoading} className="disabled:opacity-65"><span className={isLoading ? "loading loading-spinner loading-sm mr-2": ""}></span>{isLoading ? "Loading....": "Finish"}</button>
 
                 </div>
             )

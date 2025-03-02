@@ -23,7 +23,7 @@
         @apply text-main text-[22px] leading-4 
     }
     .form-container{
-        @apply border px-8 md:px-16 py-10 text-left mx-[5%] md:mx-[10%] mb-[10%] mt-[5%] border-slate-300
+        @apply border px-8 lg:px-16 py-10 text-left mx-[5%] lg:mx-[10%] mb-[10%] mt-[5%] border-slate-300
     }
     .auth-label-container > h2{
         @apply text-xl mb-1
@@ -47,7 +47,7 @@
         transition: all 0.5s linear;
     }
     .render-container  button:hover{
-        @apply opacity-85 
+        @apply opacity-65 
     }
   
     .render-container input[type="email"] , .render-container input[type="password"]{
