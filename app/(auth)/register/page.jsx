@@ -15,12 +15,12 @@ import { toast, Toaster } from "sonner";
 import { auth } from "@/firebase/firebase-client";
 import { verifyToken } from "@/app/actions/auth";
 // import { useRouter } from "next/router";
-const poppins = Poppins({
+export const poppins = Poppins({
     subsets: ["latin"],
     weight: "800"
 })
 
-const roboto = Roboto({
+export const roboto = Roboto({
     subsets: ["latin"],
     weight: "300"
 })
@@ -129,7 +129,7 @@ function Register() {
                 <div className="step-container">
                     <div className="alert-container">
                         <Image src={alertIcon} alt="alert-image"/>
-                        <h2> Password should contain 6 numerical characters</h2>
+                        <h2> Password should contain 6 numerical(numbers) characters</h2>
                     </div>
                     <h2>Password: </h2>
                     <label className=" flex items-center gap-2">
@@ -186,7 +186,7 @@ function Register() {
                         </label>
                    </section>
 
-                   <button onClick={handleRegister} disabled={isLoading} className="disabled:opacity-65"><span className={isLoading ? "loading loading-spinner loading-sm mr-2": ""}></span>{isLoading ? "Loading....": "Finish"}</button>
+                   <button onClick={handleRegister} disabled={isLoading} ><span className={isLoading ? "loading loading-spinner loading-sm mr-2": ""}></span>{isLoading ? "Loading....": "Create Account"}</button>
 
                 </div>
             )
@@ -219,7 +219,7 @@ function Register() {
                 <Image src={credits}  alt="auth-image"/>
             </section>
 
-            <Toaster richColors closeButton position="bottom-right" className="rounded-none"/>
+            <Toaster richColors closeButton position="bottom-right"/>
         </main>
       
      );

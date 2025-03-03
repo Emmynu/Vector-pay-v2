@@ -28,6 +28,9 @@
     .auth-label-container > h2{
         @apply text-xl mb-1
     }
+    .auth-label-container > p{
+        @apply font-thin
+    }
     .step-container > h2{
         @apply mb-2 text-slate-600 text-[15px]
     }
@@ -42,12 +45,12 @@
         @apply mt-8
     }
     .render-container  button {
-        @apply bg-main text-white py-2.5 mt-5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[17px] ;
+        @apply bg-main text-white py-2.5 mt-5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[16px] ;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         transition: all 0.5s linear;
     }
-    .render-container  button:hover{
-        @apply opacity-65 
+    .render-container  button:disabled{
+        @apply opacity-65 cursor-pointer
     }
   
     .render-container input[type="email"] , .render-container input[type="password"]{
