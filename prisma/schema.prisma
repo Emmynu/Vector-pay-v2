@@ -15,11 +15,13 @@ datasource db {
 
 model User {
   id    String  @id @default(auto()) @map("_id") @db.ObjectId
-  uid String
+  uid String @unique
   firstName String
   lastName String
   email String
   avatarUrl String
   verified Boolean
+  totpCode String
+  totpQrCode String
 }
 

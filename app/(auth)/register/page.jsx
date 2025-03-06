@@ -200,7 +200,7 @@ function Register() {
            <section className="auth-form-container">
             <section className="auth-logo-container">
                     <Image src={Logo} width={40} height={40} alt="Logo"/>
-                    <h2 className={poppins.className}>VectorPay</h2>
+                    <h2 className="font-sans font-bold">VectorPay</h2>
                 </section>
                 <section className="form-container">
                     <article className="auth-label-container">

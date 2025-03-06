@@ -3,29 +3,33 @@
 import { adminAuth } from "@/firebase/firebase-admin"
 import { cookies } from "next/headers"
 import prisma from "../db"
+import speakeasy from "speakeasy"
+import QRcode from "qrcode"
 
 export async function verifyToken(token, firstName, lastName) {
-    const cookie =  await cookies()
     try {
         const user = await adminAuth.verifyIdToken(token)
         if (user?.uid) {
-            //save token to cookies
-            cookie.set("user", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production" ,
-                maxAge: 600, // 10mins
-                sameSite: true,
-                path: "/"
-            })
+            await saveCookie("user", token)
            
-           const  data =  {
-                firstName,
-                lastName,
-                email: user?.email,
-                verified: user?.email_verified,
-                uid: user?.uid
-           } 
-           await saveUserToDB(data)
+            const res =  await findUser(user?.uid)
+            if (res?.uid) {
+                await saveCookie("totp", res?.totpCode)
+                await saveCookie("qrcode", res?.totpQrCode)
+            } else {
+                const secret = await generateSecretKey()
+                // hash the secret usin bcrypt
+                const  data =  {
+                    firstName,
+                    lastName,
+                    email: user?.email,
+                    verified: user?.email_verified,
+                    uid: user?.uid,
+                    totpCode: secret?.base32,
+                    totpQrCode: secret?.otpauth_url
+               } 
+               await saveUserToDB(data)
+            }
          return user
         } else {
          return { error: "Unauthorized - Authentication failed"}
@@ -37,6 +41,18 @@ export async function verifyToken(token, firstName, lastName) {
 }
 
 
+async function saveCookie(name, value) {
+    const cookie =  await cookies()
+     //save token to cookies
+     cookie.set(name, value, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" ,
+        maxAge: 600, // 10mins
+        sameSite: true,
+        path: "/"
+    })
+}
+
 export async function saveUserToDB(user) {
     try {
         await prisma.user.create({
@@ -46,12 +62,27 @@ export async function saveUserToDB(user) {
                 lastName: user?.lastName,
                 email: user?.email,
                 avatarUrl: "",
-                verified: user?.verified
+                verified: user?.verified,
+                totpCode: user?.totpCode,
+                totpQrCode: user?.totpQrCode
             }
         })
     } catch (error) {
         console.log(error);
-        
+    }
+}
+
+export async function findUser(userId) {
+    try {
+       const user =  await prisma.user.findUnique({
+            where: {
+                uid: userId
+            }
+        })
+
+        return user
+    } catch (error) {
+        console.log(error?.message);  
     }
 }
 
@@ -63,10 +94,25 @@ export async function findUserInFirebase(email) {
                 uid:user?.uid,
             }
         } else {
-            return []
+            return null
         }
     } catch (error) {
         return { error: error?.message}
     }
 
 }
+
+export async function generateSecretKey() {
+    const secret =  speakeasy.generateSecret({ length: 20})
+   return secret  
+}
+
+export async function generateQrCode() {
+    const cookie =  await cookies()
+    const qrcode = await QRcode.toDataURL(cookie.get("qrcode")?.value)
+    return {
+        code: cookie.get("totp")?.value, 
+        qrcode}
+}
+
+
