@@ -87,6 +87,6 @@
         @apply flex flex-col justify-center items-center 
     }
     .qrcode-container > img {
-        @apply w-[150px] h-[150px] border my-2 border-slate-300 rounded-[5px] p-3
+        @apply w-[150px] h-[150px] border my-2 border-slate-300 rounded-[5px] p-3 
     }
 }

@@ -7,15 +7,17 @@ import "../../styles/auth.css"
 import { Poppins, Roboto } from "next/font/google";
 import credits from "../../images/credits.jpg"
 import Link from "next/link";
-import { generateQrCode } from "@/app/actions/auth";
+import { generateQrCode, verifyCode } from "@/app/actions/auth";
 import { useEffect, useState } from "react";
 import { poppins } from "../login/page";
-
+import OtpInput from "react-otp-input";
 
 
  function TotpPage() {
     const [totp, setTotp] = useState(null)
+    const [code, setCode] = useState(null)
     const [copied, setCopied] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(()=>{
         async function getTotp() {
@@ -37,6 +39,25 @@ import { poppins } from "../login/page";
         }, 1500);
     }
     
+    function handlePaste(event) {
+            const data = event.clipboardData.getData('text');
+            console.log(data)
+    }
+    
+   async function handleVerify(){
+         setIsLoading(true)
+        if(code.length === 6 ){
+            // verify the code
+            const result =   await verifyCode(code)
+            if (result) {
+                window.location = "/"
+            } else {
+                toast.error("Incorrect code")
+            }
+        }
+        setIsLoading(false)
+    }
+
     return (
         <>
           <main className="auth-container">
@@ -50,9 +71,7 @@ import { poppins } from "../login/page";
                     <article className="auth-label-container">
                         <h3 className={poppins.className}>Two-Factor Authentication</h3>
                         <p className="my-1">Set up two factor authentication to continue</p>
-                        {/* <div><
-                        use the code 
-                        <h3>{totp?.code}</h3></div> */}
+                      
                     </article>
                     <section className="render-container">
                         <ol className="totp-content-container">
@@ -70,7 +89,19 @@ import { poppins } from "../login/page";
                            <li className="mt-5">
                                <h2>Enter the 6-digit authentication code generated</h2>
                                {/* handle the code  */}
-                               <section></section>
+                               <section>
+                                <OtpInput
+                                    value={code}
+                                    onChange={setCode}
+                                    numInputs={6}
+                                    renderSeparator={<span> </span>}
+                                    renderInput={(props) => <input {...props} />}
+                                    onPaste={(event)=>handlePaste(event)}
+                                    inputStyle={{border: "1px solid gray", padding: "15px", width:"40px" , marginLeft:"4px",borderRadius: "8px"} }
+                                    
+                                    />
+                                    <button onClick={handleVerify} disabled={code?.length < 6 || isLoading} className="disabled:opacity-75"><span className={isLoading ? " loading loading-spinner loading-sm mr-2 disabled:opacity-75": ""}></span>{isLoading ? "Loading..." : "Next"}</button>
+                                </section>
                            </li>
                         </ol>
                     </section>

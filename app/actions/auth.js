@@ -116,3 +116,12 @@ export async function generateQrCode() {
 }
 
 
+export async function verifyCode(code) {
+    const cookie =  await cookies()
+    const res =   speakeasy.totp.verify({
+        secret:cookie.get("totp")?.value,
+        encoding: "base32",
+        token: code
+    })
+    return res
+}
