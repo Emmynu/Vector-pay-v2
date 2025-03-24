@@ -8,12 +8,13 @@ import invisble from "../../images/invisible.png"
 import "../../styles/auth.css"
 import  { Poppins,  Roboto } from "next/font/google"
 import { emailSchema, nameSchema, passwordSchema } from "@/zod-schema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createUserWithEmailAndPassword, deleteUser, getIdToken, sendEmailVerification, updateProfile } from "firebase/auth";
 import { toast, Toaster } from "sonner";
 import { auth } from "@/firebase/firebase-client";
 import { verifyToken } from "@/app/actions/auth";
+import { useTheme } from "next-themes";
 // import { useRouter } from "next/router";
 export const poppins = Poppins({
     subsets: ["latin"],
@@ -32,6 +33,17 @@ function Register() {
     const [formData, setFormData] = useState({email: "", password: "", firstName: "", lastName: ""})
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    const { theme, setTheme } = useTheme()
+   
+    useEffect(() => {
+        setMounted(true)
+      }, [])
+    
+      if (!mounted) {
+        return null
+      }
+    
 
     function handleInputChange(e) {
         setFormData({...formData, [e.target.name]: e.target.value})
@@ -107,6 +119,7 @@ function Register() {
         if (steps === 1) {
             return (
                 <div className="step-container">
+                    
                     <h2 className={roboto.className}>Email Address: </h2>
                     <label className=" flex items-center gap-2">
                         <svg
@@ -143,7 +156,7 @@ function Register() {
                             d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
                             clipRule="evenodd" />
                         </svg>
-                        <input type={showPassword ? "password": "text"} className="grow" placeholder="Password" value={formData.password} name="password" onChange={handleInputChange} />
+                        <input type={!showPassword ? "password": "text"} className="grow" placeholder="Password" value={formData.password} name="password" onChange={handleInputChange} />
                         <Image src={!showPassword ? eye : invisble} alt="eye" className="w-4 cursor-pointer" onClick={()=>setShowPassword(!showPassword)}/>
                     </label>
                     <button onClick={handleSecondStep}>Next</button>
@@ -186,7 +199,7 @@ function Register() {
                         </label>
                    </section>
 
-                   <button onClick={handleRegister} disabled={isLoading} ><span className={isLoading ? "loading loading-spinner loading-sm mr-2": ""}></span>{isLoading ? "Loading....": "Create Account"}</button>
+                   <button onClick={handleRegister} disabled={isLoading} ><span className={isLoading ? "loading loading-bars loading-sm mr-2": ""}></span>{isLoading ? "": "Create Account"}</button>
 
                 </div>
             )

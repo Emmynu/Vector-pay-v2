@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Logo from "../../images/logo.png"
+import { useTheme } from "next-themes";
 import "../../styles/auth.css"
 import { Poppins, Roboto } from "next/font/google";
 import credits from "../../images/credits.jpg"
@@ -33,7 +34,8 @@ export const roboto = Roboto({
  function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setisLoading] = useState(false)
-    
+    const {theme, setTheme} = useTheme()
+    setTheme("cupcake")
 
 
    async function handleLogin(e) {
@@ -127,11 +129,13 @@ export const roboto = Roboto({
                                     d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
                                     clipRule="evenodd" />
                                 </svg>
-                                <input type={showPassword ? "password": "text"} className="grow" placeholder="Password" name="password"/>
+                                <input type={!showPassword ? "password": "text"} className="grow" placeholder="Password" name="password"/>
                                 <Image src={!showPassword ? eye : invisble} alt="eye" className="w-4 cursor-pointer" onClick={()=>setShowPassword(!showPassword)}/>
                             </label>
                             <h3 className="text-right mt-3 -mb-2 font-medium text-[14px] text-main hover:underline"><Link href={"reset-password"}>Forgot Password?</Link></h3>
-                            <button disabled={isLoading}><span className={isLoading ? "loading loading-spinner mr-2" : ""}></span>{isLoading ? "Loading" : "Login to account"}</button>
+                            <button disabled={isLoading}><span className={isLoading ? "loading loading-bars loading-sm mr-2" : ""}></span>{isLoading ? "" : "Login to account"}</button>
+
+            
                         </div>
                     </form>
                 </article>
