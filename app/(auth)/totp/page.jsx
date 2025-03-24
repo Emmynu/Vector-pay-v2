@@ -3,6 +3,7 @@
 import { Toaster, toast } from "sonner";
 import Image from "next/image";
 import Logo from "../../images/logo.png"
+import copy from "../../images/copy.png"
 import "../../styles/auth.css"
 import { Poppins, Roboto } from "next/font/google";
 import credits from "../../images/credits.jpg"
@@ -16,7 +17,6 @@ import OtpInput from "react-otp-input";
  function TotpPage() {
     const [totp, setTotp] = useState(null)
     const [code, setCode] = useState(null)
-    const [copied, setCopied] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(()=>{
@@ -29,14 +29,11 @@ import OtpInput from "react-otp-input";
             }
         }
         getTotp()
-    }) 
+    },[]) 
 
     function handleCopy() {
         navigator.clipboard.writeText(totp?.code)
-        setCopied(true)
-        setTimeout(() => {
-            setCopied(false)
-        }, 1500);
+        toast.success("Copied to clipboard")
     }
     
     function handlePaste(event) {
@@ -67,7 +64,7 @@ import OtpInput from "react-otp-input";
                         <Image src={Logo} width={40} height={40} alt="Logo"/>
                         <h2 className="font-sans font-bold">VectorPay</h2>
                     </section>
-                    <section className="form-container px-11">
+                    <section className="form-container px-6 md:px-8">
                     <article className="auth-label-container">
                         <h3 className={poppins.className}>Two-Factor Authentication</h3>
                         <p className="my-1">Set up two factor authentication to continue</p>
@@ -80,10 +77,12 @@ import OtpInput from "react-otp-input";
                                 <div className="qrcode-container">
                                     <img src={totp?.qrcode} alt="qrcode" />
                                 </div>
-                                <h3 className="divider divider-[rgb(203 213 225)] font-thin  text-sm  font-sans" >Or enter the text manually</h3>
+                                <h3 className="divider divider-neutral font-thin  text-sm  font-sans" >Or enter the text manually</h3>
                                 <div className="border bg-slate-200 flex items-center rounded-[5px]">
-                                    <input type="text" name="code" id="code" className="bg-transparent p-3 text-sm tracking-wider w-full"  readOnly value={totp?.code}/>   
-                                    <span className="btn text-sm" onClick={handleCopy}>{copied ? "copied": "copy"}</span>
+                                    <input type="text" name="code" id="code" className="bg-transparent border-none outline-none p-3 text-sm tracking-wider w-full"  readOnly value={totp?.code}/>   
+                                    <span className="mr-2" onClick={handleCopy}>
+                                        <Image src={copy} alt="copy" className="cursor-pointer w-5" />
+                                    </span>
                                 </div>
                            </li>
                            <li className="mt-5">
@@ -97,10 +96,10 @@ import OtpInput from "react-otp-input";
                                     renderSeparator={<span> </span>}
                                     renderInput={(props) => <input {...props} />}
                                     onPaste={(event)=>handlePaste(event)}
-                                    inputStyle={{border: "1px solid gray", padding: "15px", width:"40px" , marginLeft:"4px",borderRadius: "8px"} }
+                                    inputStyle={{border: "1px solid gray", padding: "15px", width:"40px", height: "45px" , marginLeft:"4px",borderRadius: "7px", fontSize: "14px"} }
                                     
                                     />
-                                    <button onClick={handleVerify} disabled={code?.length < 6 || isLoading} className="disabled:opacity-75"><span className={isLoading ? " loading loading-spinner loading-sm mr-2 disabled:opacity-75": ""}></span>{isLoading ? "Loading..." : "Next"}</button>
+                                    <button onClick={handleVerify} disabled={code?.length < 6 || isLoading} className="disabled:opacity-75"><span className={isLoading ? " loading loading-bars loading-sm mr-2 disabled:opacity-75": ""}></span>{isLoading ? "" : "Next"}</button>
                                 </section>
                            </li>
                         </ol>

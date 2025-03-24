@@ -10,12 +10,12 @@ export default {
       colors: {
         main: "#03457C"
       },
-      borderColor: {
-        success: "green",
-        error: "red"
-      }
+     
     },
   },
   plugins: [require("daisyui")],
-
+  daisyui:{
+    themes:["light","cupcake"],
+     darkTheme: "cupcake"
+  }
 };

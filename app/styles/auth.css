@@ -23,7 +23,7 @@
         @apply text-main text-[22px] leading-4 
     }
     .form-container{
-        @apply border px-8 lg:px-16 py-10 text-left mx-[5%] lg:mx-[10%] mb-[10%] mt-[5%] border-slate-300
+        @apply border px-8 lg:px-16 py-10 text-left mx-[5%] lg:mx-[10%]  mt-[5%] border-slate-300
     }
     .totp-container > h2{
        @apply font-sans font-bold text-[20px]
@@ -57,7 +57,7 @@
     }
   
     .render-container input[type="email"] , .render-container input[type="password"]{
-        @apply border-none outline-none w-full
+        @apply border-none outline-none w-full bg-transparent
     }
    .auth-footer-container{
        @apply text-center
@@ -89,4 +89,5 @@
     .qrcode-container > img {
         @apply w-[150px] h-[150px] border my-2 border-slate-300 rounded-[5px] p-3 
     }
+
 }
