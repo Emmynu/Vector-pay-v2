@@ -5,6 +5,8 @@ import { cookies } from "next/headers"
 import prisma from "../db"
 import speakeasy from "speakeasy"
 import QRcode from "qrcode"
+import { randomBytes } from "crypto"
+
 
 export async function verifyToken(token, firstName, lastName) {
     try {
@@ -18,7 +20,6 @@ export async function verifyToken(token, firstName, lastName) {
                 await saveCookie("qrcode", res?.totpQrCode)
             } else {
                 const secret = await generateSecretKey()
-                // hash the secret usin bcrypt
                 const  data =  {
                     firstName,
                     lastName,
@@ -124,4 +125,13 @@ export async function verifyCode(code) {
         token: code
     })
     return res
+}
+
+
+export async function generateChallenge() {
+    const cookie = await cookies()
+    const user = await adminAuth.verifyIdToken(cookie.get("user")?.value)
+    const challenge =  randomBytes(32).toString("base64")
+
+    return { challenge, user }
 }
