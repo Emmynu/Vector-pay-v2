@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Logo from "../../images/logo.png"
-import { useTheme } from "next-themes";
 import "../../styles/auth.css"
 import { Poppins, Roboto } from "next/font/google";
 import credits from "../../images/credits.jpg"
@@ -34,8 +33,7 @@ export const roboto = Roboto({
  function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setisLoading] = useState(false)
-    const {theme, setTheme} = useTheme()
-    setTheme("cupcake")
+   
 
 
    async function handleLogin(e) {

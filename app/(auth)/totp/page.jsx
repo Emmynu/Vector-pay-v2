@@ -42,17 +42,23 @@ import OtpInput from "react-otp-input";
     }
     
    async function handleVerify(){
+
+    if (!code) {
+        toast.error("Please enter the OTP.")
+    }
+
+    if(code.length === 6 ){
          setIsLoading(true)
-        if(code.length === 6 ){
-            // verify the code
-            const result =   await verifyCode(code)
-            if (result) {
-                window.location = "/"
-            } else {
-                toast.error("Incorrect code")
-            }
+        // verify the code
+        const result =   await verifyCode(code)
+        if (result) {
+            window.location = "/"
+        } else {
+            toast.error("The OTP code you entered is incorrect. Please try again")
         }
-        setIsLoading(false)
+    }
+    
+    setIsLoading(false)
     }
 
     return (
