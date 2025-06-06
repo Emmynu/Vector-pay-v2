@@ -48,7 +48,7 @@ async function saveCookie(name, value) {
      cookie.set(name, value, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production" ,
-        maxAge: 600, // 10mins
+     
         sameSite: true,
         path: "/"
     })
