@@ -8,31 +8,9 @@ import Image from "next/image";
 import Logo from "../images/logo.png"
 import cancelIcon from "../images/cancel.png"
 import Link from "next/link";
+import "../styles/main.css"
 
  
-export  function User() {
-    const [user,setUser] = useState({})
-    useEffect(()=>{
-        onAuthStateChanged(auth, u => {
-            setUser({
-                name: u.displayName,
-                avatar_url:u.photoURL 
-            })
-        })
-    })
-    
-
-    
-    return (
-        <div className="dropdown mx-0.5 md:mx-1.5 hidden md:block">
-                <div tabIndex="0" role="button" className="">
-                    <img src={!user.avatar_url === null ? user.avatar_url : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
-                </div>
-        </div>
-          
-    )
-}
-
 
 export function SideBar() {
     
@@ -63,9 +41,9 @@ export function SideBar() {
 
         <ul>
             <h2>Main</h2>
-            <li>
+            <li onClick={()=>document.getElementById('my_modal_3').showModal()}>
                 <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon"/>
-            <   Link href={"*"}>Fund Wallet</Link>
+                <span>Fund Wallet</span>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=103537&format=png&color=000000"} alt="atc-icon"/>
@@ -145,9 +123,9 @@ export function SideBarSm() {
 
         <ul>
             <h2>Main</h2>
-            <li>
+            <li onClick={()=>document.getElementById('my_modal_3').showModal()}>
                 <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon"/>
-            <   Link href={"*"}>Fund Wallet</Link>
+                <span href={"*"}>Fund Wallet</span>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=103537&format=png&color=000000"} alt="atc-icon"/>
@@ -200,5 +178,51 @@ export function HamburgerMenu() {
       <span onClick={openSideBar}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block md:hidden h-6 w-6 mr-2.5 cursor-pointer stroke-current -mt-1" > <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg>
       </span>
+    )
+}
+
+export function TransactionHistory() {
+    return <main className="transaction-container">
+       <article>
+            <h2>Latest Transactions</h2>
+            <p>
+            <Link href={""}>» See All</Link>
+          </p>
+       </article>
+
+       <section>
+
+       </section>
+    </main>
+}
+
+export function Statistics() {
+    return <main className="statistics-container">
+       <article>
+            <h2>Statistics</h2>
+            <p>
+            <Link href={""}>» See All</Link>
+          </p>
+       </article>
+
+       <section>
+        
+       </section>
+    </main>
+}
+
+
+export function DepositModal() {
+    return (
+        <dialog id="my_modal_3" className="modal">
+            <div className="modal-box">
+                <form method="dialog">
+                {/* if there is a button in form, it will close the modal */}
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 className="font-bold text-lg">Hello!</h3>
+                <p className="py-4">Press ESC key or click on ✕ button to close</p>
+            </div>
+        </dialog>
     )
 }

@@ -1,12 +1,14 @@
 "use client"
 
-import { HamburgerMenu, User } from "@/app/libs/component";
+import { DepositModal, HamburgerMenu, Statistics, TransactionHistory } from "@/app/libs/component";
 import { Poppins, Roboto } from "next/font/google";
 import walletIcon from "../../images/wallet-blue.png"
 import transactionIcon from "../../images/transaction.png"
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/firebase/firebase-client";
 
 export const poppins = Poppins({
     subsets: ["latin"],
@@ -20,14 +22,22 @@ export const roboto = Roboto({
 
 export default function DashBoard(){
     const [showBalance, setShowBalance] = useState(false)
+    const [name, setName] = useState(false)
+    const [avatarUrl, setAvatarUrl] = useState(false)
 
 
     const handleBalanceToggle =(e)=>{
         setShowBalance(e.target.checked)
     }
 
-
+    useEffect(()=>{
+        onAuthStateChanged(auth, user=>{
+            setName(user.displayName)
+            setAvatarUrl(user.photoURL)
+        })
+    },[])
  
+
     return <main>
         <header className="dashboard-header">
             <section>
@@ -38,7 +48,7 @@ export default function DashBoard(){
                 <div className="balance-container">
                     <h2>{showBalance ? "₦ 0.00 ": "₦****"}</h2>
                 </div>
-                <User />
+                <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
                 {/* notification icon */}
                 <button className="btn btn-ghost btn-circle">
                     <div className="indicator">
@@ -51,16 +61,16 @@ export default function DashBoard(){
         </header>
 
         <section className="my-10 mx-5 md:m-10 ">
-            <h2 className={`wallet-label`}>My Wallet</h2>
+            <h2 className={`wallet-label`}>Welcome {name}, </h2>
 
-            <section className="wallet-container ">
+            <section className="wallet-container overflow-x-scroll">
                 <section className="wallet-balance-container">
                     <div className="balance">
                         <Image src={walletIcon} alt="wallet-icon" className="wallet-icon"/>
                         <h2 className={poppins.className}>Wallet Balance:</h2>
                        <article className="flex">
 
-                          <h1 className="amount ">{showBalance ? "₦ 0.00 ": "₦****"}</h1>
+                          <h1 className="amount ">{showBalance ? <span className="text-4xl">₦ 0.00</span> : <span className="text-3xl">₦****</span>}</h1>
                           <sub className=" mt-4 md:mt-5 ml-1">
                             <label className="swap">
                             {/* this hidden checkbox controls the state */}
@@ -90,17 +100,37 @@ export default function DashBoard(){
                     <div className="transaction-count-container">
                         <Image src={transactionIcon} alt="wallet-icon"  className="wallet-icon"/>
                         <h2 className={poppins.className}>Total Transaction:</h2>
-                        <h1 className="transaction-count">0 </h1>
+                        <h1 className="transaction-count text-4xl">0 </h1>
                     </div>
-                    <div>
-                        <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon" className="w-6 h-6"/>
-                        <Link href={"/"}>Add Funds</Link>
+                    <div onClick={()=>document.getElementById('my_modal_3').showModal()}>
+                        <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon" className="w-5 h-5 md:w-6 md:h-6"/>
+                        <span>Add Funds</span>
                     </div>
                 </section>
-                
+                <section className="account-limit-container">
+                   <article className="account-limit-details">
+                    <section>
+                        <h2>Daily Limit:</h2>
+                        <p>₦0 / ₦50,000</p>
+                    </section>
+                    <section>
+                        <h2>Account Level:</h2>
+                        <p>Tier 1</p>
+                    </section>
+                   </article>
+                   <div className="w-full h-2 overflow-hidden bg-gray-400 rounded-lg lg:h-3 mt-8"></div>
+                   <h4 className="upgrade-link">[ <Link href={""}>Upgrade Account</Link> ]</h4>
+                </section>
             </section>
 
             
         </section>
+
+        <section className="transaction-details-container">
+            <TransactionHistory/>
+            <Statistics />
+        </section>
+
+        <DepositModal />
     </main>
 }
