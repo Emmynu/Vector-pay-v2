@@ -19,7 +19,7 @@
     .sidebar-container-sm{
         @apply absolute md:hidden top-0 bottom-0 left-0 w-[94%] z-50  bg-white shadow-2xl shadow-gray-400 p-7 h-[100vh] 
     }
-    .main-container section {
+    .main-container > section {
         @apply col-span-1 md:col-span-2 lg:col-span-3
     }
  
@@ -61,21 +61,21 @@
         transition: all .9s linear;
     }
     .wallet-label{
-        @apply mb-5 text-xl font-semibold;
+        @apply mb-5 text-lg md:text-[22px] font-semibold tracking-wide;
         font-family: Arial, Helvetica, sans-serif;
     }
     
     .wallet-container{
-        @apply grid  lg:grid-cols-4 items-center gap-4 flex-nowrap 
+        @apply flex lg:grid grid-cols-5 items-stretch  gap-4 
     }
     .wallet-balance-container{
-        @apply bg-main w-full col-span-2 rounded-[7px] px-7 py-6 md:py-8 block md:flex justify-between lg:justify-evenly items-center 
+        @apply bg-main w-full flex-shrink-0 col-span-3 rounded-[7px] px-7 py-6 md:py-8 block md:flex justify-between lg:justify-around items-center 
     }
     .wallet-balance-container > div:nth-child(3){
-        @apply flex items-center btn bg-white shadow-md shadow-white w-fit mt-4 md:mt-0 border-none outline-none
+        @apply flex items-center btn  bg-white shadow-md shadow-white w-fit mt-4 md:mt-0 border-none outline-none
     }
-    .wallet-balance-container > div:nth-child(3) > a{
-        @apply  text-base font-semibold;
+    .wallet-balance-container > div:nth-child(3) > span{
+        @apply  md:text-base font-semibold text-sm;
         font-family: Arial, Helvetica, sans-serif;
     }
     .transaction-count-container{
@@ -85,10 +85,47 @@
         @apply bg-white p-3 rounded-full  
     }
     .transaction-count-container > h2 , .balance > h2 {
-        @apply text-white text-xs md:text-sm tracking-widest font-semibold mt-3.5 md:mt-4;
+        @apply text-white text-xs md:text-[13px] tracking-widest font-semibold mt-3.5 md:mt-4;
     }
     .amount, .transaction-count{
-        @apply text-4xl font-bold text-white mt-2 md:mt-1;
+        @apply  font-bold text-white mt-2 md:mt-1;
         font-family: Arial, Helvetica, sans-serif;
     }
+    .account-limit-container{
+        @apply bg-blue-100 w-10/12 lg:w-full col-span-2 rounded-[7px] px-8 py-10 md:py-8 flex-shrink-0 
+    }
+    .account-limit-details{
+        @apply flex items-center justify-between
+    }
+    .account-limit-details > section > h2 {
+        @apply font-medium text-gray-600 text-sm lg:text-base
+    }
+    .account-limit-details > section > p{
+        @apply  font-semibold tracking-wide text-base lg:text-lg mt-1;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .upgrade-link {
+        @apply text-right mt-3 text-sm md:text-base text-slate-700 underline-offset-[3px] hover:underline font-semibold ;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        transition: all 1s ease-in-out;
+    }
+     .transaction-details-container{
+        @apply my-10 mx-5 md:m-10 grid lg:grid-cols-5 gap-7
+     }
+     .transaction-container{
+        @apply col-span-3
+     }
+     .statistics-container {
+        @apply hidden lg:block col-span-2
+     }
+     .transaction-container > article, .statistics-container > article {
+        @apply flex justify-between items-center
+     }
+     .transaction-container > article > h2, .statistics-container > article > h2 {
+        @apply font-semibold text-base;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+     }
+     .transaction-container > article > p, .statistics-container > article > p{
+        @apply bg-blue-100 px-3 py-2.5 text-main font-semibold rounded-[5px] text-xs lg:text-[12.5px];
+     }
 }
