@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+
+@layer base{
+    .auth-logo-container{
+        @apply flex items-center
+    }
+    .auth-logo-container > h2 {
+        @apply text-main text-[21px] leading-4 
+    }
+    .main-container{
+        @apply grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4
+    }
+    .sidebar-container{
+        @apply w-full h-[100vh] hidden md:block col-span-1 lg:col-span-1 cursor-pointer shadow-none bg-blue-100 p-7 
+    }
+    .sidebar-container-sm{
+        @apply absolute md:hidden top-0 bottom-0 left-0 w-[94%] z-50  bg-white shadow-2xl shadow-gray-400 p-7 h-[100vh] 
+    }
+    .main-container section {
+        @apply col-span-1 md:col-span-2 lg:col-span-3
+    }
+ 
+    .sidebar-container > ul, .sidebar-container-sm > ul {
+        @apply my-9
+    }
+    .sidebar-container > ul > h2, .sidebar-container-sm > ul > h2 {
+        @apply font-medium my-3
+    }
+    .sidebar-container > ul > li, .sidebar-container-sm > ul > li{
+        @apply text-sm my-3 cursor-pointer flex items-center
+    }
+    .sidebar-container > ul > li > img, .sidebar-container-sm > ul > li > img {
+        @apply w-5 h-5 mr-1
+    }
+    .dashboard-header {
+        @apply border-b-2 border-gray-200 px-5 py-4 md:px-6 md:py-5 
+    }
+    .dashboard-header, .dashboard-header >section:nth-child(2){
+        @apply flex justify-between items-center 
+    }
+    .dashboard-header >section:nth-child(2){
+        @apply justify-around
+    }
+    .dashboard-header > section:nth-child(1){
+        @apply text-xl md:text-2xl lg:text-[1.6rem] font-bold tracking-wide px-3 leading-8 flex items-center ;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    }
+    .balance-container {
+        @apply bg-main cursor-pointer hover:shadow-xl shadow-slate-300 px-4 py-2.5 text-white font-medium rounded-[5px] tracking-wider text-sm mr-1.5 hidden md:block;
+        transition: all .6s linear;
+    }
+    .open-nav{
+        transform: translateX(0);
+        transition: all .9s linear;
+    }
+    .close-nav{
+        transform: translateX(-150%);
+        transition: all .9s linear;
+    }
+    .wallet-label{
+        @apply mb-5 text-xl font-semibold;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .wallet-container{
+        @apply grid  lg:grid-cols-4 items-center gap-4 flex-nowrap 
+    }
+    .wallet-balance-container{
+        @apply bg-main w-full col-span-2 rounded-[7px] px-7 py-6 md:py-8 block md:flex justify-between lg:justify-evenly items-center 
+    }
+    .wallet-balance-container > div:nth-child(3){
+        @apply flex items-center btn bg-white shadow-md shadow-white w-fit mt-4 md:mt-0
+    }
+    .wallet-balance-container > div:nth-child(3) > a{
+        @apply  text-base font-semibold;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .transaction-count-container{
+        @apply hidden lg:flex items-start flex-col
+    }
+    .transaction-count-container > img , .balance > img {
+        @apply bg-white p-3 rounded-full  
+    }
+    .transaction-count-container > h2 , .balance > h2 {
+        @apply text-white text-xs md:text-sm tracking-widest font-semibold mt-3.5 md:mt-4;
+    }
+    .amount, .transaction-count{
+        @apply text-4xl font-bold text-white mt-0 md:mt-1;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+}

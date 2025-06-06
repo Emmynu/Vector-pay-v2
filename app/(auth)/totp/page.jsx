@@ -5,9 +5,7 @@ import Image from "next/image";
 import Logo from "../../images/logo.png"
 import copy from "../../images/copy.png"
 import "../../styles/auth.css"
-import { Poppins, Roboto } from "next/font/google";
 import credits from "../../images/credits.jpg"
-import Link from "next/link";
 import { generateQrCode, verifyCode } from "@/app/actions/auth";
 import { useEffect, useState } from "react";
 import { poppins } from "../login/page";
@@ -52,7 +50,7 @@ import OtpInput from "react-otp-input";
         // verify the code
         const result =   await verifyCode(code)
         if (result) {
-            window.location = "/"
+            window.location = "/app"
         } else {
             toast.error("The OTP code you entered is incorrect. Please try again")
         }
