@@ -23,5 +23,6 @@ model User {
   verified Boolean
   totpCode String
   totpQrCode String
+  balance Float
 }
 
