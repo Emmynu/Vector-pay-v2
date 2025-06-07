@@ -65,7 +65,8 @@ export async function saveUserToDB(user) {
                 avatarUrl: "",
                 verified: user?.verified,
                 totpCode: user?.totpCode,
-                totpQrCode: user?.totpQrCode
+                totpQrCode: user?.totpQrCode,
+                balance: 0
             }
         })
     } catch (error) {

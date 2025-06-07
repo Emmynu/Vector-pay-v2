@@ -1,14 +1,15 @@
 "use client"
 
-import { DepositModal, HamburgerMenu, Statistics, TransactionHistory } from "@/app/libs/component";
+import { DepositAmountModal, DepositModal, HamburgerMenu, Statistics, TransactionHistory } from "@/app/libs/component";
 import { Poppins, Roboto } from "next/font/google";
 import walletIcon from "../../images/wallet-blue.png"
 import transactionIcon from "../../images/transaction.png"
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import { auth } from "@/firebase/firebase-client";
+import { toast, Toaster } from "sonner";
 
 export const poppins = Poppins({
     subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function DashBoard(){
     const [showBalance, setShowBalance] = useState(false)
     const [name, setName] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState(false)
+    const [isVerified, setIsVerified] = useState(false)
 
 
     const handleBalanceToggle =(e)=>{
@@ -34,8 +36,21 @@ export default function DashBoard(){
         onAuthStateChanged(auth, user=>{
             setName(user.displayName)
             setAvatarUrl(user.photoURL)
+            setIsVerified(user.emailVerified)
         })
     },[])
+    console.log(isVerified);
+    
+    function handleToggleModal() {
+        if (isVerified) {
+             document.getElementById('my_modal_3').showModal()        
+        } else {
+            toast.info("Please verify your account")
+            onAuthStateChanged(auth,user=>{
+                sendEmailVerification(user)
+            })
+        }
+    }
  
 
     return <main>
@@ -46,7 +61,7 @@ export default function DashBoard(){
             </section>
             <section>
                 <div className="balance-container">
-                    <h2>{showBalance ? "₦ 0.00 ": "₦****"}</h2>
+                    <h2>{showBalance ? "₦0.00 ": "₦****"}</h2>
                 </div>
                 <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
                 {/* notification icon */}
@@ -70,7 +85,7 @@ export default function DashBoard(){
                         <h2 className={poppins.className}>Wallet Balance:</h2>
                        <article className="flex">
 
-                          <h1 className="amount ">{showBalance ? <span className="text-4xl">₦ 0.00</span> : <span className="text-3xl">₦****</span>}</h1>
+                          <h1 className="amount ">{showBalance ? <span className="text-3xl">₦0.00</span> : <span className="text-3xl">₦****</span>}</h1>
                           <sub className=" mt-4 md:mt-5 ml-1">
                             <label className="swap">
                             {/* this hidden checkbox controls the state */}
@@ -102,11 +117,12 @@ export default function DashBoard(){
                         <h2 className={poppins.className}>Total Transaction:</h2>
                         <h1 className="transaction-count text-4xl">0 </h1>
                     </div>
-                    <div onClick={()=>document.getElementById('my_modal_3').showModal()}>
+                    <div onClick={handleToggleModal}>
                         <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon" className="w-5 h-5 md:w-6 md:h-6"/>
                         <span>Add Funds</span>
                     </div>
                 </section>
+
                 <section className="account-limit-container">
                    <article className="account-limit-details">
                     <section>
@@ -132,5 +148,7 @@ export default function DashBoard(){
         </section>
 
         <DepositModal />
+        <DepositAmountModal />
+        <Toaster richColors closeButton position="bottom-right"/>
     </main>
 }
