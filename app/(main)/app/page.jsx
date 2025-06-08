@@ -1,7 +1,7 @@
 "use client"
 
 import { DepositAmountModal, DepositModal, HamburgerMenu, Statistics, TransactionHistory } from "../../libs/component";
-import { Poppins, Roboto } from "next/font/google";
+import { Poppins } from "next/font/google";
 import walletIcon from "../../images/wallet-blue.png"
 import transactionIcon from "../../images/transaction.png"
 import Image from "next/image";
@@ -11,15 +11,11 @@ import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
 
-export const poppins = Poppins({
+ const poppins = Poppins({
     subsets: ["latin"],
     weight: "800"
 })
 
-export const roboto = Roboto({
-    subsets: ["latin"],
-    weight: "300"
-})
 
 export default function DashBoard(){
     const [showBalance, setShowBalance] = useState(false)
