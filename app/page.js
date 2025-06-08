@@ -1,4 +1,4 @@
-import { getTodos, saveTodo } from "../libs/actions/todos/todo"
+import { getTodos, saveTodo } from "./libs/actions/todos/todo"
 
 
 export default async function Home() {

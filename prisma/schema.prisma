@@ -7,23 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
   uid String @unique
-  name String
+  firstName String
+  lastName String
   email String
-  token String
-  isVerfied Boolean @default(false)
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now()) 
-  todos Todo[]
-}
-
-
-
-model Todo {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
-  user User @relation(fields: [userId], references: [uid])
-  userId String 
+  avatarUrl String
+  verified Boolean
+  totpCode String
+  totpQrCode String
 }
