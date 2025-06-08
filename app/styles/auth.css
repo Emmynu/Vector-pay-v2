@@ -2,58 +2,92 @@
 @tailwind utilities;
 @tailwind components;
 
-
-@layer base{
-    .main-form-container{
-        @apply border border-black  w-[85%] md:w-[50%] lg:w-[25%] p-5 flex flex-col m-[10%_auto] rounded-md
-    }
-    .logo-container{ 
-        @apply cursor-pointer select-none flex items-center  justify-center
-    }
-    .logo-container > img {
-        @apply w-[43px] h-[43px] mr-1
-    }
-    /* .logo-container > h2{
-        @apply text-[25px] font-bold tracking-wider mt-1;
-      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    } */
-    .main-form{
-        @apply mt-4
-    }
-    .main-form > section {
-        @apply flex flex-col
-    }
-    .main-form > section > label {
-        @apply mt-2 tracking-wider font-bold  text-sm md:text-base
-    }
-    .main-form > section >input {
-        @apply mt-1.5 w-full rounded-[5px] p-2 font-[arial] text-sm tracking-widest outline-none
-    }
-    .main-form > section > input::placeholder{
-        @apply text-black text-sm md:text-base
-    }
-    .auth-button {
-        @apply bg-black text-white text-center w-full my-2 p-3 rounded-md font-bold tracking-wider text-sm md:text-[17px]
-    }
-    .auth-button:disabled{
-        @apply opacity-55
-    }
+@layer base {
     .auth-container{
-        @apply flex items-center justify-center
+        @apply grid grid-cols-4 lg:grid-cols-5 items-center overflow-hidden gap-10
     }
-    .auth-container > button{
-        @apply border border-slate-500 px-11 lg:px-10 py-3 mt-5 rounded-lg  hover:bg-slate-100;
-        transition: all .6s linear;
+    .auth-img-container{
+        @apply hidden md:flex col-span-2 lg:col-span-3  w-full h-[100vh]  flex-col items-center justify-center;
+        background: #cbe7f1
     }
-    .auth-container > button:nth-child(1){
-        @apply mr-5
+    .auth-img-container > img {
+        @apply w-[90%]
     }
-    .auth-link{
-        @apply mt-3 font-bold hover:underline text-base ;
+    .auth-form-container{
+        @apply col-span-4 md:col-span-2  mt-[10%] md:mt-0
+    }
+    .auth-logo-container{
+        @apply flex items-center cursor-pointer select-none justify-center mb-7
+    }
+    .auth-logo-container > h2 {
+        @apply text-main text-[22px] leading-4 
+    }
+    .form-container{
+        @apply border px-8 lg:px-16 py-10 text-left mx-[5%] lg:mx-[10%]  mt-[5%] border-slate-300
+    }
+    .totp-container > h2{
+       @apply font-sans font-bold text-[20px]
+    }
+    .auth-label-container > h2{
+        @apply text-xl mb-1
+    }
+    .auth-label-container > p{
+        @apply font-thin
+    }
+    .step-container > h2{
+        @apply mb-2 text-slate-600 text-[15px]
+    }
+    .step-container > label {
+        @apply border border-slate-300 px-2 py-2.5
+    }
+    .step-container > label > input {
+        @apply border-none outline-none text-sm font-medium tracking-wide;
+        font-family: Arial, Helvetica, sans-serif
+    }
+    .render-container{
+        @apply mt-8
+    }
+    .render-container  button {
+        @apply bg-main text-white py-2.5 mt-5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[16px] ;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        transition: all 0.5s linear;
     }
-    .status{
-        @apply text-[13px] tracking-wider bg-green-400  p-3 my-4 rounded-md  font-bold;
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    .render-container  button:disabled{
+        @apply opacity-65 cursor-pointer
     }
+  
+    .render-container input[type="email"] , .render-container input[type="password"]{
+        @apply border-none outline-none w-full bg-transparent
+    }
+   .auth-footer-container{
+       @apply text-center
+    }
+    .auth-footer-container > h2 {
+        @apply font-semibold mt-3 text-[14px] ;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .auth-footer-container a {
+        @apply text-main underline underline-offset-1
+    }
+
+    .alert-container{
+        @apply flex items-center bg-yellow-200 px-4 py-2 mb-4 rounded-[3px] cursor-pointer select-none
+    }
+    .alert-container > h2{
+        @apply ml-3 text-[14px] font-medium text-slate-800;
+    }
+    .totp-content-container{
+       @apply  p-1 m-1 list-item ;
+       list-style:decimal ;
+    }
+    .totp-content-container > li > h2{
+        @apply font-thin text-[14px] mb-2
+    }
+    .qrcode-container{
+        @apply flex flex-col justify-center items-center 
+    }
+    .qrcode-container > img {
+        @apply w-[150px] h-[150px] border my-2 border-slate-300 rounded-[5px] p-3 
+    }
+
 }

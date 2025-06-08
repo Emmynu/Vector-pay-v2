@@ -8,12 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        main: "#03457C"
       },
+     
     },
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require("daisyui")],
+  daisyui:{
+    themes:["light"],
+    darkTheme: false
+  }
 };
