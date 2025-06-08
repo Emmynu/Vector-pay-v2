@@ -16,12 +16,12 @@ import { auth } from "../../../firebase/firebase-client";
 import { verifyToken } from "../../actions/auth";
 
 
-export const poppins = Poppins({
+ const poppins = Poppins({
     subsets: ["latin"],
     weight: "800"
 })
 
-export const roboto = Roboto({
+ const roboto = Roboto({
     subsets: ["latin"],
     weight: "300"
 })

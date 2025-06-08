@@ -8,8 +8,16 @@ import "../../styles/auth.css"
 import credits from "../../images/credits.jpg"
 import { generateQrCode, verifyCode } from "../../actions/auth";
 import { useEffect, useState } from "react";
-import { poppins } from "../login/page";
+import  { Poppins   } from "next/font/google"
 import OtpInput from "react-otp-input";
+
+
+ const poppins = Poppins({
+    subsets: ["latin"],
+    weight: "800"
+})
+
+
 
 
  function TotpPage() {

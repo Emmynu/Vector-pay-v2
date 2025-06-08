@@ -4,13 +4,24 @@ import Image from "next/image";
 import  credits from "../../images/credits.jpg"
 import Logo from  "../../images/logo.png"
 import Link from "next/link"
-import { poppins, roboto } from "../register/page";
+import  { Poppins,  Roboto } from "next/font/google"
 import { emailSchema } from "../../../zod-schema";
 import { toast, Toaster } from "sonner";
 import { findUserInFirebase } from "../../actions/auth";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../../firebase/firebase-client";
 import { useRef, useState } from "react";
+
+const poppins = Poppins({
+    subsets: ["latin"],
+    weight: "800"
+})
+
+ const roboto = Roboto({
+    subsets: ["latin"],
+    weight: "300"
+})
+
 
 function ResetPassword() {
     const formRef = useRef()
