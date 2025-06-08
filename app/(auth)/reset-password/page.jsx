@@ -5,11 +5,11 @@ import  credits from "../../images/credits.jpg"
 import Logo from  "../../images/logo.png"
 import Link from "next/link"
 import { poppins, roboto } from "../register/page";
-import { emailSchema } from "@/zod-schema";
+import { emailSchema } from "../../../zod-schema";
 import { toast, Toaster } from "sonner";
-import { findUserInFirebase } from "@/app/actions/auth";
+import { findUserInFirebase } from "../../actions/auth";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/firebase/firebase-client";
+import { auth } from "../../../firebase/firebase-client";
 import { useRef, useState } from "react";
 
 function ResetPassword() {
