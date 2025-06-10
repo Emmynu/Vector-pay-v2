@@ -71,10 +71,10 @@
     .wallet-balance-container{
         @apply bg-main w-10/12 lg:w-full flex-shrink-0 col-span-3 rounded-[7px] px-7 py-6 md:py-8 block md:flex justify-between lg:justify-around items-center 
     }
-    .wallet-balance-container > div:nth-child(3){
-        @apply flex items-center btn  bg-white shadow-md shadow-white w-fit mt-4 md:mt-0 border-none outline-none
+    .wallet-balance-container > button{
+        @apply flex items-center btn  bg-white shadow-md shadow-white w-fit mt-4 md:mt-0 border-none outline-none 
     }
-    .wallet-balance-container > div:nth-child(3) > span{
+    .wallet-balance-container > button > span{
         @apply  md:text-base font-semibold text-sm;
         font-family: Arial, Helvetica, sans-serif;
     }
@@ -170,5 +170,29 @@
         @apply bg-main text-white py-[11px] mt-3.5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[16px] disabled:opacity-65;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         transition: all 0.5s linear;
+     }
+  
+     .transactions > section {
+        @apply my-4 flex justify-between bg-blue-100 p-5 rounded-md  items-center
+     }
+     .transactions > section > div:nth-child(1) {
+        @apply flex justify-between items-center
+     }
+     .transactions > section > div:nth-child(1) > img {
+        @apply  mr-4 p-3 rounded-full w-11 h-11 bg-gray-100
+     }
+     .transactions > section > div:nth-child(1)  h2{
+        @apply font-medium text-gray-800 text-[15px] leading-5;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+     }
+     .transactions > section > div:nth-child(1)  p {
+        @apply text-xs mt-1.5 font-thin
+     }
+     .transaction-amount{
+        @apply font-semibold text-base text-gray-700;
+        font-family: Arial, Helvetica, sans-serif;
+     }
+     .transaction-status{
+        @apply text-green-600 font-medium
      }
 }
