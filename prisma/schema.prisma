@@ -29,5 +29,7 @@ model Transactions {
   userId String 
   type String
   amount Int
+  status String
+  reference String
   createdAt DateTime @default(now())
 }

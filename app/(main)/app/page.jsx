@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
-import { getBalance } from "../../actions/payment";
+import { getBalance, getTransactions } from "../../actions/payment";
 
 
  const poppins = Poppins({
@@ -27,6 +27,8 @@ export default function DashBoard(){
     const [avatarUrl, setAvatarUrl] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [totalTransaction, setTotalTransaction] = useState(null)
+    
 
     
     const handleBalanceToggle =(e)=>{
@@ -52,12 +54,14 @@ export default function DashBoard(){
             setIsLoading(true)
             if (uid !== false) {
                 const currentBalance = await getBalance(uid)
-                if (currentBalance?.error) {
+                const transactionCount = await getTransactions(uid)
+                if (currentBalance?.error ) {
                     setIsLoading(false)
                     toast.error(currentBalance?.error)
                 }else{
                     const formattedBalance = new Intl.NumberFormat("en-US").format(currentBalance?.balance)
                     setBalance(formattedBalance)
+                    setTotalTransaction(transactionCount)
                     setIsLoading(false)
                 }
                 
@@ -144,7 +148,7 @@ export default function DashBoard(){
                     <div className="transaction-count-container">
                         <Image src={transactionIcon} alt="wallet-icon"  className="wallet-icon"/>
                         <h2 className={poppins.className}>Total Transaction:</h2>
-                        <h1 className="transaction-count text-4xl">0 </h1>
+                        <h1 className="transaction-count text-4xl">{totalTransaction ? totalTransaction?.length: "0"} </h1>
                     </div>
                     <button onClick={handleToggleModal}>
                         <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon" className="w-5 h-5 md:w-6 md:h-6"/>

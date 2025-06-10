@@ -11,7 +11,7 @@ export default async function logOut(){
     cookie.delete("user")
     cookie.delete("totp")
     cookie.delete("qrcode")
-    window.location = ("/login")
+    redirect("/login")
 }
 
 export async function updateBalance(amount) {

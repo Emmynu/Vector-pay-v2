@@ -195,7 +195,6 @@ export function TransactionHistory() {
         onAuthStateChanged(auth, user=>{setUid(user?.uid)})
     },[])
 
-    console.log(uid);
     
     useEffect(()=>{
         async function transactions() {
@@ -224,21 +223,29 @@ export function TransactionHistory() {
        </article>
 
        <section>
-            {transactions.length === 0 ? <article>
-                
-            </article>:
+            {transactions.length === 0 ?
+                <section class="transaction-empty">
+                    <img src="https://th.bing.com/th/id/OIP.ZsjPQuS9XJsVY_JFsHvn9QHaHa?rs=1&pid=ImgDetMain" alt="" />
+                    <h2>Transaction History empty</h2>
+                </section>:
              <article className="transactions">
                 {transactions.map(transaction=>{
                     return <section>
                         <div>
-                            <Image src={transaction?.type === "deposit" ? depositIcon : ""} alt={`${transaction?.type}-icon`}/>
+                            <img src={transaction?.type === "deposit" ? "https://img.icons8.com/?size=100&id=122074&format=png&color=000000" : ""} alt={`${transaction?.type}-icon`}/>
                             <section>
                                 <h2>{transaction?.type === "deposit" ? "Fund Wallet by ATM Card": ""}</h2>
-                                <p>2025-06-09T23:00:19.855+00:00<span className="transaction-status"> · Success</span></p>
+                                <p>{new Intl.DateTimeFormat("en-US", {
+                                    month: "long",
+                                    day:"numeric",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                }).format(transaction?.createdAt)}<span className={transaction?.status === "success"?"transaction-status text-green-600 ": transaction?.status === "failed" ? "transaction-status text-red-600 ": "transaction-status text-yellow-600 "}> · {transaction?.status?.charAt(0)?.toUpperCase() + transaction?.status?.slice(1)}</span></p>
                             </section>
                         </div>
                         <div>
-                            <p className="transaction-amount">₦{transaction?.amount}</p>
+                            <p className="transaction-amount">+₦{transaction?.amount}</p>
                         </div>
                     </section>
                 })}    
@@ -336,21 +343,34 @@ export function DepositAmountModal() {
       if (amount >= 100) {
         try {
             closeModal()
+            const reference =  new Date().getTime().toString()
  
             koraPayInstance.initialize({
                 key: process.env.NEXT_PUBLIC_KORAPAY_PUBLIC_KEY ,
-                reference: new Date().getTime().toString(),
+                reference,
                 amount: parseInt(amount), 
                 currency: "NGN",
                 customer: {
                 name:currentUser?.name,
                 email:currentUser?.email,
                 },
-                onClose: ()=>{
-                    toast.error("Transaction cancelled. You closed the payment window")
+                onClose: async()=>{
+                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "cancelled", reference)
+                    if (result?.error) {
+                        toast.error(res?.error)
+                    } else {
+                        toast.error("Transaction cancelled. You closed the payment window")
+                        window.location = "/app"
+                    }
                 },
                 onFailed:async()=>{
-                    toast.error("Payment failed. Please try again!")
+                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "failed", reference)
+                    if (result?.error) {
+                        toast.error(res?.error)
+                    } else {
+                        toast.error("Payment failed. Please try again!")
+                        window.location = "/app"
+                    }
                 },
                 onSuccess: async function () {
                     if (!isProcessed) {
@@ -360,7 +380,7 @@ export function DepositAmountModal() {
                             toast.error(res?.error)
                         }
                         else{
-                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit")
+                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "success", reference)
                             if (result?.error) {
                                 toast.error(res?.error)
                             } else {
