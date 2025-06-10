@@ -66,6 +66,7 @@ export async function saveUserToDB(user) {
                 verified: user?.verified,
                 totpCode: user?.totpCode,
                 totpQrCode: user?.totpQrCode,
+                balance: 0
             }
         })
     } catch (error) {
@@ -83,7 +84,7 @@ export async function findUser(userId) {
 
         return user
     } catch (error) {
-        console.log(error?.message);  
+       return { error: error?.message};  
     }
 }
 

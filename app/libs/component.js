@@ -5,10 +5,14 @@ import logOut from "../actions/main";
 import Image from "next/image";
 import Logo from "../images/logo.png"
 import cancelIcon from "../images/cancel.png"
+import depositIcon from "../images/deposit.png"
 import Link from "next/link";
 import "../styles/main.css"
 import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import useKoraPay from "./useKoraPay";
+import { toast } from "sonner";
+import { deposit, getTransactions, saveTransaction } from "../actions/payment";
 
 
  
@@ -184,6 +188,33 @@ export function HamburgerMenu() {
 }
 
 export function TransactionHistory() {
+    const [transactions, setTransactions] = useState([])
+    const [uid, setUid] = useState(null)
+
+    useEffect(()=>{
+        onAuthStateChanged(auth, user=>{setUid(user?.uid)})
+    },[])
+
+    console.log(uid);
+    
+    useEffect(()=>{
+        async function transactions() {
+           if (uid) {
+                const allTransactions =  await getTransactions(uid)
+                if (allTransactions?.error) {
+                    toast.error(allTransactions?.error)
+                } else {
+                    setTransactions(allTransactions)     
+                }  
+           } else {
+            
+           }
+        }
+        transactions()
+    },[uid])
+
+    console.log(transactions);
+    
     return <main className="transaction-container">
        <article>
             <h2>Latest Transactions</h2>
@@ -193,7 +224,25 @@ export function TransactionHistory() {
        </article>
 
        <section>
-
+            {transactions.length === 0 ? <article>
+                
+            </article>:
+             <article className="transactions">
+                {transactions.map(transaction=>{
+                    return <section>
+                        <div>
+                            <Image src={transaction?.type === "deposit" ? depositIcon : ""} alt={`${transaction?.type}-icon`}/>
+                            <section>
+                                <h2>{transaction?.type === "deposit" ? "Fund Wallet by ATM Card": ""}</h2>
+                                <p>2025-06-09T23:00:19.855+00:00<span className="transaction-status"> · Success</span></p>
+                            </section>
+                        </div>
+                        <div>
+                            <p className="transaction-amount">₦{transaction?.amount}</p>
+                        </div>
+                    </section>
+                })}    
+            </article>}
        </section>
     </main>
 }
@@ -260,11 +309,14 @@ export function DepositModal() {
 export function DepositAmountModal() {
     const modalRef = useRef(null)
     const [amount, setAmount] = useState(null)
-    const [currentUser, setcurrentUser] = useState({name: "", email: "", isVerified: null})
-
+    const [currentUser, setcurrentUser] = useState({uid: "", name: "", email: "", isVerified: null})
+    const { koraPayInstance } = useKoraPay()
+    // const [isProcessed, setIsProcessed] = useState(false)
+    let isProcessed = false
+    
 
     useEffect(()=>{
-        onAuthStateChanged(auth,user=>setcurrentUser({name:user?.displayName, email: user?.email, isVerified:user?.emailVerified }))
+        onAuthStateChanged(auth,user=>setcurrentUser({uid:user?.uid ,name:user?.displayName, email: user?.email, isVerified:user?.emailVerified }))
     },[])
 
     const closeModal = ()=>{
@@ -278,32 +330,54 @@ export function DepositAmountModal() {
             document.getElementById("my_modal_3").showModal()
        }
 
-    const config = {
-        reference: new Date().getTime().toString(),
-        email:currentUser?.email,
-        amount: amount * 100,
-        publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY,
-        metadata: {
-          name: currentUser?.name,
-        },
-    }
-
-
-//     const initializePayment = usePaystackPayment(config)
-
-//    async function onSuccess() {
-//        await updateBalance(amount)
-//     }
-
 
     function handleDeposit() {
+
+      if (amount >= 100) {
         try {
-            // initializePayment({onSuccess})
             closeModal()
-        } catch (error) {
-            console.log(error?.message);
+ 
+            koraPayInstance.initialize({
+                key: process.env.NEXT_PUBLIC_KORAPAY_PUBLIC_KEY ,
+                reference: new Date().getTime().toString(),
+                amount: parseInt(amount), 
+                currency: "NGN",
+                customer: {
+                name:currentUser?.name,
+                email:currentUser?.email,
+                },
+                onClose: ()=>{
+                    toast.error("Transaction cancelled. You closed the payment window")
+                },
+                onFailed:async()=>{
+                    toast.error("Payment failed. Please try again!")
+                },
+                onSuccess: async function () {
+                    if (!isProcessed) {
+                       isProcessed = true 
+                        const res = await deposit(currentUser?.uid, parseInt(amount))
+                        if (res?.error) {
+                            toast.error(res?.error)
+                        }
+                        else{
+                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit")
+                            if (result?.error) {
+                                toast.error(res?.error)
+                            } else {
+                                window.location = "/app"
+                            }
+                        }
+                        
+                    }
             
+                },
+        });
+
+            
+        } catch (error) {
+            toast.error(error?.message);
         }
+      }
     }
 
     return (
@@ -326,13 +400,16 @@ export function DepositAmountModal() {
                         
                             type="number"
                             name="amount"
-                            className="input input-bordered validator"
+                            className="input outline-none validator"
                             value={amount}
+                            min={100}
+                            max={500000}
                             onChange={(e)=>setAmount(e.target.value)}
                             required
                             placeholder="Enter Amount"
-                            title="Must be between be a number"
+                            title="Minimum deposit is ₦100"
                             />
+                            <p className="validator-hint">Deposit range is ₦100-₦500,000</p>
                             <button onClick={handleDeposit} disabled={amount <= 0}>Continue</button>
                    </section>
                 </div>
