@@ -55,13 +55,15 @@ export async function getBalance(uid) {
    }
 }
 
-export async function saveTransaction(uid, amount, type) {
+export async function saveTransaction(uid, amount, type, status, reference) {
     try {
         const transactions = await prisma.transactions.create({
             data: {
                 userId: uid,
                 amount,
                 type,
+                status,
+                reference
             }
         })
         return transactions
@@ -80,7 +82,7 @@ export async function getTransactions(uid) {
            orderBy: {
             createdAt: "desc"
            },
-           take: 3
+           take: 4
         })
         return transactions
     } catch (error) {
