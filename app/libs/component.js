@@ -5,7 +5,6 @@ import logOut from "../actions/main";
 import Image from "next/image";
 import Logo from "../images/logo.png"
 import cancelIcon from "../images/cancel.png"
-import depositIcon from "../images/deposit.png"
 import Link from "next/link";
 import "../styles/main.css"
 import { useEffect, useRef, useState } from "react";
@@ -13,15 +12,67 @@ import { onAuthStateChanged } from "firebase/auth";
 import useKoraPay from "./useKoraPay";
 import { toast } from "sonner";
 import { deposit, getTransactions, saveTransaction } from "../actions/payment";
+import { usePathname } from "next/navigation";
 
 
- 
+export function DashBoardHeader() {
+    const [avatarUrl, setAvatarUrl] = useState(false)
+
+    useEffect(()=>{
+        try {
+          onAuthStateChanged(auth, user=>{
+              setAvatarUrl(user.photoURL)
+          })
+        } catch (error) {
+          
+        }
+      },[])
+
+    return (
+        <header className="dashboard-header">
+        <section>
+           <HamburgerMenu />
+            <h2>DashBoard</h2>
+        </section>
+        <section>
+            <div className="balance-container">
+                <h2>{"₦****"}</h2>
+            </div>
+            <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
+            {/* notification icon */}
+            <button className="btn btn-ghost btn-circle">
+                <div className="indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
+                    <span className="badge badge-xs badge-primary indicator-item"></span>
+                </div>
+            </button>
+
+        </section>
+    </header>
+
+    )
+}
+
+export function DashBoardHeaderBalance({}) {
+    
+} 
 
 export function SideBar() {
+    const pathname = usePathname()
     
     async function handleLogout() {
         auth.signOut()
         await logOut()
+    }
+
+    function handleDeposit() {
+        if (pathname === "/app") {
+            document.querySelector("#my_modal_3").showModal()
+        } else {
+            window.location = "/app"
+            document.querySelector("#my_modal_3").showModal()
+        }
+        
     }
     
 
@@ -47,13 +98,13 @@ export function SideBar() {
 
         <ul>
             <h2>Main</h2>
-            <li onClick={()=>document.getElementById('my_modal_3').showModal()}>
+            <li onClick={handleDeposit}>
                 <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon"/>
                 <span>Fund Wallet</span>
             </li>
             <li>
-                <img src={"https://img.icons8.com/?size=100&id=103537&format=png&color=000000"} alt="atc-icon"/>
-                <Link href={"*"}>Airtime to Cash</Link>
+                <img src={"https://img.icons8.com/?size=100&id=16026&format=png&color=000000"} alt="atc-icon"/>
+                <Link href={"*"}>Transfer</Link>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
@@ -81,7 +132,7 @@ export function SideBar() {
             <h2>Settings</h2>
             <li>
             <img src={"https://img.icons8.com/?size=100&id=2969&format=png&color=000000"} alt="settings-icon"/>
-                <Link href={"*"}>Account Settings</Link>
+                <Link href={"/app/settings"}>Account Settings</Link>
             </li>
             <li onClick={handleLogout} >
             <img src={"https://img.icons8.com/?size=100&id=83259&format=png&color=000000"} alt="logout-icon"/>
@@ -92,6 +143,7 @@ export function SideBar() {
 } // side bar for large screens
 
 export function SideBarSm() {
+    const pathname = usePathname()
     
     async function handleLogout() {
         auth.signOut()
@@ -102,6 +154,18 @@ export function SideBarSm() {
         document.querySelector(".sidebar-container-sm").classList.remove("open-nav")
         document.querySelector(".sidebar-container-sm").classList.add("close-nav")
     }
+
+    
+    function handleDeposit() {
+        if (pathname === "/app") {
+            document.querySelector("#my_modal_3").showModal()
+        } else {
+            window.location = "/app"
+            document.querySelector("#my_modal_3").showModal()
+        }
+        
+    }
+    
 
  
 
@@ -129,13 +193,13 @@ export function SideBarSm() {
 
         <ul>
             <h2>Main</h2>
-            <li onClick={()=>document.getElementById('my_modal_3').showModal()}>
+            <li onClick={handleDeposit}>
                 <img src={"https://img.icons8.com/?size=100&id=121760&format=png&color=000000"} alt="wallet-icon"/>
                 <span href={"*"}>Fund Wallet</span>
             </li>
             <li>
-                <img src={"https://img.icons8.com/?size=100&id=103537&format=png&color=000000"} alt="atc-icon"/>
-                <Link href={"*"}>Airtime to Cash</Link>
+                <img src={"https://img.icons8.com/?size=100&id=16026&format=png&color=000000"} alt="atc-icon"/>
+                <Link href={"*"}>Transfer</Link>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
@@ -163,7 +227,7 @@ export function SideBarSm() {
             <h2>Settings</h2>
             <li>
             <img src={"https://img.icons8.com/?size=100&id=2969&format=png&color=000000"} alt="settings-icon"/>
-                <Link href={"*"}>Account Settings</Link>
+                <Link href={"/app/settings"}>Account Settings</Link>
             </li>
             <li onClick={handleLogout} >
             <img src={"https://img.icons8.com/?size=100&id=83259&format=png&color=000000"} alt="logout-icon"/>
@@ -212,7 +276,6 @@ export function TransactionHistory() {
         transactions()
     },[uid])
 
-    console.log(transactions);
     
     return <main className="transaction-container">
        <article>
@@ -245,7 +308,7 @@ export function TransactionHistory() {
                             </section>
                         </div>
                         <div>
-                            <p className="transaction-amount">+₦{transaction?.amount}</p>
+                            <p className="transaction-amount">+₦{Intl.NumberFormat("en-US").format(transaction?.amount)}</p>
                         </div>
                     </section>
                 })}    
@@ -340,7 +403,7 @@ export function DepositAmountModal() {
 
     function handleDeposit() {
 
-      if (amount >= 100) {
+      if (amount >= 100 && amount < 500000) {
         try {
             closeModal()
             const reference =  new Date().getTime().toString()
@@ -397,6 +460,8 @@ export function DepositAmountModal() {
         } catch (error) {
             toast.error(error?.message);
         }
+      }else{
+        toast.error("Deposit range is ₦100-₦500,000")
       }
     }
 
@@ -415,7 +480,7 @@ export function DepositAmountModal() {
                     
                    <section>
                         <label htmlFor="amount">Amount:</label>
-                            
+                        
                         <input
                         
                             type="number"
@@ -430,7 +495,7 @@ export function DepositAmountModal() {
                             title="Minimum deposit is ₦100"
                             />
                             <p className="validator-hint">Deposit range is ₦100-₦500,000</p>
-                            <button onClick={handleDeposit} disabled={amount <= 0}>Continue</button>
+                            <button onClick={handleDeposit} disabled={(amount <= 0 && amount >=500000)}>Continue</button>
                    </section>
                 </div>
             </div>

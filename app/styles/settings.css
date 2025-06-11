@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+@layer base{
+  
+    .settings-label{
+        @apply text-xl font-medium border-b pt-7 pb-4 md:pt-7 md:pb-5 mt-3 md:font-[verdana];
+    }
+    .loading-container{
+        @apply mt-10 lg:w-7/12
+    }
+    .loading-container >section{
+        @apply flex items-start md:items-center justify-between my-7 flex-col md:flex-row
+    }
+    .loading-container > section > div{
+        @apply skeleton w-full h-6 md:h-10
+    }
+    .loading-container > section >div:nth-child(2){
+        @apply mt-3 md:mt-0  w-[50%] md:w-full ml-0 md:ml-3
+    }
+    .tab{
+        @apply font-medium;
+    }
+    .user-info-container > h3{
+        @apply font-semibold text-sm my-7 tracking-[0.015rem] flex justify-between flex-col md:flex-row items-start md:items-center;
+        font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif
+    }
+     .user-info-container > h3 > span > a {
+        @apply text-blue-600 hover:underline
+    }
+    .user-info-container > h3 > span:nth-child(2){
+        @apply text-slate-500 text-sm md:text-[15px] mt-1
+    }
+    .update-info-container > div{
+        @apply flex items-start justify-between my-9 flex-col  md:flex-row md:items-center;
+        font-family: Arial, Helvetica, sans-serif
+    }
+    .update-info-container > div > article h2{
+        @apply text-sm font-bold ;
+    }
+    .update-info-container > div > article h4{
+        @apply text-xs mt-0.5 text-slate-500;
+        font-family: sans-serif;
+    }
+    .update-info-container > div button {
+        @apply text-main mt-2.5 md:mt-0 font-bold text-sm
+    }
+    .settings-form-label{
+        @apply border w-full rounded-[5px] border-gray-300 flex items-center p-2.5 text-sm
+    }
+    .settings-form-label input {
+        @apply border-none outline-none 
+    }
+}
