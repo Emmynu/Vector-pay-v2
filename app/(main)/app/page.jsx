@@ -24,7 +24,6 @@ export default function DashBoard(){
     const [balance, setBalance] = useState(null)
     const [uid, setUid] = useState(false)
     const [name, setName] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [totalTransaction, setTotalTransaction] = useState(null)
@@ -40,7 +39,6 @@ export default function DashBoard(){
         onAuthStateChanged(auth, user=>{
             setName(user.displayName)
             setUid(user?.uid)
-            setAvatarUrl(user.photoURL)
             setIsVerified(user.emailVerified)
         })
       } catch (error) {
@@ -87,30 +85,10 @@ export default function DashBoard(){
  
 
     return <main>
-        <header className="dashboard-header">
-            <section>
-               <HamburgerMenu />
-                <h2>DashBoard</h2>
-            </section>
-            <section>
-                <div className="balance-container">
-                    <h2>{showBalance ? `₦${balance ? balance: "0.00"}`: "₦****"}</h2>
-                </div>
-                <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
-                {/* notification icon */}
-                <button className="btn btn-ghost btn-circle">
-                    <div className="indicator">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                        <span className="badge badge-xs badge-primary indicator-item"></span>
-                    </div>
-                </button>
-
-            </section>
-        </header>
-
+      
         <section className="my-10 mx-5 md:m-10 ">
             <h2 className={`wallet-label`}>Welcome {name}, </h2>
-
+            
             <section className="wallet-container overflow-x-scroll">
                 <section className="wallet-balance-container">
                     <div className="balance">
@@ -183,6 +161,6 @@ export default function DashBoard(){
         <DepositModal />
         <DepositAmountModal />
   
-        <Toaster richColors closeButton position="bottom-right"/>
+        <Toaster richColors closeButton position="bottom-right" className="z-[4000]"/>
     </main>
 }

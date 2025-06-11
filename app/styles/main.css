@@ -30,7 +30,7 @@
         @apply font-medium my-3
     }
     .sidebar-container > ul > li, .sidebar-container-sm > ul > li{
-        @apply text-sm my-3 cursor-pointer flex items-center
+        @apply text-sm my-3 cursor-pointer flex items-center 
     }
     .sidebar-container > ul > li > img, .sidebar-container-sm > ul > li > img {
         @apply w-5 h-5 mr-1

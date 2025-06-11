@@ -8,6 +8,7 @@ import QRcode from "qrcode"
 import { randomBytes } from "crypto"
 
 
+
 export async function verifyToken(token, firstName, lastName) {
     try {
         const user = await adminAuth.verifyIdToken(token)
@@ -84,7 +85,7 @@ export async function findUser(userId) {
 
         return user
     } catch (error) {
-       return { error: error?.message};  
+       return { error: "Sorry, Could not fetch your information"};  
     }
 }
 
