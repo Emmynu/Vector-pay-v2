@@ -32,7 +32,7 @@ export function DashBoardHeader() {
         <header className="dashboard-header">
         <section>
            <HamburgerMenu />
-            <h2>DashBoard</h2>
+            <h2>Dashboard</h2>
         </section>
         <section>
             <div className="balance-container">
