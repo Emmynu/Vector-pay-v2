@@ -46,10 +46,10 @@
     .update-info-container > div button {
         @apply text-main mt-2.5 md:mt-0 font-bold text-sm
     }
-    .settings-form-label{
+    .settings-form-label, .transaction-container{
         @apply border w-full rounded-[5px] border-gray-300 flex items-center p-2.5 text-sm
     }
-    .settings-form-label input {
+    .settings-form-label input, .transaction-container input {
         @apply border-none outline-none 
     }
 }

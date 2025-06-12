@@ -28,7 +28,7 @@ export async function verifyToken(token, firstName, lastName) {
                     verified: user?.email_verified,
                     uid: user?.uid,
                     totpCode: secret?.base32,
-                    totpQrCode: secret?.otpauth_url
+                    totpQrCode: secret?.otpauth_url,
                } 
                await saveUserToDB(data)
             }
@@ -67,7 +67,9 @@ export async function saveUserToDB(user) {
                 verified: user?.verified,
                 totpCode: user?.totpCode,
                 totpQrCode: user?.totpQrCode,
-                balance: 0
+                balance: 0,
+                accountLevel: "1"
+                // transactionPin : "0000"
             }
         })
     } catch (error) {

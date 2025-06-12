@@ -31,10 +31,25 @@ export async function updateBalance(amount) {
                 }
             })
         }else{
-
+            return { error: "Sorry, An error occured."}
         }
     }else{
-
+        return { error: "Sorry, An error occured."}
     }
     
+}
+
+export async function updateTransactionPin(uid, pin) {
+    try {
+        await prisma.user.update({
+            where: {
+                uid,
+            },
+            data: {
+                transactionPin: pin
+            }
+        })
+    } catch (error) {
+        return {error: error?.message}
+    }
 }

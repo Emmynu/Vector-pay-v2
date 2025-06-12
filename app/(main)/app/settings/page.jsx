@@ -8,7 +8,8 @@ import { auth } from "../../../../firebase/firebase-client"
 import { toast, Toaster } from "sonner"
 import { Poppins } from "next/font/google"
 import Link from "next/link"
-import { updatePasswordSchema } from "../../../../zod-schema"
+import { pinSchema, updatePasswordSchema } from "../../../../zod-schema"
+import { updateTransactionPin } from "../../../actions/main"
 
 
 const poppins = Poppins({
@@ -21,9 +22,13 @@ export default function Settings() {
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isPending, setIsPending] = useState(false)
+    const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState("")
+    const [transactionError, setTransactionError] = useState("")
     const [password, setPassword] = useState({newPassword: "", confirmPassword: ""})
+    const [pin, setPin] = useState({oldPin: "", newPin: "", confirmPin: ""})
     const modalRef = useRef(null)
+    const transactionModalRef = useRef(null)
 
     useEffect(()=>{
         onAuthStateChanged(auth, user => setUid(user?.uid))
@@ -40,16 +45,25 @@ export default function Settings() {
                 setIsLoading(false)
                 setUser(currentUser)
             }
+
           }
         }
         getUser()
     },[uid])
 
 
+
     function handleInput(e) {
         const {name,value} = e.target
         setPassword((prev)=>({
             ...prev, [name]:value
+        }))
+    }
+
+    function handlePinInput(e) {
+        const { name, value} = e.target
+        setPin((prev)=>({
+            ...prev, [name]: value
         }))
     }
     async function handlePasswordChange() {
@@ -92,6 +106,48 @@ export default function Settings() {
        }, 2000);
     }
 
+    async function handleTransactionPinChange() {
+        setIsProcessing(true)
+        if (pin.confirmPin && pin.newPin && pin.oldPin) {
+           const result =  pinSchema.safeParse(pin)
+            if (!result?.success) {
+                result.error.errors.map(error=>{
+                    setTransactionError(error?.message);
+                  })
+            } else {
+                if (pin.oldPin === user?.transactionPin) {
+                    if (pin.newPin === pin.confirmPin) {
+                        // update the pin
+                        const res = await updateTransactionPin(uid, pin.newPin)
+                        if (res?.error) {
+                            setTransactionError(res?.error);
+                            
+                        } else {
+                            //close the modal
+                            if (transactionModalRef.current) {
+                                transactionModalRef.current.close()
+                            }
+                        }
+                    } else {
+                        setTransactionError("Please ensure your PINs match");
+                    }
+                    
+                } else {
+                    setTransactionError("The old PIN you entered is incorrect");
+                }
+            }
+        } else {
+            setTransactionError("Invalid Input");
+            
+        }
+
+        setTimeout(() => {
+            setTransactionError("")
+            setIsProcessing(false)
+        }, 2000);
+        
+    }
+
 
     
     return (
@@ -131,7 +187,7 @@ export default function Settings() {
                             </h3>
                             <h3>
                                 <span className={poppins.className}>Wallet Balance: </span>
-                                <span>NGN{user?.balance}</span>
+                                <span>NGN{new Intl.NumberFormat("en-US").format(user?.balance)}</span>
                             </h3>
                            
                             <h3>
@@ -140,14 +196,19 @@ export default function Settings() {
                             </h3>
 
                             <h3>
+                                <span className={poppins.className}>Account Number: </span>
+                                <span>1234567890</span>
+                            </h3>
+
+                            <h3>
                                 <span className={poppins.className}>BVN: </span>
-                                <span>Click here to [ <Link href={"*"}>Link your bvn</Link> ]</span>
+                               {user?.bvn ? <span>{user?.bvn}</span> :  <span>Click here to [ <Link href={"*"}>Link your bvn</Link> ]</span>}
                             </h3>
 
                             
                             <h3>
                                 <span className={poppins.className}>Level: </span>
-                                <span>Tier 1 [ <Link href={"*"}>Upgrade your account </Link> ]</span>
+                                <span>Tier {user?.accountLevel} {user?.accountLevel < 3 &&[ <Link href={"*"}>Upgrade your account </Link> ]}</span>
                             </h3>
                         </section>}
                     </div>
@@ -168,20 +229,20 @@ export default function Settings() {
                                     <h2 className={poppins.className}>Update Transaction Pin</h2>
                                     <h4>Change your old transaction pin to a new one</h4>
                                 </article>
-                                <button>Change transaction pin</button>
+                                <button onClick={() => document.querySelector("#transaction_modal").showModal()}>Change transaction pin</button>
                             </div>
                             <div>
                                 <article>
                                     <h2 className={poppins.className}>Reset Transaction Pin</h2>
                                     <h4>Forgot your transaction pin. Reset your pin</h4>
                                 </article>
-                                <button>Reset transaction pin</button>
+                                <button onClick={() => document.querySelector("#transaction_modal").showModal()}>Reset transaction pin</button>
                             </div>
                         </section>
                     </div>
 
                     {/* Password modal */}
-                    <dialog id="password_modal" className="modal modal-bottom md:modal-middle" ref={modalRef}>
+                    <dialog id="password_modal" className="modal modal-bottom md:modal-middle border " ref={modalRef}>
                         <div className="modal-box p-10">
                             <form method="dialog">
                                 <button className="btn btn-md btn-circle btn-ghost absolute right-2 top-1">✕</button>
@@ -257,7 +318,121 @@ export default function Settings() {
                                 </article>
 
                                   
-                                <button onClick={handlePasswordChange} disabled={(user === null) || (isPending)}>{isPending ? <span className="loading loading-bars"></span> :<span>Continue</span>}</button>
+                                <button onClick={handlePasswordChange} disabled={(user === null || isPending)}>{isPending ? <span className="loading loading-bars"></span> :<span>Continue</span>}</button>
+                            </section>
+                            </div>
+                        </div>
+                    </dialog>
+
+                      {/* Transaction modal */}
+                      <dialog id="transaction_modal" className="modal modal-bottom md:modal-middle" ref={transactionModalRef}>
+                        <div className="modal-box p-10">
+                            <form method="dialog">
+                                <button className="btn btn-md btn-circle btn-ghost absolute right-2 top-1">✕</button>
+                            </form>
+                            <div className="modal-amount-container">
+                                <article className="mb-7">
+                                    <h2 >Update Transaction Pin</h2>
+                                </article>
+                                
+                            <section className="">
+
+                            <article className="mt-4 flex flex-col" style={{width: "100%"}}>
+                                <h2 className="text-sm mb-1.5">Old Pin: </h2>
+                                <label className="settings-form-label"  >
+                                    <svg className="h-[1em] opacity-50 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                        <g
+                                        strokeLinejoin="round"
+                                        strokeLinecap="round"
+                                        strokeWidth="2.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        >
+                                        <path
+                                            d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                                        ></path>
+                                        <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                        </g>
+                                    </svg>
+
+                                    <input
+                                        type="number"
+                                        name="oldPin"
+                                        required
+                                        className="ml-1"
+                                        placeholder="Pin"
+                                        value={pin.oldPin}
+                                        onChange={handlePinInput}
+                                    />
+                                </label>
+                                        
+                                    </article>
+                                
+                                
+                                <article className="mt-4 flex flex-col" style={{width: "100%"}}>
+                                            <h2 className="text-sm mb-1.5">New Pin: </h2>
+                                            <label className="settings-form-label"  >
+                                                <svg className="h-[1em] opacity-50 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                                    <g
+                                                    strokeLinejoin="round"
+                                                    strokeLinecap="round"
+                                                    strokeWidth="2.5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    >
+                                                    <path
+                                                        d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                                                    ></path>
+                                                    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                                    </g>
+                                                </svg>
+
+                                                <input
+                                                    type="number"
+                                                    name="newPin"
+                                                    required
+                                                    className="ml-1"
+                                                    placeholder="Pin"
+                                                    value={pin.newPin}
+                                                    onChange={handlePinInput}
+                                                />
+                                            </label>
+                                        
+                                    </article>
+
+                                    <article className="mt-4 flex flex-col" style={{width: "100%"}}>
+                                            <h2 className="text-sm mb-1.5">Confirm Pin: </h2>
+                                            <label className="settings-form-label"  >
+                                                <svg className="h-[1em] opacity-50 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                                    <g
+                                                    strokeLinejoin="round"
+                                                    strokeLinecap="round"
+                                                    strokeWidth="2.5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    >
+                                                    <path
+                                                        d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                                                    ></path>
+                                                    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                                    </g>
+                                                </svg>
+
+                                                <input
+                                                    type="number"
+                                                    name="confirmPin"
+                                                    required
+                                                    className="ml-1"
+                                                    placeholder="Pin"
+                                                    value={pin.confirmPin}
+                                                    onChange={handlePinInput}
+                                                />
+                                            </label>
+                                        
+                                    </article>
+                                
+                                    {transactionError && <p  className="text-red-600 text-sm font-medium mt-1">{transactionError}</p>}
+                                <button onClick={handleTransactionPinChange} disabled={ user === null || isProcessing}>{isProcessing ? <span className="loading loading-bars "></span> : <span>Continue</span>}</button>
                             </section>
                             </div>
                         </div>

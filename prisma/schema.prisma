@@ -19,6 +19,9 @@ model User {
   totpCode String
   totpQrCode String
   balance Int
+  accountLevel String
+  bvn String?
+  transactionPin String?
   transactions Transactions[]
 }
 
