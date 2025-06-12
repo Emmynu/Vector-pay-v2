@@ -208,7 +208,7 @@ export default function Settings() {
                             
                             <h3>
                                 <span className={poppins.className}>Level: </span>
-                                <span>Tier {user?.accountLevel} [ <Link href={"*"}>Upgrade your account </Link> ]</span>
+                                <span>Tier {user?.accountLevel} {user?.accountLevel < 3 &&[ <Link href={"*"}>Upgrade your account </Link> ]}</span>
                             </h3>
                         </section>}
                     </div>
