@@ -6,6 +6,7 @@ import prisma from "../db"
 import speakeasy from "speakeasy"
 import QRcode from "qrcode"
 import { randomBytes } from "crypto"
+import { generateAccountNumber } from "./main"
 
 
 
@@ -68,8 +69,8 @@ export async function saveUserToDB(user) {
                 totpCode: user?.totpCode,
                 totpQrCode: user?.totpQrCode,
                 balance: 0,
-                accountLevel: "1"
-                // transactionPin : "0000"
+                accountLevel: "1",
+                accountNumber:  await generateAccountNumber()
             }
         })
     } catch (error) {

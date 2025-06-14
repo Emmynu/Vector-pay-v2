@@ -44,7 +44,6 @@ import OtpInput from "react-otp-input";
     
     function handlePaste(event) {
             const data = event.clipboardData.getData('text');
-            console.log(data)
     }
     
    async function handleVerify(){

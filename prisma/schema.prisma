@@ -20,6 +20,7 @@ model User {
   totpQrCode String
   balance Int
   accountLevel String
+  accountNumber String @unique
   bvn String?
   transactionPin String?
   transactions Transactions[]
@@ -34,5 +35,7 @@ model Transactions {
   amount Int
   status String
   reference String
+  recipient String @unique 
+  recipientName String
   createdAt DateTime @default(now())
 }

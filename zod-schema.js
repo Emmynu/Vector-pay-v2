@@ -17,7 +17,7 @@ export const updatePasswordSchema = z.object({
 
 
 export const pinSchema = z.object({
-    oldPin: z.string().regex(new RegExp(/^[0-9]{4,4}$/), { message: "Invalid Transaction Pin" }).min(4,{message: "Transaction Pin should atleast contain 4 numerical characters(numbers)"}).max(4, { message: "Transaction Pin should not be more than 4 numerical characters(numbers)"}).trim(),
+    oldPin: z.string().regex(new RegExp(/^[0-9]{4,4}$/), { message: "Invalid Transaction Pin" }).min(4,{message: "Transaction Pin should atleast contain 4 numerical characters(numbers)"}).max(4, { message: "Transaction Pin should not be more than 4 numerical characters(numbers)"}).trim().optional(),
     newPin: z.string().regex(new RegExp(/^[0-9]{4,4}$/), { message: "Invalid Transaction Pin" }).min(4,{message: "Transaction Pin should atleast contain 4 numerical characters(numbers)"}).max(4, { message: "Transaction Pin should not be more than 4 numerical characters(numbers)"}).trim(),
     confirmPin: z.string().regex(new RegExp(/^[0-9]{4,4}$/), { message: "Invalid Transaction Pin" }).min(4,{message: "Transaction Pin should atleast contain 4 numerical characters(numbers)"}).max(4, { message: "Transaction Pin should not be more than 4 numerical characters(numbers)"}).trim(),
     

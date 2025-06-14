@@ -36,7 +36,7 @@ export function DashBoardHeader() {
         </section>
         <section>
             <div className="balance-container">
-                <h2>{"₦****"}</h2>
+                <h2 className="dashboard-balance">{"₦****"}</h2>
             </div>
             <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
             {/* notification icon */}
@@ -104,7 +104,7 @@ export function SideBar() {
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=16026&format=png&color=000000"} alt="atc-icon"/>
-                <Link href={"*"}>Transfer</Link>
+                <Link href={"/app/transfer"}>Transfer</Link>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
@@ -199,7 +199,7 @@ export function SideBarSm() {
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=16026&format=png&color=000000"} alt="atc-icon"/>
-                <Link href={"*"}>Transfer</Link>
+                <Link href={"/app/transfer"}>Transfer</Link>
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
@@ -276,7 +276,10 @@ export function TransactionHistory() {
         transactions()
     },[uid])
 
+   
     
+
+   
     return <main className="transaction-container">
        <article>
             <h2>Latest Transactions</h2>
@@ -293,24 +296,52 @@ export function TransactionHistory() {
                 </section>:
              <article className="transactions">
                 {transactions.map(transaction=>{
+                    let icon;
+                    let amount
+                    let transactionType;
+                    let color;
+                    switch (transaction?.type) {
+                        case "deposit":
+                            icon ="https://img.icons8.com/?size=100&id=122074&format=png&color=000000"
+                            amount = `+`
+                            transactionType="Fund Wallet by ATM Card"
+                            color = "#b1d5fc"
+                            break;
+                        case "transfer":
+                            if (transaction.recipient === uid) {
+                                icon = "https://img.icons8.com/?size=100&id=14909&format=png&color=000000",
+                                amount = `+`
+                                transactionType= `Transfer From ${transaction?.recipientName}`
+                                color= "#a1fae4"
+                            }
+                            else{
+                                icon = "https://img.icons8.com/?size=100&id=14902&format=png&color=000000",
+                                amount = `-`
+                                transactionType= `Transfer To ${transaction?.recipientName}`
+                                color= "#9bbeff"
+                            }
+                    
+                        default:
+                            break;
+                    }
                     return <section>
-                        <div>
-                            <img src={transaction?.type === "deposit" ? "https://img.icons8.com/?size=100&id=122074&format=png&color=000000" : ""} alt={`${transaction?.type}-icon`}/>
-                            <section>
-                                <h2>{transaction?.type === "deposit" ? "Fund Wallet by ATM Card": ""}</h2>
-                                <p>{new Intl.DateTimeFormat("en-US", {
-                                    month: "long",
-                                    day:"numeric",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                }).format(transaction?.createdAt)}<span className={transaction?.status === "success"?"transaction-status text-green-600 ": transaction?.status === "failed" ? "transaction-status text-red-600 ": "transaction-status text-yellow-600 "}> · {transaction?.status?.charAt(0)?.toUpperCase() + transaction?.status?.slice(1)}</span></p>
-                            </section>
-                        </div>
-                        <div>
-                            <p className="transaction-amount">+₦{Intl.NumberFormat("en-US").format(transaction?.amount)}</p>
-                        </div>
-                    </section>
+                    <div>
+                        <img src={icon} alt={`${transaction?.type}-icon`} className={`mr-4 p-3 rounded-full w-11 h-11`} style={{backgroundColor: color}}/>
+                        <section>
+                            <h2>{transactionType}</h2>
+                            <p>{new Intl.DateTimeFormat("en-US", {
+                                month: "long",
+                                day:"numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                            }).format(transaction?.createdAt)}<span className={transaction?.status === "success"?"transaction-status text-green-600 ": transaction?.status === "failed" ? "transaction-status text-red-600 ": "transaction-status text-yellow-600 "}> · {transaction?.status?.charAt(0)?.toUpperCase() + transaction?.status?.slice(1)}</span></p>
+                        </section>
+                    </div>
+                    <div>
+                        <p className="transaction-amount">{amount}₦{Intl.NumberFormat("en-US").format(transaction?.amount)}</p>
+                    </div>
+                </section>
                 })}    
             </article>}
        </section>
@@ -418,7 +449,7 @@ export function DepositAmountModal() {
                 email:currentUser?.email,
                 },
                 onClose: async()=>{
-                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "cancelled", reference)
+                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "cancelled", reference,"null", "null")
                     if (result?.error) {
                         toast.error(res?.error)
                     } else {
@@ -427,7 +458,7 @@ export function DepositAmountModal() {
                     }
                 },
                 onFailed:async()=>{
-                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "failed", reference)
+                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "failed", reference, "null", "null")
                     if (result?.error) {
                         toast.error(res?.error)
                     } else {
@@ -443,7 +474,7 @@ export function DepositAmountModal() {
                             toast.error(res?.error)
                         }
                         else{
-                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "success", reference)
+                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "success", reference,"null", "null")
                             if (result?.error) {
                                 toast.error(res?.error)
                             } else {
