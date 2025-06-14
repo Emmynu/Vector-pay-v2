@@ -1,10 +1,11 @@
 "use server"
 
-import { adminAuth } from "../../firebase/firebase-admin";
+// import { adminAuth } from "../../firebase/firebase-admin";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { findUser } from "./auth";
+// import { findUser } from "./auth";
 import prisma from "../db";
+
 
 export default async function logOut(){
     const cookie = await cookies()
@@ -12,31 +13,6 @@ export default async function logOut(){
     cookie.delete("totp")
     cookie.delete("qrcode")
     redirect("/login")
-}
-
-export async function updateBalance(amount) {
-    const cookie = await cookies()
-    const user =  await adminAuth.verifyIdToken(cookie.get("user")?.value)
-
-    if (user) {
-        const currentUser = await findUser(user?.uid)
-        if (currentUser) {
-            // update the balance
-            await prisma.user.update({
-                where: {
-                    uid: currentUser?.uid
-                },
-                data: {
-                    balance: amount
-                }
-            })
-        }else{
-            return { error: "Sorry, An error occured."}
-        }
-    }else{
-        return { error: "Sorry, An error occured."}
-    }
-    
 }
 
 export async function updateTransactionPin(uid, pin) {
@@ -52,4 +28,32 @@ export async function updateTransactionPin(uid, pin) {
     } catch (error) {
         return {error: error?.message}
     }
+}
+
+ export async function generateAccountNumber() {
+    let accountNumber =  ""
+    for (let i = 0; i < 10; i++) {
+        accountNumber += Math.floor(Math.random()* 10)
+    }
+    return accountNumber
+}
+
+
+export async function handleAccountNumber(formData) {
+    const { accountNumber } = Object.fromEntries(formData) 
+
+    //  find the user by accountNumber 
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                accountNumber
+            } 
+        })        
+        
+        return user
+    } catch (error) {
+        // console.log(error);
+        return { error: "User not Found"}
+    }
+    
 }

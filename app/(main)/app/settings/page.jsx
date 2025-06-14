@@ -154,7 +154,7 @@ export default function Settings() {
         <main className="settings-container">
 
            <section>
-                <div className="tabs tabs-border tabs-sm nmd:tabs-md my-9 mx-5 md:m-7 ">
+                <div className="tabs tabs-border tabs-sm md:tabs-md my-9 mx-5 md:m-7 ">
                     <input type="radio" name="my_tabs_2" className="tab " aria-label="Profile" defaultChecked/>
                     <div className="tab-content border-base-300 bg-base-100 ">
                         <h2 className="settings-label">Account  Information</h2>
@@ -197,7 +197,7 @@ export default function Settings() {
 
                             <h3>
                                 <span className={poppins.className}>Account Number: </span>
-                                <span>1234567890</span>
+                                <span>{user?.accountNumber}</span>
                             </h3>
 
                             <h3>
@@ -208,7 +208,7 @@ export default function Settings() {
                             
                             <h3>
                                 <span className={poppins.className}>Level: </span>
-                                <span>Tier {user?.accountLevel} {user?.accountLevel < 3 &&[ <Link href={"*"}>Upgrade your account </Link> ]}</span>
+                                <span>Tier {user?.accountLevel} {user?.accountLevel < 3 &&<Link href={"*"}>[ Upgrade your account ]</Link> }</span>
                             </h3>
                         </section>}
                     </div>
@@ -283,7 +283,7 @@ export default function Settings() {
                                         title="Password should not be more than 6 numerical characters (numbers)"
                                     />
                                 </label>
-                                   
+                                   transaction-container
 
                                     <article className="mt-4 flex flex-col" style={{width: "100%"}}>
                                         <h2 className="text-sm mb-1.5">Confirm Password: </h2>
@@ -307,7 +307,7 @@ export default function Settings() {
                                                 type="number"
                                                 name="confirmPassword"
                                                 required
-                                                className="ml-1"
+                                                className="ml-1 outline-none border-none"
                                                 placeholder="Password"
                                                 value={password.confirmPassword}
                                                 onChange={handleInput}
@@ -359,8 +359,8 @@ export default function Settings() {
                                         type="number"
                                         name="oldPin"
                                         required
-                                        className="ml-1"
-                                        placeholder="Pin"
+                                        className="ml-1 outline-none border-none"
+                                        placeholder="Old Pin"
                                         value={pin.oldPin}
                                         onChange={handlePinInput}
                                     />
@@ -391,8 +391,8 @@ export default function Settings() {
                                                     type="number"
                                                     name="newPin"
                                                     required
-                                                    className="ml-1"
-                                                    placeholder="Pin"
+                                                    className="ml-1 outline-none border-none"
+                                                    placeholder="New Pin"
                                                     value={pin.newPin}
                                                     onChange={handlePinInput}
                                                 />
@@ -422,8 +422,8 @@ export default function Settings() {
                                                     type="number"
                                                     name="confirmPin"
                                                     required
-                                                    className="ml-1"
-                                                    placeholder="Pin"
+                                                    className="ml-1 outline-none border-none"
+                                                    placeholder="Confirm Pin"
                                                     value={pin.confirmPin}
                                                     onChange={handlePinInput}
                                                 />

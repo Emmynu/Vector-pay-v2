@@ -18,6 +18,8 @@ export async function deposit(uid, amount) {
     }
 }
 
+
+//increment
 export async function updateBalance(uid, amount) {
     try {
         const balance = await prisma.user.update({
@@ -37,6 +39,27 @@ export async function updateBalance(uid, amount) {
     }
 }
 
+//decrement
+export async function updateBalanceDecrement(uid, amount) {
+    try {
+        const balance = await prisma.user.update({
+            where: {
+                uid: uid
+            },
+            data: { 
+                balance: {
+                    decrement: amount
+                }
+            }
+        })    
+        return balance
+    } catch (error) {
+        return {error: error?.message}
+
+    }
+}
+
+
 export async function getBalance(uid) {
    try {
         const currentBalance = await prisma.user.findUnique({
@@ -55,7 +78,7 @@ export async function getBalance(uid) {
    }
 }
 
-export async function saveTransaction(uid, amount, type, status, reference) {
+export async function saveTransaction(uid, amount, type, status, reference, recipient, recipientName) {
     try {
         const transactions = await prisma.transactions.create({
             data: {
@@ -63,7 +86,9 @@ export async function saveTransaction(uid, amount, type, status, reference) {
                 amount,
                 type,
                 status,
-                reference
+                reference,
+                recipient,
+                recipientName,
             }
         })
         return transactions
@@ -77,7 +102,10 @@ export async function getTransactions(uid) {
     try {
         const transactions = await prisma.transactions.findMany({
            where: {
-            userId: uid
+            OR: [
+                { userId: uid },
+                { recipient: uid } 
+            ]
            },
            orderBy: {
             createdAt: "desc"
@@ -86,6 +114,8 @@ export async function getTransactions(uid) {
         })
         return transactions
     } catch (error) {
+        console.log(error);
+        
         return { error:  "Sorry, Could not fetch transaction history."}
        
     }

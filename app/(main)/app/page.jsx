@@ -32,6 +32,11 @@ export default function DashBoard(){
     
     const handleBalanceToggle =(e)=>{
         setShowBalance(e.target.checked)
+        if (!showBalance) {
+            document.querySelector(".dashboard-balance").innerHTML = `₦${balance}`
+        } else {
+            document.querySelector(".dashboard-balance").innerHTML = `₦****`
+        }
     }
 
     useEffect(()=>{
