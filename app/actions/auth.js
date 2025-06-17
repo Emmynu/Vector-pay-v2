@@ -44,13 +44,12 @@ export async function verifyToken(token, firstName, lastName) {
 }
 
 
-async function saveCookie(name, value) {
+async function saveCookie(name, value, maxAge) {
     const cookie =  await cookies()
      //save token to cookies
      cookie.set(name, value, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production" ,
-     
         sameSite: true,
         path: "/"
     })

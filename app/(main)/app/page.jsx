@@ -1,6 +1,6 @@
 "use client"
 
-import { DepositAmountModal, DepositModal, HamburgerMenu, Statistics, TransactionHistory } from "../../libs/component";
+import { DepositAmountModal, DepositModal, Statistics, TransactionHistory } from "../../libs/component";
 import { Poppins } from "next/font/google";
 import walletIcon from "../../images/wallet-blue.png"
 import transactionIcon from "../../images/transaction.png"
@@ -166,6 +166,6 @@ export default function DashBoard(){
         <DepositModal />
         <DepositAmountModal />
   
-        <Toaster richColors closeButton position="bottom-right" className="z-[4000]"/>
+        <Toaster richColors closeButton position="bottom-right" />
     </main>
 }

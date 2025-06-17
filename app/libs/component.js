@@ -1,7 +1,7 @@
 "use client"
 
 import { auth } from "../../firebase/firebase-client";
-import logOut from "../actions/main";
+import logOut, { updateTransactionPin } from "../actions/main";
 import Image from "next/image";
 import Logo from "../images/logo.png"
 import cancelIcon from "../images/cancel.png"
@@ -13,6 +13,8 @@ import useKoraPay from "./useKoraPay";
 import { toast } from "sonner";
 import { deposit, getTransactions, saveTransaction } from "../actions/payment";
 import { usePathname } from "next/navigation";
+import { pinSchema } from "../../zod-schema";
+import { findUser } from "../actions/auth";
 
 
 export function DashBoardHeader() {
@@ -28,10 +30,18 @@ export function DashBoardHeader() {
         }
       },[])
 
+      
+    function openSideBar() {
+        document.querySelector(".sidebar-container-sm").classList.add("open-nav")
+        document.querySelector(".sidebar-container-sm").classList.remove("close-nav")
+    }
+
     return (
         <header className="dashboard-header">
         <section>
-           <HamburgerMenu />
+            <span onClick={openSideBar}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block md:hidden h-6 w-6 mr-2.5 cursor-pointer stroke-current -mt-1" > <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg>
+        </span>
             <h2>Dashboard</h2>
         </section>
         <section>
@@ -46,16 +56,174 @@ export function DashBoardHeader() {
                     <span className="badge badge-xs badge-primary indicator-item"></span>
                 </div>
             </button>
-
         </section>
     </header>
 
     )
 }
 
-export function DashBoardHeaderBalance({}) {
+export function TransactionPinSetUp() {
+    const [uid, setUid] = useState(null)
+    const [user, setUser] = useState(null)
+    const [newPin, setNewPin] = useState({ newPin: "", confirmPin: ""})
+    const [pinError, setPinError] = useState("")
+    const [isProcessing, setIsProcessing] = useState(false)
+    const transactionModalRef = useRef(null)
+
+      useEffect(()=>{
+        onAuthStateChanged(auth, user => setUid(user?.uid))
+    },[])
+
+    useEffect(()=>{
+        async function getUser() {
+            if (uid) {
+                const result = await findUser(uid)  
+                setUser(result)
+            }
+        }
+        getUser()
+    },[uid])
+
+       function handlePinInput(e) {
+         const { name, value} = e.target
+         setNewPin((prev)=>({
+             ...prev, [name]: value
+         }))
+     }
+     
     
-} 
+   async function handlePinSetup() {
+        setIsProcessing(true)
+        if (newPin?.newPin && newPin?.confirmPin) {
+             const result = pinSchema.safeParse(newPin)
+             if (result?.error) {
+                result.error.errors.map(error=>{
+                    setPinError(error?.message);
+                  })
+             } else {
+                if (newPin?.newPin === newPin?.confirmPin) {
+                     const res = await updateTransactionPin(uid, newPin?.newPin)
+                     if (res?.error) {
+                        setPinError(res?.error);
+                        
+                     } else {
+                        if (transactionModalRef.current) {
+                            transactionModalRef.current.close()
+                            window.location = "/app/transfer"
+                        } 
+                     }
+                } else {
+                    setPinError("Please ensure your PINs match");   
+                }
+             }
+             
+        } else {
+            setPinError("Invalid Input")
+        }
+
+        setTimeout(() => {
+            setIsProcessing(false)
+        }, 2000);
+    }
+
+
+
+   return(
+        <>
+            {!user?.transactionPin && <section>
+            <div role="alert" className="alert alert-horizontal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info h-6 w-6 shrink-0">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Please set up a Transaction Pin before making transfers.</span>
+                <div>
+                    <button className="bg-main text-white px-3 text-sm py-1.5 rounded-[7px]" onClick={()=>document.querySelector("#transaction_modal").showModal()}>Set Up</button>
+                </div>
+            </div>
+            <dialog id="transaction_modal" className="modal modal-bottom md:modal-middle" ref={transactionModalRef}>
+                <div className="modal-box p-10">
+                    <form method="dialog">
+                        <button className="btn btn-md btn-circle btn-ghost absolute right-2 top-1">✕</button>
+                    </form>
+                    <div className="modal-amount-container">
+                        <article className="mb-7">
+                            <h2 >Setup Transaction Pin</h2>
+                        </article>
+                        
+                    <section className="">
+
+                        <article className="mt-4 flex flex-col" style={{width: "100%"}}>
+                            <h2 className="text-sm mb-1.5">New Pin: </h2>
+                            <label className="pin-setup-label"  >
+                                <svg className="h-[1em] opacity-50 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <g
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth="2.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    >
+                                    <path
+                                        d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                                    ></path>
+                                    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                    </g>
+                                </svg>
+
+                                <input
+                                    type="number"
+                                    name="newPin"
+                                    required
+                                    className="ml-1 outline-none border-none mt-1"
+                                    placeholder="New Pin"
+                                    value={newPin.newPin}
+                                    onChange={handlePinInput}
+                                />
+                            </label>
+                                
+                        </article>
+
+                        <article className="mt-4 flex flex-col" style={{width: "100%"}}>
+                            <h2 className="text-sm mb-1.5">Confirm Pin: </h2>
+                            <label className="pin-setup-label"  >
+                                <svg className="h-[1em] opacity-50 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <g
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth="2.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    >
+                                    <path
+                                        d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                                    ></path>
+                                    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                    </g>
+                                </svg>
+
+                                <input
+                                    type="number"
+                                    name="confirmPin"
+                                    required
+                                    className="ml-1 outline-none border-none mt-1"
+                                    placeholder="Confirm Pin"
+                                    value={newPin.confirmPin}
+                                    onChange={handlePinInput}
+                                />
+                            </label>
+                            
+                        </article>
+                        
+                            {pinError && <p  className="text-red-600 text-sm font-medium mt-1">{pinError}</p>}
+                        <button  disabled={isProcessing} onClick={handlePinSetup}>{isProcessing ? <span className="loading loading-bars "></span> : <span>Continue</span>}</button>
+                    </section>
+                    </div>
+                </div>
+            </dialog> 
+        </section>}
+        </>
+   )
+}
 
 export function SideBar() {
     const pathname = usePathname()
@@ -108,7 +276,7 @@ export function SideBar() {
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
-                <Link href={"*"}>Withdraw</Link>
+                <Link href={"/app/withdraw"}>Withdraw</Link>
             </li>
         </ul>
 
@@ -203,7 +371,7 @@ export function SideBarSm() {
             </li>
             <li>
                 <img src={"https://img.icons8.com/?size=100&id=OZJM1EFnyQ1s&format=png&color=000000"} alt="withdraw-icon"/>
-                <Link href={"*"}>Withdraw</Link>
+                <Link href={"/app/withdraw"}>Withdraw</Link>
             </li>
         </ul>
 
@@ -237,19 +405,6 @@ export function SideBarSm() {
     </aside>
 }// side bar for small screens
 
-export function HamburgerMenu() {
-
-    function openSideBar() {
-        document.querySelector(".sidebar-container-sm").classList.add("open-nav")
-        document.querySelector(".sidebar-container-sm").classList.remove("close-nav")
-    }
-
-    return (
-      <span onClick={openSideBar}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block md:hidden h-6 w-6 mr-2.5 cursor-pointer stroke-current -mt-1" > <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg>
-      </span>
-    )
-}
 
 export function TransactionHistory() {
     const [transactions, setTransactions] = useState([])
@@ -284,7 +439,7 @@ export function TransactionHistory() {
        <article>
             <h2>Latest Transactions</h2>
             <p>
-            <Link href={""}>» See All</Link>
+            <Link href={"/app/transaction-history"}>» See All</Link>
           </p>
        </article>
 
@@ -306,6 +461,12 @@ export function TransactionHistory() {
                             amount = `+`
                             transactionType="Fund Wallet by ATM Card"
                             color = "#b1d5fc"
+                            break;
+                        case "withdraw":
+                            icon = "https://img.icons8.com/?size=100&id=73812&format=png&color=000000",
+                            amount= `-`,
+                            transactionType = `Withdrawal to Bank Account`
+                            color= "#ccccfa" 
                             break;
                         case "transfer":
                             if (transaction.recipient === uid) {
@@ -449,7 +610,7 @@ export function DepositAmountModal() {
                 email:currentUser?.email,
                 },
                 onClose: async()=>{
-                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "cancelled", reference,"null", "null")
+                    const result = await saveTransaction(currentUser?.uid, parseInt(amount), "deposit", "cancelled", reference, null, null, null)
                     if (result?.error) {
                         toast.error(res?.error)
                     } else {
@@ -458,7 +619,7 @@ export function DepositAmountModal() {
                     }
                 },
                 onFailed:async()=>{
-                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "failed", reference, "null", "null")
+                    const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "failed", reference, null, null, null)
                     if (result?.error) {
                         toast.error(res?.error)
                     } else {
@@ -474,7 +635,7 @@ export function DepositAmountModal() {
                             toast.error(res?.error)
                         }
                         else{
-                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "success", reference,"null", "null")
+                            const result = await saveTransaction(currentUser?.uid,parseInt(amount), "deposit", "success", reference, null, null, null)
                             if (result?.error) {
                                 toast.error(res?.error)
                             } else {

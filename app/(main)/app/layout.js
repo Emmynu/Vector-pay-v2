@@ -1,5 +1,5 @@
 
-import { DashBoardHeader } from "../../libs/component";
+import { DashBoardHeader, TransactionPinSetUp } from "../../libs/component";
 import SideBarProvider from "../../libs/provider";
 
 export const metadata = {
@@ -17,6 +17,7 @@ export default function RootLayout({ children }) {
             <SideBarProvider />
             <section>
               <DashBoardHeader />
+              <TransactionPinSetUp />
                 {children}
             </section>
        </main>
