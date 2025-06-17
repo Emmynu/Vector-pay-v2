@@ -1,11 +1,26 @@
 "use client"
 
 
+import { toast } from "sonner";
+import { removeBeneficiary } from "../actions/payment";
 import "../styles/transfer.css"
 import Link from "next/link";
 
 
-export default function Beneficiaries({ uid, beneficiary }) {
+export default function Beneficiaries({ beneficiary }) {
+
+    async function deleteBeneficiary(accountNumber) {
+        const exists = beneficiary.find(user=> user?.beneficiaryAccountNumber === accountNumber)
+    
+        if (exists) {
+            await removeBeneficiary(exists?.beneficiaryAccountNumber)
+            toast.success(`${exists?.beneficiaryName} removed from beneficiaries`)
+            setTimeout(() => {
+                window.location = "/app/transfer"
+            }, 500);
+        } 
+        
+    }
 
     return (
       <>
@@ -26,11 +41,11 @@ export default function Beneficiaries({ uid, beneficiary }) {
 
                         </div>
                     </div>
-                    <button>remove</button>
+                    <button onClick={()=>deleteBeneficiary(user?.beneficiaryAccountNumber)}>remove</button>
                 </article>
             })}
         </section> :
-       <section class="transaction-empty">
+       <section className="transaction-empty">
             <img src="https://th.bing.com/th/id/OIP.ZsjPQuS9XJsVY_JFsHvn9QHaHa?rs=1&pid=ImgDetMain" alt="" />
             <h2>No Beneficiary Found</h2>
         </section>}

@@ -10,7 +10,6 @@ import OtpInput from "react-otp-input";
 import { findUser } from "../../../actions/auth";
 import { getBeneficiary, saveBeneficiary, saveTransaction, updateBalance, updateBalanceDecrement } from "../../../actions/payment";
 import Beneficiaries from "../../../libs/beneficiaries";
-import { revalidatePath } from "next/cache";
 
 function TransferPage() {
     const [uid, setUid] = useState(null)
@@ -18,7 +17,7 @@ function TransferPage() {
     const [sender, setSender] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [recipient, setRecipient] = useState(null)
-    const [beneficiary, setBeneficiary] = useState(null)
+    const [beneficiary, setBeneficiary] = useState([])
     const [pin, setPin] = useState(null)
     const [error, setError] = useState("")
     const [transactionError, setTransactionError] = useState("")
@@ -71,17 +70,31 @@ function TransferPage() {
     
 
     async function handleBeneficiary() {
-        beneficiary?.map(user => {
-            if (user?.beneficiaryId === recipient?.uid) {
-               toast.error(`${recipient?.firstName} is already a beneficiary`)
-            } else {
-                 saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
-                 toast.success("Beneficiary Added")
-            }
-        })
-      revalidatePath("/app/transfer")
+      if (beneficiary.length <= 0) {
+            saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
+            toast.success(`${recipient?.firstName} added to beneficiaries `)
+
+            setTimeout(() => {
+                window.location = "/app/transfer"
+            }, 500);
+      } else {
+            beneficiary?.map(user => {
+                if (user?.beneficiaryId === recipient?.uid) {
+                toast.error(`${recipient?.firstName} is already a beneficiary`)
+                } else {
+                    saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
+                    toast.success(`${recipient?.firstName} added to beneficiaries `)
+
+                    setTimeout(() => {
+                        window.location = "/app/transfer"
+                    }, 500);
+                }
+            })
+      }
     }
 
+  
+// 1075217488
     async function transferFunds() {
         setIsLoading(true)
         if (pin === sender?.transactionPin) {
