@@ -154,8 +154,21 @@ export async function getBeneficiary(uid, take) {
         })
         return beneficiaries
     } catch (error) {
-        console.log(error?.message);
-        
         return { error: "Sorry, Could not fetch beneficiaries"}
+    }
+}
+
+
+export async function removeBeneficiary(beneficiaryAccountNumber) {
+    try {
+        const beneficiary = await prisma.beneficiaries.delete({
+            where: {
+                beneficiaryAccountNumber,
+            }
+        })
+        console.log(beneficiary);
+        return beneficiary
+    } catch (error) {
+        return { error: "Sorry, Could not remove beneficiary"}
     }
 }
