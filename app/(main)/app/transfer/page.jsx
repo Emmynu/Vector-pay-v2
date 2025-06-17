@@ -110,12 +110,13 @@ function TransferPage() {
                 if (res?.error) {
                     setTransactionError(res?.error)
                 } else {
-                    const resp = await saveTransaction(sender?.uid,parseInt(amount), "transfer", "success", reference, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
+                    const resp = await saveTransaction(sender?.uid,parseInt(amount), "transfer", "success", reference, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber, `${sender?.firstName} ${sender.lastName}`)
                     if (resp?.error) {
                         setTransactionError(resp?.error)
                     } else {
                         pinModalRef.current.close()
-                        toast.success(`Transaction Success`)
+                        toast.success(`Transaction Successful`)
+                        window.location = "/app"
                     }
                 }   
             }

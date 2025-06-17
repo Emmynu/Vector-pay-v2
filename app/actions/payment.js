@@ -79,7 +79,7 @@ export async function getBalance(uid) {
    }
 }
 
-export async function saveTransaction(uid, amount, type, status, reference, recipientId, recipientName, recipientAccountNumber) {
+export async function saveTransaction(uid, amount, type, status, reference, recipientId, recipientName, recipientAccountNumber, name) {
     try {
         const transactions = await prisma.transactions.create({
             data: {
@@ -90,7 +90,8 @@ export async function saveTransaction(uid, amount, type, status, reference, reci
                 reference,
                 recipientId,
                 recipientName,
-                recipientAccountNumber
+                recipientAccountNumber,
+                name
             }
         })
         return transactions

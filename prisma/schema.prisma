@@ -36,7 +36,8 @@ model Transactions {
   amount Int
   status String
   reference String
-
+  name String?
+  
   recipientId String?
   recipientName String?
   recipientAccountNumber String?
