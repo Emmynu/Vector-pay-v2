@@ -472,7 +472,7 @@ export function TransactionHistory() {
                             if (transaction?.recipientId === uid) {
                                 icon = "https://img.icons8.com/?size=100&id=14909&format=png&color=000000",
                                 amount = `+`
-                                transactionType= `Transfer From ${transaction?.recipientName}`
+                                transactionType= `Transfer From ${transaction?.name}`
                                 color= "#a1fae4"
                             }
                             else{
