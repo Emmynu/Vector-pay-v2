@@ -19,6 +19,7 @@ export async function deposit(uid, amount) {
 }
 
 
+
 //increment
 export async function updateBalance(uid, amount) {
     try {
@@ -78,7 +79,7 @@ export async function getBalance(uid) {
    }
 }
 
-export async function saveTransaction(uid, amount, type, status, reference, recipient, recipientName) {
+export async function saveTransaction(uid, amount, type, status, reference, recipientId, recipientName, recipientAccountNumber) {
     try {
         const transactions = await prisma.transactions.create({
             data: {
@@ -87,13 +88,16 @@ export async function saveTransaction(uid, amount, type, status, reference, reci
                 type,
                 status,
                 reference,
-                recipient,
+                recipientId,
                 recipientName,
+                recipientAccountNumber
             }
         })
         return transactions
     } catch (error) {
-        return { error: "Sorry, Could not fetch transaction history."}
+        console.log(error);
+        
+        return { error: "Sorry, An error occured."}
         
     }
 }
@@ -104,7 +108,7 @@ export async function getTransactions(uid) {
            where: {
             OR: [
                 { userId: uid },
-                { recipient: uid } 
+                { recipientId: uid }
             ]
            },
            orderBy: {
@@ -118,5 +122,40 @@ export async function getTransactions(uid) {
         
         return { error:  "Sorry, Could not fetch transaction history."}
        
+    }
+}
+
+export async function saveBeneficiary(uid, beneficiaryId, beneficiaryName, beneficiaryAccountNumber) {
+    try {
+        const beneficiaries = await prisma.beneficiaries.create({
+            data: {
+                userId:uid,
+                beneficiaryId,
+                beneficiaryName,
+                beneficiaryAccountNumber
+            }
+        })
+        return beneficiaries
+    } catch (error) {
+        return { error: "Sorry, Could not fetch beneficiaries"}
+    }
+}
+
+export async function getBeneficiary(uid, take) {
+    try {
+        const beneficiaries = await prisma.beneficiaries.findMany({
+            where: {
+                userId:uid,
+            },
+            orderBy: {
+                createdAt: "desc"
+            },
+            take,
+        })
+        return beneficiaries
+    } catch (error) {
+        console.log(error?.message);
+        
+        return { error: "Sorry, Could not fetch beneficiaries"}
     }
 }

@@ -7,7 +7,7 @@
         @apply  my-10 mx-5 md:m-12
     }
     .transfer-label{
-        @apply mb-5 text-lg md:text-[22px] font-semibold tracking-wide;
+        @apply mb-5 text-lg md:text-[20px] font-semibold tracking-wide;
         font-family: Arial, Helvetica, sans-serif;
     }
     .transfer-form-container{
@@ -17,7 +17,11 @@
         @apply mb-1 font-medium text-[15px] 
     }
     .transfer-form-container input {
-        @apply w-full mt-1.5
+        @apply w-full mt-1.5 text-[12px] 
+    }
+   
+    .transfer-form-container input:disabled{
+      @apply bg-white border-t-[1.5px] border-gray-300
     }
     .transfer-btn{
         @apply bg-main px-4 py-2 text-xs md:text-sm font-medium rounded-[5px] text-white
@@ -35,5 +39,47 @@
      }
      .beneficiary-nav > p{
         @apply bg-blue-100 px-3 py-2.5 text-main font-semibold rounded-[5px] text-xs lg:text-[12.5px];
+     }
+     .transfer-transaction-container {
+        @apply my-4 flex justify-between border bg-white shadow-md shadow-gray-200 p-5 rounded-md  items-center
+     }
+     .transfer-transaction-container > div {
+        @apply flex justify-between items-start
+     }
+     .transfer-transaction-container > div > article > h2 {
+        @apply  font-medium text-gray-800 text-sm  leading-5;
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+     }
+     .transfer-transaction-container > div p {
+        @apply text-[12px] md:text-xs mt-0.5 font-thin
+     }
+     .transaction-empty {
+        @apply flex flex-col items-center -mt-0
+     }
+     .transaction-empty > img{
+        @apply w-[75%] h-[75%] md:w-[65%] md:h-[65%]
+     }
+     .transaction-empty > h2 {
+        @apply  -mt-2 md:-mt-5 text-sm md:text-base font-semibold tracking-wide text-gray-700;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+     }
+     .beneficiary-container{
+      @apply flex flex-col mt-4
+     }
+     .beneficiary-container > article{
+      @apply my-2 flex border bg-white shadow-md shadow-gray-200 p-5 rounded-md justify-between items-center
+     }
+     .beneficiary-container > article  img {
+      @apply  mr-2 rounded-full w-8 h-8
+     }
+     .beneficiary-container > article   h2{
+      @apply font-medium text-gray-800 text-sm md:text-[14px] leading-5;
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+   }
+     .beneficiary-container > article  p{
+      @apply text-[12px] md:text-xs mt-0.5 font-thin text-main italic 
+     }
+     .beneficiary-container > article button{
+      @apply text-red-700 font-medium text-sm 
      }
 }
