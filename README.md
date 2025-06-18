@@ -8,5 +8,5 @@
 7. beneficiaries -->
 8. Transaction Page & beneficiary page
 9. pie chart
-10. handle transaction limit based on tiers
+<!-- 10. handle transaction limit based on tiers -->
 

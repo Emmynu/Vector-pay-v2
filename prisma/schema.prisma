@@ -23,6 +23,9 @@ model User {
   accountNumber String @unique
   bvn String?
   transactionPin String?
+  dailyTransactionLimit Int @default(100000)
+  currentDailyAmountUser Int @default(0)
+  lastLimitResetAt DateTime @default(now())
   transactions Transactions[]
   beneficiaries Beneficiaries[]
 }

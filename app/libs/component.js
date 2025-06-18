@@ -11,10 +11,11 @@ import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import useKoraPay from "./useKoraPay";
 import { toast } from "sonner";
-import { deposit, getTransactions, saveTransaction } from "../actions/payment";
+import { deposit, getTransactionSummary, saveTransaction } from "../actions/payment";
 import { usePathname } from "next/navigation";
 import { pinSchema } from "../../zod-schema";
 import { findUser } from "../actions/auth";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 
 export function DashBoardHeader() {
@@ -69,6 +70,9 @@ export function TransactionPinSetUp() {
     const [pinError, setPinError] = useState("")
     const [isProcessing, setIsProcessing] = useState(false)
     const transactionModalRef = useRef(null)
+    const pathname = usePathname()
+
+    
 
       useEffect(()=>{
         onAuthStateChanged(auth, user => setUid(user?.uid))
@@ -109,7 +113,7 @@ export function TransactionPinSetUp() {
                      } else {
                         if (transactionModalRef.current) {
                             transactionModalRef.current.close()
-                            window.location = "/app/transfer"
+                            window.location = pathname
                         } 
                      }
                 } else {
@@ -406,34 +410,7 @@ export function SideBarSm() {
 }// side bar for small screens
 
 
-export function TransactionHistory() {
-    const [transactions, setTransactions] = useState([])
-    const [uid, setUid] = useState(null)
-
-    useEffect(()=>{
-        onAuthStateChanged(auth, user=>{setUid(user?.uid)})
-    },[])
-
-    
-    useEffect(()=>{
-        async function transactions() {
-           if (uid) {
-                const allTransactions =  await getTransactions(uid)
-                if (allTransactions?.error) {
-                    toast.error(allTransactions?.error)
-                } else {
-                    setTransactions(allTransactions)     
-                }  
-           } else {
-            
-           }
-        }
-        transactions()
-    },[uid])
-
-   
-    
-
+export function TransactionHistory({ transactions, uid }) {
    
     return <main className="transaction-container">
        <article>
@@ -444,13 +421,13 @@ export function TransactionHistory() {
        </article>
 
        <section>
-            {transactions.length === 0 ?
+            {transactions?.length === 0 ?
                 <section class="transaction-empty">
                     <img src="https://th.bing.com/th/id/OIP.ZsjPQuS9XJsVY_JFsHvn9QHaHa?rs=1&pid=ImgDetMain" alt="" />
                     <h2>Transaction History empty</h2>
                 </section>:
              <article className="transactions">
-                {transactions.map(transaction=>{
+                {transactions?.map(transaction=>{
                     let icon;
                     let amount
                     let transactionType;
@@ -509,7 +486,33 @@ export function TransactionHistory() {
     </main>
 }
 
-export function Statistics() {
+export function Statistics({ uid }) {
+    const [data, setData] = useState([])
+
+    useEffect(()=>{
+        async function getSummary() {
+            if (uid) {
+                const res = await getTransactionSummary(uid)
+                if (res?.error) {
+                    
+                } else {
+                    const newData = res?.map(item => ({
+                        name: item?.type,
+                        value: item?.totalAmount
+                    }))
+                    setData(newData)
+                }
+            
+            }
+        }
+        getSummary()
+    },[uid])
+
+    const colors = ["#60a5fa", "#03457C", "#03457C"]
+
+    console.log(data);
+    
+
     return <main className="statistics-container">
        <article>
             <h2>Statistics</h2>
@@ -518,9 +521,20 @@ export function Statistics() {
           </p>
        </article>
 
-       <section>
-        
-       </section>
+       {data.length > 0 && <section className="w-full h-[250px] ">
+            <ResponsiveContainer>
+                <PieChart width={730} height={730}>
+                    <Pie data={data} cx="50%" cy="50%" fill={colors[Math.floor(Math.random() * colors.length)]}  outerRadius={70} dataKey="value" nameKey="name" label={({ name, percent })=> `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                        {data?.map((entry, index)=>{
+                            
+                            <Cell key={`cell-${entry?.name}`} />
+                        })}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                </PieChart>
+            </ResponsiveContainer>
+       </section>}
     </main>
 }
 
