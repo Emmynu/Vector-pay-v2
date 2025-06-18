@@ -3,6 +3,7 @@
 import prisma from "../db";
 import { findUser } from "./auth";
 
+
 export async function deposit(uid, amount) {
     try {
         const user = await findUser(uid)
@@ -60,6 +61,41 @@ export async function updateBalanceDecrement(uid, amount) {
     }
 }
 
+export async function updateDailyAmountUsed(uid, amount) {
+    try {
+        const result = await prisma.user.update({
+            where: {
+                uid: uid
+            },
+            data: { 
+                lastLimitResetAt: new Date(),
+                currentDailyAmountUser : {
+                    increment: amount
+                }
+            }
+        })    
+        return result
+    } catch (error) { 
+        return { error: "Sorry, An error occured Please try again"}
+
+    }
+}
+export async function resetDailyAmountUsed(uid) {
+    try {
+        const result = await prisma.user.update({
+            where: {
+                uid: uid
+            },
+            data: { 
+                currentDailyAmountUser : 0
+            }
+        })    
+        return result
+    } catch (error) { 
+        return { error: "Sorry, An error occured Please try again"}
+
+    }
+}
 
 export async function getBalance(uid) {
    try {
@@ -96,8 +132,6 @@ export async function saveTransaction(uid, amount, type, status, reference, reci
         })
         return transactions
     } catch (error) {
-        console.log(error);
-        
         return { error: "Sorry, An error occured."}
         
     }
@@ -115,7 +149,6 @@ export async function getTransactions(uid) {
            orderBy: {
             createdAt: "desc"
            },
-           take: 4
         })
         return transactions
     } catch (error) {
@@ -138,7 +171,7 @@ export async function saveBeneficiary(uid, beneficiaryId, beneficiaryName, benef
         })
         return beneficiaries
     } catch (error) {
-        return { error: "Sorry, Could not fetch beneficiaries"}
+        return { error: "Sorry, Could not save beneficiary"}
     }
 }
 
@@ -167,9 +200,32 @@ export async function removeBeneficiary(beneficiaryAccountNumber) {
                 beneficiaryAccountNumber,
             }
         })
-        console.log(beneficiary);
         return beneficiary
     } catch (error) {
         return { error: "Sorry, Could not remove beneficiary"}
+    }
+}
+
+export async function getTransactionSummary(uid) {
+    try {
+        const transactions = await prisma.transactions.groupBy({
+            by: ["type"],
+            _sum: {
+                amount: true
+            },
+            where: {
+                userId: uid,
+                status: "success"
+            },
+        })
+        
+        const transactionSummary = transactions?.map(transaction=>({
+            type: transaction?.type,
+            totalAmount: transaction?._sum?.amount
+        }))
+
+        return transactionSummary
+    } catch (error) {
+        return { error: error?.message}
     }
 }

@@ -70,14 +70,14 @@
       @apply my-2 flex border bg-white shadow-md shadow-gray-200 p-5 rounded-md justify-between items-center
      }
      .beneficiary-container > article  img {
-      @apply  mr-2 rounded-full w-8 h-8
+      @apply  mr-3 rounded-full w-10 h-10
      }
      .beneficiary-container > article   h2{
-      @apply font-medium text-gray-800 text-sm md:text-[14px] leading-5;
+      @apply font-medium text-gray-800 text-sm md:text-base leading-5;
       font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
    }
      .beneficiary-container > article  p{
-      @apply text-[12px] md:text-xs mt-0.5 font-thin text-main italic 
+      @apply text-[12px] md:text-xs mt-0.5 font-normal text-main italic 
      }
      .beneficiary-container > article button{
       @apply text-red-700 font-medium text-sm 

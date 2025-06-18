@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import OtpInput from "react-otp-input";
 import { toast, Toaster } from "sonner";
 import "../../../styles/withdraw.css"
-import { saveTransaction, updateBalanceDecrement } from "../../../actions/payment";
+import { saveTransaction, updateBalanceDecrement, updateDailyAmountUsed } from "../../../actions/payment";
 
 function Withdraw() {
     const [banks, setBanks] = useState([])
@@ -54,6 +54,8 @@ function Withdraw() {
         }
         getUser()
     },[uid])
+
+ 
 
  
 
@@ -125,28 +127,34 @@ function Withdraw() {
 
     async function handleWithdraw() {
         setIsLoading(true)
-        if (pin === user?.transactionPin) {
-            try {
-                const reference = new Date().getTime().toString()
-                // decrease the balaANCE
-                await updateBalanceDecrement(user?.uid, parseInt(amount))
-                // save the transaction
-                await saveTransaction(user?.uid, parseInt(amount), "withdraw", "success", reference)
-                // close the modal
-                pinModalRef.current.close()
-                // show success message
-                toast.success("Withdrawal Complete!")
-            } catch (error) {
-                setTransactionError(error?.message)
-            }
-            finally{
-                setTimeout(() => {
-                    window.location = "/app"
-                }, 2000);
+        if ((user?.currentDailyAmountUser + parseInt(amount)) < user?.dailyTransactionLimit) {
+            if (pin === user?.transactionPin) {
+                try {
+                    const reference = new Date().getTime().toString()
+                    // decrease the balaANCE
+                    await updateBalanceDecrement(user?.uid, parseInt(amount))
+                    // add the amount to the dailyAmountUsed
+                    await updateDailyAmountUsed(user?.uid, parseInt(amount))
+                    // save the transaction
+                    await saveTransaction(user?.uid, parseInt(amount), "withdraw", "success", reference)
+                    // close the modal
+                    pinModalRef.current.close()
+                    // show success message
+                    toast.success("Withdrawal Complete!")
+                } catch (error) {
+                    setTransactionError(error?.message)
+                }
+                finally{
+                    setTimeout(() => {
+                        window.location = "/app"
+                    }, 2000);
+                }
+            } else {
+                // show error message
+                setTransactionError("Incorrect Transaction PIN")
             }
         } else {
-            // show error message
-            setTransactionError("Incorrect Transaction PIN")
+            setTransactionError("Daily Transaction Limit Reached")
         }
         
         setTimeout(() => {

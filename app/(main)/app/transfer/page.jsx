@@ -8,7 +8,7 @@ import { auth } from "../../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
 import OtpInput from "react-otp-input";
 import { findUser } from "../../../actions/auth";
-import { getBeneficiary, saveBeneficiary, saveTransaction, updateBalance, updateBalanceDecrement } from "../../../actions/payment";
+import { getBeneficiary, saveBeneficiary, saveTransaction, updateBalance, updateBalanceDecrement, updateDailyAmountUsed } from "../../../actions/payment";
 import Beneficiaries from "../../../libs/beneficiaries";
 
 function TransferPage() {
@@ -32,7 +32,7 @@ function TransferPage() {
         async function getUser() {
             if (uid) {
                 const user = await findUser(uid)  
-                const res = await getBeneficiary(uid, 5)
+                const res = await getBeneficiary(uid, 4)
                 setSender(user)
                 setBeneficiary(res)
             }
@@ -70,65 +70,68 @@ function TransferPage() {
     
 
     async function handleBeneficiary() {
-      if (beneficiary.length <= 0) {
-            saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
-            toast.success(`${recipient?.firstName} added to beneficiaries `)
+        const isABeneficiary = beneficiary.find(user=> user?.beneficiaryId === recipient?.uid)
+        if (!isABeneficiary) {
+                await saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
+                toast.success(`${recipient?.firstName} added to beneficiaries `)
 
-            setTimeout(() => {
-                window.location = "/app/transfer"
-            }, 500);
-      } else {
-            beneficiary?.map(user => {
-                if (user?.beneficiaryId === recipient?.uid) {
-                toast.error(`${recipient?.firstName} is already a beneficiary`)
-                } else {
-                    saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
-                    toast.success(`${recipient?.firstName} added to beneficiaries `)
-
-                    setTimeout(() => {
-                        window.location = "/app/transfer"
-                    }, 500);
-                }
-            })
-      }
+                setTimeout(() => {
+                    window.location = "/app/transfer"
+                }, 500);
+        } else {
+            toast.error(`${recipient?.firstName} is already a beneficiary`)   
+        }
+        
     }
 
   
-// 1075217488
+
     async function transferFunds() {
         setIsLoading(true)
-        if (pin === sender?.transactionPin) {
-            const reference =  new Date().getTime().toString()
-            // decrease the sender balance
-            const result = await updateBalanceDecrement(sender?.uid, parseInt(amount))
-            // // increase the recipient balance            
-            if (result?.error) {
-                setTransactionError(result?.error)
-            } else {
-                const res = await updateBalance(recipient?.uid, parseInt(amount))  
-                // save the transaction 
-                if (res?.error) {
-                    setTransactionError(res?.error)
+        if ((sender?.currentDailyAmountUser + parseInt(amount)) < sender?.dailyTransactionLimit) {
+            if (pin === sender?.transactionPin) {
+                const reference =  new Date().getTime().toString()
+                // decrease the sender balance
+                const result = await updateBalanceDecrement(sender?.uid, parseInt(amount))
+                // // increase the recipient balance            
+                if (result?.error) {
+                    setTransactionError(result?.error)
                 } else {
-                    const resp = await saveTransaction(sender?.uid,parseInt(amount), "transfer", "success", reference, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber, `${sender?.firstName} ${sender.lastName}`)
-                    if (resp?.error) {
-                        setTransactionError(resp?.error)
+                    const res = await updateBalance(recipient?.uid, parseInt(amount))  
+                    // save the transaction 
+                    if (res?.error) {
+                        setTransactionError(res?.error)
                     } else {
-                        pinModalRef.current.close()
-                        toast.success(`Transaction Successful`)
-                        window.location = "/app"
-                    }
-                }   
+                        const response  = await updateDailyAmountUsed(sender?.uid, parseInt(amount))
+                        if (!response?.error) {
+
+                            const resp = await saveTransaction(sender?.uid,parseInt(amount), "transfer", "success", reference, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber, `${sender?.firstName} ${sender.lastName}`)
+
+                            if (resp?.error) {
+                                setTransactionError(resp?.error)
+                            } else {
+                                pinModalRef.current.close()
+                                toast.success(`Transaction Successful`)
+                                window.location = "/app"
+                            }
+                        } else {
+                            setTransactionError(response?.error)
+                        }
+                        
+                    }   
+                }
+                
+                
+            } else {
+                setTransactionError("Incorrect Transaction PIN")
             }
-            
-            
         } else {
-            setTransactionError("Incorrect Transaction PIN")
+            setTransactionError("Daily Transaction Limit Reached")
         }
         setTimeout(() => {
             setIsLoading(false)
             setTransactionError("")
-        }, 2000);
+        }, 1500);
     }
 
     return ( 

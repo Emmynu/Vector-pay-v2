@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
-import { getBalance, getTransactions } from "../../actions/payment";
+import { getBalance, getTransactions, resetDailyAmountUsed } from "../../actions/payment";
+import { findUser } from "../../actions/auth";
 
 
  const poppins = Poppins({
@@ -25,6 +26,7 @@ export default function DashBoard(){
     const [uid, setUid] = useState(false)
     const [name, setName] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
+    const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [totalTransaction, setTotalTransaction] = useState(null)
     
@@ -51,20 +53,44 @@ export default function DashBoard(){
       }
     },[])
 
+    useEffect(()=>{
+       async function getUser() {
+            if (uid) {
+                const res = await findUser(uid)
+                setUser(res)
+            }
+       }
+       getUser()
+    },[uid])
+
+
+    useEffect(()=>{
+        async function updateDailyLimit() {
+            const now = new Date()
+            const resetTime = 24 * 60 * 60 * 1000 //24hours
+            const msSinceLastReset =  now.getTime() - user?.lastLimitResetAt?.getTime()
+            if (msSinceLastReset >= resetTime) {
+                await resetDailyAmountUsed(uid)
+            } 
+        }
+        updateDailyLimit()
+    },[user])
+
+
 
     useEffect(()=>{
         async function balanceFunc() {
             setIsLoading(true)
             if (uid !== false) {
                 const currentBalance = await getBalance(uid)
-                const transactionCount = await getTransactions(uid)
+                const transaction = await getTransactions(uid)
                 if (currentBalance?.error ) {
                     setIsLoading(false)
                     toast.error(currentBalance?.error)
                 }else{
                     const formattedBalance = new Intl.NumberFormat("en-US").format(currentBalance?.balance)
                     setBalance(formattedBalance)
-                    setTotalTransaction(transactionCount)
+                    setTotalTransaction(transaction)
                     setIsLoading(false)
                 }
                 
@@ -143,11 +169,11 @@ export default function DashBoard(){
                    <article className="account-limit-details">
                     <section>
                         <h2>Daily Limit:</h2>
-                        <p>₦0 / ₦50,000</p>
+                        <p>₦{new Intl.NumberFormat("en-US").format(user?.currentDailyAmountUser || "0" )} / ₦{new Intl.NumberFormat("en-US").format(user?.dailyTransactionLimit || 100000) }</p>
                     </section>
                     <section>
                         <h2>Account Level:</h2>
-                        <p>Tier 1</p>
+                        <p>Tier {user?.accountLevel || "1"} </p>
                     </section>
                    </article>
                    <div className="w-full h-2 overflow-hidden bg-gray-400 rounded-lg lg:h-3 mt-8"></div>
@@ -159,8 +185,8 @@ export default function DashBoard(){
         </section>
 
         <section className="transaction-details-container">
-            <TransactionHistory/>
-            <Statistics />
+            <TransactionHistory transactions={totalTransaction?.slice(0, 3)} uid={uid}/>
+            <Statistics uid={uid}/>
         </section>
 
         <DepositModal />
