@@ -7,8 +7,8 @@ import { auth } from "../../../../firebase/firebase-client";
 import { getPaginatedTransaction, getTransactionSummary } from "../../../../app/actions/payment";
 import { TransactionDetail } from "../../../libs/component";
 import { PieChart, ResponsiveContainer, Pie, Tooltip, Legend, Cell } from "recharts";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+// import Link from "next/link";
+// import { useSearchParams } from "next/navigation";
 
 const itemsPerPage =  5
 
@@ -19,8 +19,8 @@ function Page() {
     const [data, setData] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [totalTransaction, setTotalTransaction] = useState(null)
-    const searchParams = useSearchParams()
-    const params = searchParams.get("type")
+    // const searchParams = useSearchParams()
+    // const params = searchParams.get("type")
     
 
     useEffect(()=>{
@@ -53,7 +53,7 @@ function Page() {
         document.getElementById("transaction-detail").showModal()
     }
 
-    const newTransaction =  params ? transactions?.filter(res=>res?.type === params) : transactions
+    // const newTransaction =  params ? transactions?.filter(res=>res?.type === params) : transactions
 
     return ( 
         <main className="transaction-history-container">
