@@ -1,26 +1,12 @@
 "use client"
 
-
-import { toast } from "sonner";
-import { removeBeneficiary } from "../actions/payment";
 import "../styles/transfer.css"
 import Link from "next/link";
 
 
 export default function Beneficiaries({ beneficiary }) {
 
-    async function deleteBeneficiary(accountNumber) {
-        const exists = beneficiary.find(user=> user?.beneficiaryAccountNumber === accountNumber)
-    
-        if (exists) {
-            await removeBeneficiary(exists?.beneficiaryAccountNumber)
-            toast.success(`${exists?.beneficiaryName} removed from beneficiaries`)
-            setTimeout(() => {
-                window.location = "/app/transfer"
-            }, 500);
-        } 
-        
-    }
+
 
     return (
       <>
@@ -41,7 +27,6 @@ export default function Beneficiaries({ beneficiary }) {
 
                         </div>
                     </div>
-                    <button onClick={()=>deleteBeneficiary(user?.beneficiaryAccountNumber)}>remove</button>
                 </article>
             })}
         </section> :

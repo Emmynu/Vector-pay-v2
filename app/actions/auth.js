@@ -38,7 +38,6 @@ export async function verifyToken(token, firstName, lastName) {
          return { error: "Unauthorized - Authentication failed"}
         }
     } catch (error) {
-        console.log(error);
         return { error: error?.message}
     }
 }
@@ -73,7 +72,7 @@ export async function saveUserToDB(user) {
             }
         })
     } catch (error) {
-        console.log(error);
+        return { error : error?.message }
     }
 }
 
