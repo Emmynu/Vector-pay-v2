@@ -81,8 +81,6 @@ function Withdraw() {
                     setAccountNumber("")
                     setSelectedBank("")
                 })
-
-                console.log( result);
                 
                 if (result?.status) {
                     setAccountName(result?.data?.account_name)
@@ -127,7 +125,7 @@ function Withdraw() {
 
     async function handleWithdraw() {
         setIsLoading(true)
-        if ((user?.currentDailyAmountUser + parseInt(amount)) < user?.dailyTransactionLimit) {
+        if ((user?.currentDailyAmountUser + parseInt(amount)) <= user?.dailyTransactionLimit) {
             if (pin === user?.transactionPin) {
                 try {
                     const reference = new Date().getTime().toString()

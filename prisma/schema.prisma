@@ -13,7 +13,7 @@ model User {
   uid String @unique 
   firstName String
   lastName String
-  email String
+  email String @unique
   avatarUrl String
   verified Boolean
   totpCode String
@@ -55,6 +55,6 @@ model Beneficiaries {
   userId String
   beneficiaryId String 
   beneficiaryName String
-  beneficiaryAccountNumber String @unique
+  beneficiaryAccountNumber String
   createdAt DateTime @default(now())
 }

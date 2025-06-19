@@ -88,7 +88,7 @@ function TransferPage() {
 
     async function transferFunds() {
         setIsLoading(true)
-        if ((sender?.currentDailyAmountUser + parseInt(amount)) < sender?.dailyTransactionLimit) {
+        if ((sender?.currentDailyAmountUser + parseInt(amount)) <= sender?.dailyTransactionLimit) {
             if (pin === sender?.transactionPin) {
                 const reference =  new Date().getTime().toString()
                 // decrease the sender balance

@@ -148,12 +148,45 @@ export async function getTransactions(uid) {
            },
            orderBy: {
             createdAt: "desc"
-           },
+           }
         })
         return transactions
     } catch (error) {
-        console.log(error);
         
+        return { error:  "Sorry, Could not fetch transaction history."}
+       
+    }
+}
+
+
+export async function getPaginatedTransaction(uid, pageSize , page) {
+    const skip = (page - 1) * pageSize
+    try {
+        const transactions = await prisma.transactions.findMany({
+           where: {
+            OR: [
+                { userId: uid },
+                { recipientId: uid }
+            ]
+           },
+           orderBy: {
+            createdAt: "desc"
+           },
+           take: pageSize,
+           skip,
+        })
+
+        const totalTransactions = await prisma.transactions.count({ 
+            where: { 
+                OR: [
+                    { userId: uid },
+                    { recipientId: uid }
+                ]
+            }
+        })
+
+        return {transactions, totalTransactions}
+    } catch (error) {      
         return { error:  "Sorry, Could not fetch transaction history."}
        
     }
@@ -193,18 +226,7 @@ export async function getBeneficiary(uid, take) {
 }
 
 
-export async function removeBeneficiary(beneficiaryAccountNumber) {
-    try {
-        const beneficiary = await prisma.beneficiaries.delete({
-            where: {
-                beneficiaryAccountNumber,
-            }
-        })
-        return beneficiary
-    } catch (error) {
-        return { error: "Sorry, Could not remove beneficiary"}
-    }
-}
+
 
 export async function getTransactionSummary(uid) {
     try {
@@ -220,8 +242,8 @@ export async function getTransactionSummary(uid) {
         })
         
         const transactionSummary = transactions?.map(transaction=>({
-            type: transaction?.type,
-            totalAmount: transaction?._sum?.amount
+            name: transaction?.type,
+            value: transaction?._sum?.amount
         }))
 
         return transactionSummary

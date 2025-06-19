@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+
+
+@layer base{
+    .transaction-history-container{
+        @apply my-10 mx-5 md:m-8
+    }
+    .transaction-history-title-container{
+        @apply mb-5 text-lg md:text-[22px] font-semibold tracking-wide;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .transaction-history-content-container {
+        @apply lg:w-[60%] 
+    }
+    .transaction-empty {
+        @apply flex flex-col items-center -mt-0 
+     }
+     .transaction-empty > img{
+        @apply w-[75%] h-[75%] md:w-[80%] md:h-[80%] -ml-10
+     }
+     .transaction-empty > h2 {
+        @apply  -mt-2 md:-mt-5 text-sm md:text-base font-semibold tracking-wide text-gray-700;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+     }
+
+     .transactions > section {
+        @apply my-4 flex justify-between border bg-white shadow-md shadow-gray-200 p-5 rounded-md  items-center
+     }
+     .transactions > section > div:nth-child(1) {
+        @apply flex justify-between items-center
+     }
+  
+     .transactions > section > div:nth-child(1)  h2{
+        @apply font-medium text-gray-800 text-sm md:text-[15px] leading-5;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+     }
+     .transactions > section > div:nth-child(1)  p {
+        @apply text-[12px] md:text-xs mt-1 md:mt-1.5 font-thin
+     }
+     .transaction-amount{
+        @apply font-semibold text-base text-gray-700;
+        font-family: Arial, Helvetica, sans-serif;
+     }
+     .transaction-status{
+        @apply font-medium mt-1 md:mt-0
+     }
+     .filter-container{
+        @apply flex items-center my-1
+     }
+     .filter-container a{
+        @apply ml-1.5 text-main bg-blue-100 px-2.5 py-1.5 rounded-md font-medium text-xs md:text-sm
+     }
+     .transaction-detail-container> h2{
+         @apply text-xl font-medium ;
+         font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+     }
+     .detail-container{
+      @apply mt-3
+     }
+     .detail-container > h2{
+      @apply font-semibold text-[14px] mt-5 text-slate-800;
+      font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+     }
+     .detail-container > p {
+      @apply -mt-0.5 text-[15px] ;
+      font-family:'Courier New', Courier, monospace;
+     }
+}

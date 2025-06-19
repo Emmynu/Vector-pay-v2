@@ -17,7 +17,7 @@
         @apply w-full h-full md:h-[110vh]  hidden md:block col-span-1 lg:col-span-1 cursor-pointer shadow-none bg-blue-100 p-7 
     }
     .sidebar-container-sm{
-        @apply absolute md:hidden h-full top-0 bottom-0 left-0 w-[94%] z-50  bg-white shadow-2xl shadow-gray-400 p-7 
+        @apply absolute md:hidden h-full md:h-[110vh] top-0 bottom-0 left-0 w-[94%] z-50  bg-white shadow-2xl shadow-gray-400 p-7 
     }
     .main-container > section {
         @apply col-span-1 md:col-span-2 lg:col-span-3
@@ -36,7 +36,7 @@
         @apply w-5 h-5 mr-1
     }
     .dashboard-header {
-        @apply border-b-2 border-gray-200 px-5 py-4 md:px-6 md:py-5 
+        @apply border-b-2 border-gray-200 px-5 py-4 md:px-6 md:py-5  
     }
     .dashboard-header, .dashboard-header >section:nth-child(2){
         @apply flex justify-between items-center 
@@ -110,13 +110,13 @@
         transition: all 1s ease-in-out;
     }
      .transaction-details-container{
-        @apply my-10 mx-5 md:m-10 grid lg:grid-cols-5 gap-7
+        @apply my-10 mx-5 md:m-10 grid lg:grid-cols-7 gap-7 items-stretch
      }
      .transaction-container{
-        @apply col-span-3
+        @apply col-span-4
      }
      .statistics-container {
-        @apply hidden lg:block col-span-2
+        @apply hidden lg:block col-span-3
      }
      .transaction-container > article, .statistics-container > article {
         @apply flex justify-between items-center

@@ -5,6 +5,6 @@
 
 @layer base{
     body {
-        @apply lg:overflow-y-hidden
+        /* @apply md:overflow-y-hidden */
     }
 }

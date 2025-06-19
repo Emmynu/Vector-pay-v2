@@ -419,10 +419,11 @@ export function TransactionHistory({ transactions, uid }) {
             <Link href={"/app/transaction-history"}>» See All</Link>
           </p>
        </article>
+       
 
        <section>
-            {transactions?.length === 0 ?
-                <section class="transaction-empty">
+            {transactions?.length === 0 || !transactions ?
+                <section className="transaction-empty">
                     <img src="https://th.bing.com/th/id/OIP.ZsjPQuS9XJsVY_JFsHvn9QHaHa?rs=1&pid=ImgDetMain" alt="" />
                     <h2>Transaction History empty</h2>
                 </section>:
@@ -496,11 +497,7 @@ export function Statistics({ uid }) {
                 if (res?.error) {
                     
                 } else {
-                    const newData = res?.map(item => ({
-                        name: item?.type,
-                        value: item?.totalAmount
-                    }))
-                    setData(newData)
+                    setData(res)
                 }
             
             }
@@ -508,30 +505,67 @@ export function Statistics({ uid }) {
         getSummary()
     },[uid])
 
-    const colors = ["#60a5fa", "#03457C", "#03457C"]
-
-    console.log(data);
     
 
     return <main className="statistics-container">
        <article>
             <h2>Statistics</h2>
             <p>
-            <Link href={""}>» See All</Link>
+            <Link href={"/app/transaction-history"}>» See All</Link>
           </p>
        </article>
 
-       {data.length > 0 && <section className="w-full h-[250px] ">
-            <ResponsiveContainer>
-                <PieChart width={730} height={730}>
-                    <Pie data={data} cx="50%" cy="50%" fill={colors[Math.floor(Math.random() * colors.length)]}  outerRadius={70} dataKey="value" nameKey="name" label={({ name, percent })=> `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                        {data?.map((entry, index)=>{
-                            
-                            <Cell key={`cell-${entry?.name}`} />
-                        })}
+       {data.length > 0 && <section className="w-full h-[290px] mt-3 text-sm font-medium">
+            <ResponsiveContainer >
+                <PieChart>
+                    <Pie data={data} cx="50%" cy="50%"   outerRadius={106} dataKey="value" nameKey="name" label={({ name, percent })=> `${name} ${(percent * 100).toFixed(0)}%`} >
+
+                        <Cell  fill="#03457c" stroke="#000"/>
+                        <Cell  fill="#ffbb28" stroke="#000"/>
+                        <Cell  fill="#cbe7f1" stroke="#000"/>
                     </Pie>
-                    <Tooltip />
-                    <Legend />
+                 
+                    <Tooltip isAnimationActive animationDuration={2000}   formatter={(name, value, props)=>{
+                        const amount = new Intl.NumberFormat("en-NG",{
+                            style: "currency",
+                            currency:"NGN",
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(name)
+                        return [amount, props.payload.name]
+                    }}/>
+                    <Legend iconType="square" layout="vertical" align="right"content={({ payload })=>{
+                        return (
+                            <ul >{payload.map((entry, index)=>{
+                                const { value, payload: dataPayload} = entry
+                                const transactionType = dataPayload?.name
+                                const color = dataPayload?.fill
+                                let icon;
+        
+
+                                switch (transactionType) {
+                                    case "deposit":
+                                        icon ="https://img.icons8.com/?size=100&id=122074&format=png&color=000000"
+                                        break;
+                                    case "withdraw":
+                                        icon = "https://img.icons8.com/?size=100&id=73812&format=png&color=000000"
+                                        break;
+                                    case "transfer":
+                                        icon = "https://img.icons8.com/?size=100&id=14902&format=png&color=000000"
+                                    default:
+                                        break;
+                                }
+
+
+                                return (
+                                    <li style={{ padding: "3px", borderRadius: "5px", marginTop: "2px"}} className="flex items-center border-b ">
+                                        <img src={icon} className={` w-6 rounded-full h-6 p-1.5 mr-1`} style={{background: color}}/>
+                                        <span>{`${transactionType.charAt(0).toUpperCase()}${transactionType.slice(1,)}`}</span>
+                                    </li>
+                                )
+                            })}</ul>
+                                    )
+                                }} />
                 </PieChart>
             </ResponsiveContainer>
        </section>}
@@ -569,7 +603,7 @@ export function DepositModal() {
                    <section className="modal-content ">
                         <div>
                             <h2>Request Money</h2>
-                            <p>Request money from beneficiaries.</p>
+                            <p>Request money from other users.</p>
                         </div>
                         <div onClick={handleModalToggle}>
                             <h2>ATM Card</h2>
@@ -707,4 +741,66 @@ export function DepositAmountModal() {
             </div>
         </dialog>
     )
+}
+
+export function TransactionDetail({ transaction, uid }) {
+
+    let transactionType;
+
+    switch (transaction?.type) {
+        case "deposit":
+            transactionType="Fund Wallet by ATM Card"
+            break;
+        case "withdraw":
+            transactionType = `Withdrawal to Bank Account`
+            break;
+        case "transfer":
+            if (transaction?.recipientId === uid) {
+                transactionType= `Transfer From ${transaction?.name}`
+            }
+            else{
+                transactionType= `Transfer To ${transaction?.recipientName}`
+            }
+    
+        default:
+            break;
+    }
+    
+    return <>
+        <dialog id="transaction-detail" className="modal ">
+        <div className="modal-box p-10">
+            <form method="dialog">
+                <button className="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div className="px-5 py-7">
+                <article className="transaction-detail-container">
+                    <h2>Transaction Details</h2>
+                </article>
+                <section className="detail-container">
+                    <h2>Amount</h2>
+                    <p className="text-slate-600">₦{Intl.NumberFormat("en-US").format(transaction?.amount)}</p>
+
+                    <h2>Status</h2>
+                    <p className={transaction?.status === "success"?"transaction-status text-green-600 ": transaction?.status === "failed" ? "transaction-status text-red-600 ": "transaction-status text-yellow-600 "}>{`${transaction?.status?.charAt(0)?.toUpperCase()}${transaction?.status?.slice(1,)}`}</p>
+                    
+                    <h2>Date</h2>
+                    <p className="text-slate-600">{new Intl.DateTimeFormat("en-US", {
+                         month: "long",
+                         day:"numeric",
+                         year: "numeric",
+                         hour: "2-digit",
+                         minute: "2-digit"
+                    }).format(transaction?.createdAt) }</p>
+                    
+                    <h2>Reference</h2>
+                    <p className="text-slate-600">{transaction?.reference}</p>
+                    
+                    <h2>Type</h2>
+                    <p className="text-slate-600">{transactionType}</p>
+                </section>
+            </div>
+        </div>
+        </dialog>
+    
+    </>
 }

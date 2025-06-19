@@ -51,7 +51,6 @@ export async function handleAccountNumber(formData) {
         })        
         return user
     } catch (error) {
-        // console.log(error);
         return { error: "User not Found"}
     }
     
