@@ -13,8 +13,8 @@ import useKoraPay from "./useKoraPay";
 import { toast } from "sonner";
 import { deposit, getTransactionSummary, saveTransaction } from "../actions/payment";
 import { usePathname } from "next/navigation";
-import { pinSchema } from "../../zod-schema";
-import { findUser } from "../actions/auth";
+import { emailSchema, pinSchema } from "../../zod-schema";
+import { findUser, findUserInFirebase } from "../actions/auth";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 
@@ -51,12 +51,12 @@ export function DashBoardHeader() {
             </div>
             <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
             {/* notification icon */}
-            <button className="btn btn-ghost btn-circle">
-                <div className="indicator">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                    <span className="badge badge-xs badge-primary indicator-item"></span>
-                </div>
-            </button>
+            <div className="indicator ml-1.5" >
+                <span className="indicator-item badge badge-primary badge-xs font-medium">0</span>
+                <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
+                </button>
+            </div>
         </section>
     </header>
 
@@ -601,7 +601,10 @@ export function DepositModal() {
                    </article>
 
                    <section className="modal-content ">
-                        <div>
+                        <div onClick={()=>{
+                            document.getElementById('request_money_modal').showModal()
+                            closeModal()
+                        }}>
                             <h2>Request Money</h2>
                             <p>Request money from other users.</p>
                         </div>
@@ -740,6 +743,71 @@ export function DepositAmountModal() {
                 </div>
             </div>
         </dialog>
+    )
+}
+
+
+export function RequestMoneyModal() {
+    const modalRef = useRef(null)
+
+    async function handleSubmit(e) {
+        e.preventDefault()
+        const formData = Object.fromEntries(new FormData(e.currentTarget))
+        const result = emailSchema.safeParse(formData)
+        if (result?.error) {
+            result.error?.errors?.map(error=>{
+                console.log(error?.message)
+            })
+        } else {
+            const user = await findUserInFirebase(formData?.email)
+            console.log(user);
+        }
+        
+    }
+
+    return (
+        <>
+        <dialog id="request_money_modal" className="modal modal-bottom md:modal-middle" ref={modalRef}>
+        <div className="modal-box">
+            <button  className="modal-back-btn" onClick={()=>{
+                modalRef?.current?.close()
+                document.getElementById("my_modal_3").showModal()
+            }}> <img src="https://img.icons8.com/?size=100&id=79026&format=png&color=000000" alt="back-icon" className="w-3 mr-1 h-3"/> <span>Back</span></button>
+            <form method="dialog">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div className="modal-amount-container">
+               <article >
+                <h2>Request Funds</h2>
+                <p>Easily ask for payments from friends, family, or clients. </p>
+               </article>
+                
+                <h2 className="mb-1 font-medium text-[14px]" style={{fontFamily: "inherit"}}>Email to Request From:</h2>
+                <label className="validator">
+                    <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <g
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        strokeWidth="2.5"
+                        fill="none"
+                        stroke="currentColor"
+                        >
+                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </g>
+                    </svg>
+                    
+                <form className="request-content-container mt-5" onSubmit={handleSubmit}>
+                    <input type="email" placeholder="mail@site.com" required className="ml-1 border-none outline-none" name="email"/>
+                
+                <div className="validator-hint hidden">Enter valid email address</div>
+                <button >Continue</button>
+                </form>
+             </label>
+            </div>
+        </div>
+        </dialog>
+    </>
     )
 }
 

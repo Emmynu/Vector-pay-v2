@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "../../../styles/transaction-history.css"
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../../firebase/firebase-client";
@@ -19,6 +19,7 @@ function Page() {
     const [data, setData] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [totalTransaction, setTotalTransaction] = useState(null)
+    const [outerRadius, setOuterRadius] = useState(null)
     // const searchParams = useSearchParams()
     // const params = searchParams.get("type")
     
@@ -53,6 +54,27 @@ function Page() {
         document.getElementById("transaction-detail").showModal()
     }
 
+    let margin;
+
+    const calculatePieChartSize = useCallback(()=>{
+        if (window.innerWidth < 640) {
+            margin="20px"
+            return 80
+        }
+        else {
+            margin="50px"
+            return 110
+        }
+    },[])
+
+    useEffect(()=>{
+        window.addEventListener("resize",()=>{
+            setOuterRadius(calculatePieChartSize())
+        })
+    },[calculatePieChartSize])
+
+    
+
     // const newTransaction =  params ? transactions?.filter(res=>res?.type === params) : transactions
 
     return ( 
@@ -71,7 +93,7 @@ function Page() {
                 
                 <div className="tabs tabs-border  tabs-sm md:tabs-md ">
                 <input type="radio" name="my_tabs_2" className="tab font-medium tracking-wide" aria-label="Transactions" defaultChecked />
-                <div className="tab-content border-base-300 bg-base-100 p-4">
+                <div className="tab-content">
                     <section className="transactions">
                     {/* <div className="filter-container">
                         <Link href={`?type=`}>All</Link>
@@ -117,7 +139,7 @@ function Page() {
                         }
                         return <>
                        
-                        <section className="cursor-pointer" onClick={()=>handleShowModal(transaction)}>
+                        <section className="cursor-pointer" onClick={()=>handleShowModal(transaction)} key={transaction?.id}>
                         <div>
                             <img src={icon} alt={`${transaction?.type}-icon`} className={`mr-4 p-3 rounded-full w-11 h-11`} style={{backgroundColor: color}}/>
                             <section>
@@ -139,20 +161,21 @@ function Page() {
                         </>
                     })}  
                     </section>
-                    { <div className="flex justify-center mt-5 ">
+                    <div className="flex justify-center mt-5 ">
                         <button className="px-4 py-2 font-medium bg-blue-100 border border-slate-300 shadow-lg" onClick={()=>handlePageChange(currentPage - 1)}>«</button>
                         <button className="px-4 py-2 font-medium bg-blue-100 border border-slate-300 shadow-lg">Page {currentPage}</button>
                         <button className="px-4 py-2 font-medium bg-blue-100 border border-slate-300 shadow-lg" onClick={ ()=>handlePageChange(currentPage + 1)}>»</button>
-                    </div>}
+                    </div>
                 </div>
 
                 <input type="radio" name="my_tabs_2" className="tab font-medium tracking-wide" aria-label="Statistics"  />
-                <div className="tab-content border-base-300 bg-base-100 p-4">
+                <div className="tab-content border-base-300 bg-base-100 py-3 px-0 md:p-4">
                     {data.length > 0 &&
+                  
                      <section className="w-full h-[290px] mt-8 text-xs  md:text-sm font-medium">
                         <ResponsiveContainer >
                             <PieChart>
-                                <Pie data={data} cx="50%" cy="50%"   outerRadius={110} dataKey="value" nameKey="name" label={({ name, percent })=> `${name} ${(percent * 100).toFixed(0)}%`} >
+                                <Pie data={data} cx="50%" cy="50%"   outerRadius={outerRadius} dataKey="value" nameKey="name" label={({ name, percent })=> `${name} ${(percent * 100).toFixed(0)}%`} >
             
                                     <Cell  fill="#03457c" stroke="#000"/>
                                     <Cell  fill="#ffbb28" stroke="#000"/>
@@ -171,7 +194,7 @@ function Page() {
                                
                                 <Legend  layout="vertical" align="right" content={({ payload })=>{
                                     return (
-                                        <ul >{payload.map((entry, index)=>{
+                                        <ul style={{marginLeft: margin,  maxWidth: "fit-content"}}>{payload.map((entry, index)=>{
                                             const { value, payload: dataPayload} = entry
                                             const transactionType = dataPayload?.name
                                             const color = dataPayload?.fill

@@ -25,7 +25,9 @@
         @apply  -mt-2 md:-mt-5 text-sm md:text-base font-semibold tracking-wide text-gray-700;
         font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
      }
-
+     .transactions{
+      @apply mt-4 md:mt-6
+     }
      .transactions > section {
         @apply my-4 flex justify-between border bg-white shadow-md shadow-gray-200 p-5 rounded-md  items-center
      }

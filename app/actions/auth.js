@@ -94,9 +94,7 @@ export async function findUserInFirebase(email) {
     try {
         const user = await adminAuth.getUserByEmail(email)
         if (user?.uid) {
-            return {
-                uid:user?.uid,
-            }
+            return user
         } else {
             return null
         }
