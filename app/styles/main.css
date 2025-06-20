@@ -152,21 +152,24 @@
         @apply text-sm font-thin mt-0.5
      }
      .modal-back-btn{
-        @apply bg-gray-100 text-xs md:text-sm font-medium flex items-center px-2 md:px-3 py-1.5 md:py-1 rounded-[5px] border border-gray-600
+        @apply bg-gray-100 text-xs md:text-sm font-medium flex items-center px-2 md:p-2 py-1.5 md:py-1 rounded-[5px] border border-gray-600
      }
      .modal-amount-container{
         @apply my-4
      }
-     .modal-amount-container > section {
+     .modal-amount-container > section, .request-content-container {
         @apply mt-4 flex flex-col items-start
      } 
-     .modal-amount-container > section label{
+     .modal-amount-container > section label, .request-content-container > label{
         @apply font-medium mb-1.5
      }
-     .modal-amount-container > section input[type="number"]{
-        @apply  rounded-md w-full
+     .request-content-container > label {
+        @apply flex items-center w-full border-[1.5px] p-2 rounded-md font-normal text-slate-700 tracking-wide border-slate-300
      }
-     .modal-amount-container > section button{
+     .modal-amount-container > section input[type="number"], .request-content-container  input{
+        @apply  rounded-md w-full 
+     }
+     .modal-amount-container > section button, .request-content-container  button{
         @apply bg-main text-white py-[11px] mt-3.5 w-full text-center tracking-wide font-semibold rounded-md text-[16px] md:text-[16px] disabled:opacity-65;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         transition: all 0.5s linear;
