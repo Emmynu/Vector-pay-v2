@@ -8,7 +8,7 @@ import { auth } from "../../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
 import OtpInput from "react-otp-input";
 import { findUser } from "../../../actions/auth";
-import { getBeneficiary, saveBeneficiary, saveTransaction, updateBalance, updateBalanceDecrement, updateDailyAmountUsed } from "../../../actions/payment";
+import { getBeneficiary, saveBeneficiary, saveNotification, saveTransaction, updateBalance, updateBalanceDecrement, updateDailyAmountUsed } from "../../../actions/payment";
 import Beneficiaries from "../../../libs/beneficiaries";
 
 function TransferPage() {
@@ -110,9 +110,16 @@ function TransferPage() {
                             if (resp?.error) {
                                 setTransactionError(resp?.error)
                             } else {
-                                pinModalRef.current.close()
-                                toast.success(`Transaction Successful`)
-                                window.location = "/app"
+                                //send a transfer notification to the recipient
+                                const req = await saveNotification(recipient?.uid, parseInt(amount), "transfer", recipient?.accountNumber, sender?.uid, `${sender?.firstName} ${sender.lastName}`)
+
+                                if (req?.error) {
+                                    setTransactionError(req?.error)
+                                } else {
+                                    pinModalRef.current.close()
+                                    toast.success(`Transaction Successful`)
+                                    window.location = "/app"   
+                                }
                             }
                         } else {
                             setTransactionError(response?.error)

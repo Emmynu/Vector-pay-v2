@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import useKoraPay from "./useKoraPay";
 import { toast } from "sonner";
-import { deposit, getTransactionSummary, saveTransaction } from "../actions/payment";
+import { deposit, getNotificationCount, getTransactionSummary, saveNotification, saveTransaction } from "../actions/payment";
 import { usePathname } from "next/navigation";
 import { emailSchema, pinSchema } from "../../zod-schema";
 import { findUser, findUserInFirebase } from "../actions/auth";
@@ -19,18 +19,33 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 
 
 export function DashBoardHeader() {
-    const [avatarUrl, setAvatarUrl] = useState(false)
+    const [user, setUser] = useState(null)
+    const [notificationCount, setNotificationCount] = useState(null)
 
     useEffect(()=>{
         try {
           onAuthStateChanged(auth, user=>{
-              setAvatarUrl(user.photoURL)
+              setUser(user)
           })
         } catch (error) {
           
         }
       },[])
+      
+      useEffect(()=>{
+            async function getNotifications() {
+                const totalNotification =  await getNotificationCount(user?.uid)  
+                    
+                if (totalNotification?.error) {
+                    toast.error(totalNotification.error)
+                } else {
+                    setNotificationCount(totalNotification)
+                }   
+            }
+            getNotifications()
+      },[user])
 
+   
       
     function openSideBar() {
         document.querySelector(".sidebar-container-sm").classList.add("open-nav")
@@ -49,14 +64,15 @@ export function DashBoardHeader() {
             <div className="balance-container">
                 <h2 className="dashboard-balance">{"₦****"}</h2>
             </div>
-            <img src={!avatarUrl === null ? avatarUrl : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
+            <img src={!user === null ? user?.photoURL : "https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" } className="w-7  lg:w-9 h-7 lg:h-9 rounded-[50%]" />
             {/* notification icon */}
+            <Link href={"/app/notifications"}>
             <div className="indicator ml-1.5" >
-                <span className="indicator-item badge badge-primary badge-xs font-medium">0</span>
+                <span className="indicator-item badge badge-primary badge-xs font-medium">{notificationCount ? notificationCount : 0}</span>
                 <button>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
                 </button>
-            </div>
+            </div></Link>
         </section>
     </header>
 
@@ -747,21 +763,68 @@ export function DepositAmountModal() {
 }
 
 
-export function RequestMoneyModal() {
+export function RequestMoneyModal({ uid, accountNumber }) {
     const modalRef = useRef(null)
+    const [giver, setGiver] = useState(null)
+    const [error, setError] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
     async function handleSubmit(e) {
         e.preventDefault()
+        setIsLoading(true)
         const formData = Object.fromEntries(new FormData(e.currentTarget))
         const result = emailSchema.safeParse(formData)
         if (result?.error) {
             result.error?.errors?.map(error=>{
-                console.log(error?.message)
+                setError(error?.message)
             })
         } else {
-            const user = await findUserInFirebase(formData?.email)
-            console.log(user);
+            const { user } = await findUserInFirebase(formData?.email)
+            if (user?.uid === uid) {
+                setError("Self Requests is not allowed");
+                
+            } else{
+                setGiver(user)
+            }
         }
+
+        setTimeout(() => {
+            setIsLoading(false)
+            setError("")
+        }, 2000);
+        
+    }
+
+
+    async function handleRequestMoney(e) {
+        e.preventDefault()
+        setIsLoading(true)
+        const { amount } = Object.fromEntries(new FormData(e.currentTarget))
+        if (amount) {
+            if (amount >= 50 && amount <= 100000) {
+                // confirm request
+                const result = await saveNotification(uid, parseInt(amount), "request", accountNumber, giver?.uid, giver?.displayName)
+                if (result?.error) {
+                    setError(result?.error)
+                } else {
+                    modalRef.current.close()
+                    toast.success(`${amount} successfully requested from ${giver?.displayName}`)
+                   setTimeout(() => {
+                     window.location = "/app"
+                   }, 1200);
+                }
+            } else {
+                setError("Request range is ₦50-₦100,000")
+            }
+        } else {
+            setError("Invalid Input")
+        }
+      
+        
+        setTimeout(() => {
+            setIsLoading(false)
+            setError("")
+        }, 2000);
         
     }
 
@@ -776,40 +839,48 @@ export function RequestMoneyModal() {
             <form method="dialog">
                 <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
-            <div className="modal-amount-container">
+            {giver === null ? <div className="modal-amount-container">
                <article >
                 <h2>Request Funds</h2>
                 <p>Easily ask for payments from friends, family, or clients. </p>
                </article>
                 
-                <h2 className="mb-1 font-medium text-[14px]" style={{fontFamily: "inherit"}}>Email to Request From:</h2>
-                <label className="validator">
-                    <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <g
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        strokeWidth="2.5"
-                        fill="none"
-                        stroke="currentColor"
-                        >
-                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                        </g>
-                    </svg>
-                    
-                <form className="request-content-container mt-5" onSubmit={handleSubmit}>
-                    <input type="email" placeholder="mail@site.com" required className="ml-1 border-none outline-none" name="email"/>
-                
-                <div className="validator-hint hidden">Enter valid email address</div>
-                <button >Continue</button>
+             <div className="mt-5">
+                <label className="validator" id="email"> 
+                    <h2 className="mb-1 font-medium text-[14px]" style={{fontFamily: "inherit"}}>Email to Request From:</h2>
+                </label>
+                <form className="request-content-container " onSubmit={handleSubmit}>
+                    <input type="email" placeholder="mail@site.com" required className="" name="email"/>
+                    {error && <h2 className="text-xs md:text-sm font-medium text-red-600 mt-2">{error}</h2>}
+                    <button disabled={isLoading}>{!isLoading ? "Continue": <span className={isLoading ? "loading loading-bars loading-sm": null}></span> }</button>
                 </form>
-             </label>
-            </div>
+             </div>
+            </div>: 
+            <div className="modal-amount-container">
+                <article >
+                    <h2>Request money from {giver?.displayName}</h2>
+                    <p>Easily ask for payments from friends, family, or clients. </p>
+               </article>
+               <div className="mt-5">
+                    <label className="validator" id="amount"> 
+                        <h2 className="mb-1 font-medium text-[14px]" style={{fontFamily: "inherit"}}>Amount:</h2>
+                    </label>
+                    <form className="request-content-container -mt-0.5" onSubmit={handleRequestMoney}>
+                        <input type="number" placeholder="Enter Amount" required className="" name="amount"/>
+                        {error && <h2 className="text-xs md:text-sm font-medium text-red-600 mt-2">{error}</h2>}
+
+                        <button disabled={isLoading}>{!isLoading ? "Proceed": <span className={isLoading ? "loading loading-bars loading-sm": null}></span> }</button>
+                    </form>
+             </div>
+                </div>}
         </div>
         </dialog>
     </>
     )
 }
+
+
+
 
 export function TransactionDetail({ transaction, uid }) {
 

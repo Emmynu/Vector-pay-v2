@@ -226,6 +226,22 @@ export async function getBeneficiary(uid, take) {
 }
 
 
+export async function removeBeneficiary(id) {
+
+    try {
+        const beneficiaries = await prisma.beneficiaries.delete({
+            where: {
+                id: id,
+            },
+        })
+        return beneficiaries
+    } catch (error) {
+        console.log(error);
+        
+        return { error: "Sorry, Could not delete beneficiary"}
+    }
+}
+
 
 
 export async function getTransactionSummary(uid) {
@@ -249,5 +265,79 @@ export async function getTransactionSummary(uid) {
         return transactionSummary
     } catch (error) {
         return { error: error?.message}
+    }
+}
+
+
+export async function saveNotification(uid, amount, type, accountNumber, senderId, senderName) {
+    try {
+        const notification = await prisma.notifications.create({
+            data: {
+                userId:uid,
+                type,
+                accountNumber,
+                amount,
+                senderId, 
+                senderName,
+            }
+        })
+        return notification
+    } catch (error) {
+        console.log(error?.message);
+        
+        return { error: "Sorry, Could not send notification"}
+    }
+}
+
+export async function getNotificationCount(uid) {
+    try {
+        const notification = await prisma.notifications.count({
+            where:{
+                OR: [ 
+                    { userId: uid },
+                    { senderId: uid }
+                ],
+                status: "unread" 
+            }
+        })
+        
+        return notification
+    } catch (error) {     
+        return { error: "Sorry, Could not save notification"}
+    }
+}
+
+
+export async function getNotifications(uid) {
+    try {
+        const notification = await prisma.notifications.findMany({
+            where:{
+                OR: [ 
+                    { userId: uid },
+                    { senderId: uid }
+                ],
+            }
+        })
+        
+        return notification
+    } catch (error) {     
+        return { error: "Sorry, Could not fetch notification"}
+    }
+}
+
+export async function updateNotificationStatus(id) {
+    try {
+        const result = await prisma.notifications.update({
+            where: {
+                id: id
+            },
+            data: { 
+                status: "read"
+            }
+        })    
+        return result
+    } catch (error) { 
+        return { error: "Sorry, An error occured Please try again"}
+
     }
 }

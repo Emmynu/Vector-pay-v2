@@ -160,11 +160,11 @@
      .modal-amount-container > section, .request-content-container {
         @apply mt-4 flex flex-col items-start
      } 
-     .modal-amount-container > section label, .request-content-container > label{
+     .modal-amount-container > section label{
         @apply font-medium mb-1.5
      }
-     .request-content-container > label {
-        @apply flex items-center w-full border-[1.5px] p-2 rounded-md font-normal text-slate-700 tracking-wide border-slate-300
+     .request-content-container  input {
+        @apply flex items-center w-full border-[1.5px] p-2 rounded-md font-thin outline-none text-sm text-slate-700 tracking-wide border-slate-300
      }
      .modal-amount-container > section input[type="number"], .request-content-container  input{
         @apply  rounded-md w-full 
