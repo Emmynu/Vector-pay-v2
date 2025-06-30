@@ -1,6 +1,6 @@
 "use client"
 
-import { DepositAmountModal, DepositModal, RequestMoneyModal, Statistics, TransactionHistory } from "../../libs/component";
+import { DepositAmountModal, DepositModal, RequestMoneyAmountModal, RequestMoneyModal, Statistics, TransactionHistory } from "../../libs/component";
 import { Poppins } from "next/font/google";
 import walletIcon from "../../images/wallet-blue.png"
 import transactionIcon from "../../images/transaction.png"
@@ -191,7 +191,7 @@ export default function DashBoard(){
 
         <DepositModal />
         <DepositAmountModal />
-        <RequestMoneyModal />
+        <RequestMoneyModal uid={uid} accountNumber={user?.accountNumber}/>
         <Toaster richColors closeButton position="bottom-right" />
     </main>
 }

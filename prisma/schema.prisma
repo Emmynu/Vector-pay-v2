@@ -28,6 +28,7 @@ model User {
   lastLimitResetAt DateTime @default(now())
   transactions Transactions[]
   beneficiaries Beneficiaries[]
+  notifications Notifications[]
 }
 
 
@@ -56,5 +57,19 @@ model Beneficiaries {
   beneficiaryId String 
   beneficiaryName String
   beneficiaryAccountNumber String
+  createdAt DateTime @default(now())
+}
+
+model Notifications {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  user User @relation(fields: [userId], references: [uid])
+  userId String
+  type String
+  accountNumber String?
+  amount Int
+  status String @default("unread")
+  senderId String?
+  senderName String?
+
   createdAt DateTime @default(now())
 }
