@@ -90,7 +90,7 @@ function Register() {
                         setIsLoggedIn(true)
                         toast.success("Authentication sucessful");
                         setTimeout(() => {
-                            window.location = ("/login")
+                            window.location = ("/auth/login")
                         }, 2000);
                     }
                 } catch (error) {
@@ -214,7 +214,7 @@ function Register() {
                     <article className="render-container">
                         {render()}
                     </article>
-                <article className="auth-footer-container"><h2 className={roboto.className}>Already have an account? <Link href={"/login"}>Login</Link></h2></article>
+                <article className="auth-footer-container"><h2 className={roboto.className}>Already have an account? <Link href={"/auth/login"}>Login</Link></h2></article>
 
                 </section>
            </section>

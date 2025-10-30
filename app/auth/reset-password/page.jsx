@@ -87,7 +87,7 @@ function ResetPassword() {
                              <button type="submit" disabled={isLoading}> <span className={isLoading ? "loading loading-bars loading-sm mr-2": null}></span>{isLoading ? "": "Reset Password"}</button>
                         </form>
                      </article>
-                    <article className="auth-footer-container"><h2 >Don't have an account yet? <Link href={"/register"}>Register</Link></h2></article>
+                    <article className="auth-footer-container"><h2 >Don't have an account yet? <Link href={"/auth/register"}>Register</Link></h2></article>
 
                     </section>
            </section>

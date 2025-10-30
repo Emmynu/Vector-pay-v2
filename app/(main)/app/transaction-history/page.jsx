@@ -7,8 +7,7 @@ import { auth } from "../../../../firebase/firebase-client";
 import { getPaginatedTransaction, getTransactionSummary } from "../../../../app/actions/payment";
 import { TransactionDetail } from "../../../libs/component";
 import { PieChart, ResponsiveContainer, Pie, Tooltip, Legend, Cell } from "recharts";
-// import Link from "next/link";
-// import { useSearchParams } from "next/navigation";
+
 
 const itemsPerPage =  5
 
@@ -20,8 +19,7 @@ function Page() {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalTransaction, setTotalTransaction] = useState(null)
     const [outerRadius, setOuterRadius] = useState(null)
-    // const searchParams = useSearchParams()
-    // const params = searchParams.get("type")
+
     
 
     useEffect(()=>{
