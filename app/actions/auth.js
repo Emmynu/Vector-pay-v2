@@ -15,7 +15,6 @@ export async function verifyToken(token, firstName, lastName) {
         const user = await adminAuth.verifyIdToken(token)
         if (user?.uid) {
             await saveCookie("user", token)
-           
             const res =  await findUser(user?.uid)
             if (res?.uid) {
                 await saveCookie("totp", res?.totpCode)

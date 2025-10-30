@@ -65,7 +65,7 @@ const roboto = Roboto({
                     } else { 
                         toast.success("Authentication successful")
                         setTimeout(() => {
-                            window.location = "/totp"   
+                            window.location = "/auth/totp"   
                         }, 1000);
                     }
                } catch (error) {
@@ -131,14 +131,14 @@ const roboto = Roboto({
                                 <input type={!showPassword ? "password": "text"} className="grow" placeholder="Password" name="password"/>
                                 <Image src={!showPassword ? eye : invisble} alt="eye" className="w-4 cursor-pointer" onClick={()=>setShowPassword(!showPassword)}/>
                             </label>
-                            <h3 className="text-right mt-3 -mb-2 font-medium text-[14px] text-main hover:underline"><Link href={"reset-password"}>Forgot Password?</Link></h3>
+                            <h3 className="text-right mt-3 -mb-2 font-medium text-[14px] text-main hover:underline"><Link href={"/auth/reset-password"}>Forgot Password?</Link></h3>
                             <button disabled={isLoading}><span className={isLoading ? "loading loading-bars loading-sm mr-2" : ""}></span>{isLoading ? "" : "Login to account"}</button>
 
             
                         </div>
                     </form>
                 </article>
-                <article className="auth-footer-container"><h2 >Don't have an account yet? <Link href={"/register"}>Register</Link></h2></article>
+                <article className="auth-footer-container"><h2 >Don't have an account yet? <Link href={"/auth/register"}>Register</Link></h2></article>
 
             </section>
        </section>

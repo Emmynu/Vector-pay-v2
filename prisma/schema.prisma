@@ -18,6 +18,8 @@ model User {
   verified Boolean
   totpCode String
   totpQrCode String
+  // device token
+  // location of the device    
   balance Int
   accountLevel String
   accountNumber String @unique

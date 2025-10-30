@@ -12,7 +12,7 @@ export default async function logOut(){
     cookie.delete("user")
     cookie.delete("totp")
     cookie.delete("qrcode")
-    redirect("/login")
+    redirect("auth/login")
 }
 
 export async function updateTransactionPin(uid, pin) {
