@@ -10,7 +10,7 @@ export default  function Home() {
   
   
   return (
-   <main className=" mx-8 md:mx-20 lg:mx-48">
+   <main className=" mx-4 md:mx-20 lg:mx-48">
     <nav className="auth-logo-container">
       <Image src={Logo} width={45} height={45} alt="Logo"/>
       <h2 className="font-sans font-bold text-2xl">VectorPay</h2>

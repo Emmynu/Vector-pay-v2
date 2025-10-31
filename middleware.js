@@ -7,6 +7,10 @@ export async function middleware(req) {
     const { pathname } = req.nextUrl
    
 
+    if (!token && pathname === "/") {
+        return NextResponse.next();
+    }
+
     if (pathname === "/auth/totp" && !totp) {
         const url = req.nextUrl.clone()
         url.pathname = '/auth/login'
@@ -14,10 +18,6 @@ export async function middleware(req) {
     } 
 
     if (pathname.startsWith("/auth")) {
-        return NextResponse.next();
-    }
-
-    if (!token && pathname === "/") {
         return NextResponse.next();
     }
 
