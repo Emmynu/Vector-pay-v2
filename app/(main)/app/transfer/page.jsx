@@ -111,7 +111,7 @@ function TransferPage() {
                                 setTransactionError(resp?.error)
                             } else {
                                 //send a transfer notification to the recipient
-                                const req = await saveNotification(recipient?.uid, parseInt(amount), "transfer", recipient?.accountNumber, sender?.uid, `${sender?.firstName} ${sender.lastName}`)
+                                const req = await saveNotification(recipient?.uid, parseInt(amount), "transfer", recipient?.accountNumber, sender?.uid, `${sender?.firstName} ${sender.lastName}`,`${recipient?.firstName} ${recipient?.lastName}`)
 
                                 if (req?.error) {
                                     setTransactionError(req?.error)

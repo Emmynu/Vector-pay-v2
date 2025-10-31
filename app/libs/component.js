@@ -250,7 +250,7 @@ export function SideBar() {
     
     async function handleLogout() {
         auth.signOut()
-        await logOut()
+        await logOut() 
     }
 
     function handleDeposit() {
@@ -263,8 +263,6 @@ export function SideBar() {
         
     }
     
-
- 
 
     return <aside className="sidebar-container">
 
@@ -322,7 +320,10 @@ export function SideBar() {
             <img src={"https://img.icons8.com/?size=100&id=2969&format=png&color=000000"} alt="settings-icon"/>
                 <Link href={"/app/settings"}>Account Settings</Link>
             </li>
-            <li onClick={handleLogout} >
+            <li onClick={async()=>{
+                await handleLogout()
+                window.location = "/auth/login"
+            }} >
             <img src={"https://img.icons8.com/?size=100&id=83259&format=png&color=000000"} alt="logout-icon"/>
                 <p>Log out</p>
             </li>
@@ -417,7 +418,10 @@ export function SideBarSm() {
             <img src={"https://img.icons8.com/?size=100&id=2969&format=png&color=000000"} alt="settings-icon"/>
                 <Link href={"/app/settings"}>Account Settings</Link>
             </li>
-            <li onClick={handleLogout} >
+            <li onClick={async ()=>{
+                await handleLogout()
+                window.location = "/auth/login"
+            }} >
             <img src={"https://img.icons8.com/?size=100&id=83259&format=png&color=000000"} alt="logout-icon"/>
                 <p>Log out</p>
             </li>
@@ -767,6 +771,7 @@ export function RequestMoneyModal({ uid, accountNumber }) {
     const modalRef = useRef(null)
     const [giver, setGiver] = useState(null)
     const [error, setError] = useState(null)
+
     const [isLoading, setIsLoading] = useState(false)
 
     async function handleSubmit(e) {
@@ -803,12 +808,12 @@ export function RequestMoneyModal({ uid, accountNumber }) {
         if (amount) {
             if (amount >= 50 && amount <= 100000) {
                 // confirm request
-                const result = await saveNotification(uid, parseInt(amount), "request", accountNumber, giver?.uid, giver?.displayName)
+                const result = await saveNotification(uid, parseInt(amount), "request", accountNumber, giver?.uid, giver?.displayName, `${auth.currentUser?.displayName}`)
                 if (result?.error) {
                     setError(result?.error)
                 } else {
                     modalRef.current.close()
-                    toast.success(`${amount} successfully requested from ${giver?.displayName}`)
+                    toast.success(`₦${amount} successfully requested from ${giver?.displayName}`)
                    setTimeout(() => {
                      window.location = "/app"
                    }, 1200);
