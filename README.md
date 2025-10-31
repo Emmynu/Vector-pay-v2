@@ -1,6 +1,6 @@
 #TODOS 
 <!-- 1. toggle the nav balance -->
-2. finiallize session management
+<!-- 2. finiallize session management -->
 3. set up biometrics
 4. request money
 5. make notification page
@@ -9,5 +9,5 @@
 <!-- 8. Transaction Page & beneficiary page -->
 <!-- 9. pie chart -->
 <!-- 10. handle transaction limit based on tiers -->
-11. Landing Page
+<!-- 11. Landing Page -->
 

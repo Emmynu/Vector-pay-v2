@@ -17,6 +17,10 @@ export async function middleware(req) {
         return NextResponse.next();
     }
 
+    if (!token && pathname === "/") {
+        return NextResponse.next();
+    }
+
     if (!token && pathname !== '/auth/login') {//user is trying to go to anywhere other than the login page without the token
         const url = req.nextUrl.clone()
         url.pathname = '/auth/login'

@@ -14,11 +14,11 @@ export async function verifyToken(token, firstName, lastName) {
     try {
         const user = await adminAuth.verifyIdToken(token)
         if (user?.uid) {
-            await saveCookie("user", token)
+            await saveCookie("user", token, 3600)
             const res =  await findUser(user?.uid)
             if (res?.uid) {
-                await saveCookie("totp", res?.totpCode)
-                await saveCookie("qrcode", res?.totpQrCode)
+                await saveCookie("totp", res?.totpCode, 600)
+                await saveCookie("qrcode", res?.totpQrCode, 600)
             } else {
                 const secret = await generateSecretKey()
                 const  data =  {
@@ -49,7 +49,8 @@ async function saveCookie(name, value, maxAge) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production" ,
         sameSite: true,
-        path: "/"
+        path: "/",
+        maxAge
     })
 }
 
@@ -135,3 +136,5 @@ export async function generateChallenge() {
 
     return { challenge, user }
 }
+
+

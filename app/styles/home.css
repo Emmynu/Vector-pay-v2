@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components
+@tailwind utilities;
+
+
+@layer base{
+    .auth-logo-container{
+        @apply flex cursor-pointer select-none mb-7 items-center p-6
+    }
+    .auth-logo-container > h2 {
+        @apply text-main text-2xl leading-4 
+    }
+    .home-btn{
+        @apply bg-main outline-none text-white py-2.5 mt-1 px-3 text-center tracking-wide font-semibold rounded-md text-[14px] md:text-[15px] ;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        transition: all 0.5s linear;
+    }
+}
