@@ -269,7 +269,7 @@ export async function getTransactionSummary(uid) {
 }
 
 
-export async function saveNotification(uid, amount, type, accountNumber, senderId, senderName) {
+export async function saveNotification(uid, amount, type, accountNumber, senderId, senderName, name) {
     try {
         const notification = await prisma.notifications.create({
             data: {
@@ -279,6 +279,7 @@ export async function saveNotification(uid, amount, type, accountNumber, senderI
                 amount,
                 senderId, 
                 senderName,
+                name
             }
         })
         return notification

@@ -16,21 +16,28 @@
     .notification-container > article {
         @apply  p-4 border-slate-300  my-3 flex  items-start justify-around cursor-pointer
     }
-    .notification-container > article  div:nth-child(1){
-        @apply flex items-center
-    }
-    .notification-container > article  div:nth-child(2) > button {
-        @apply mt-4 px-5 py-1.5 bg-main text-white rounded-[4px] font-medium text-xs md:text-sm tracking-wide;
+    .notification-button{
+        @apply mt-3 px-5 py-2 bg-main text-white rounded-[4px] font-medium text-xs md:text-sm tracking-wide;
         transition: all .3s linear;
     }
-    .notification-container > article  div > button:nth-child(2){
-        @apply ml-2 bg-transparent border border-main text-main hover:bg-blue-100
+    .n-btn2{
+        @apply ml-2 bg-transparent py-1.5 border border-main text-main hover:bg-blue-100
     }
     .time{
-        @apply text-base md:text-xs font-thin text-slate-600
+        @apply text-[11px] leading-4 md:text-xs font-thin text-main mt-1
     }
     .title{
-        @apply text-gray-600 text-xs md:text-sm;
-        font-family:Arial, Helvetica, sans-serif;
+        @apply  text-xs md:text-sm font-semibold;
+        /* font-family:Arial, Helvetica, sans-serif; */
     }
+    .notification-empty {
+        @apply flex flex-col items-center 
+     }
+     .notification-empty > img{
+        @apply w-[80%] md:w-2/5 md:h-2/5
+     }
+     .notification-empty > h2 {
+        @apply  -mt-2 md:-mt-5 text-sm md:text-base font-semibold tracking-wide text-gray-700;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+     }
 }

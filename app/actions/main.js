@@ -1,9 +1,6 @@
 "use server"
 
-// import { adminAuth } from "../../firebase/firebase-admin";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-// import { findUser } from "./auth";
 import prisma from "../db";
 
 
@@ -12,7 +9,7 @@ export default async function logOut(){
     cookie.delete("user")
     cookie.delete("totp")
     cookie.delete("qrcode")
-    redirect("auth/login")
+    // redirect("auth/login") too slow
 }
 
 export async function updateTransactionPin(uid, pin) {
