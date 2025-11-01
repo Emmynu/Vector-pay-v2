@@ -15,8 +15,8 @@ import Beneficiaries from "../../../libs/beneficiaries";
 
 function TransferPage() {
     const [uid, setUid] = useState(null)
-    const [amount, setAmount] = useState(JSON.parse(localStorage.getItem("requester-info"))?.amount || "")
-    const [accountNumber, setAccountNumber] = useState(JSON.parse(localStorage.getItem("requester-info"))?.accountNumber || "")
+    const [amount, setAmount] = useState("")
+    const [accountNumber, setAccountNumber] = useState("")
     const [sender, setSender] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [recipient, setRecipient] = useState(null)
@@ -32,6 +32,21 @@ function TransferPage() {
     useEffect(()=>{
         onAuthStateChanged(auth, user => setUid(user?.uid))
     },[])
+
+
+    useEffect(() => {
+        try {
+          const storedInfo = localStorage.getItem("requester-info");
+          
+          if (storedInfo) {
+            const parsedInfo = JSON.parse(storedInfo);
+            setAmount(parsedInfo?.amount || "");
+            setAccountNumber(parsedInfo?.accountNumber || "");
+          }
+        } catch (error) {
+          console.error("Could not load data from localStorage:", error);
+        }
+      }, []);
 
     useEffect(()=>{
         async function getUser() {
