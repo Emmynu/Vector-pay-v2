@@ -40,4 +40,10 @@
         @apply  -mt-2 md:-mt-5 text-sm md:text-base font-semibold tracking-wide text-gray-700;
         font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
      }
+     .success{
+        @apply text-green-600
+     }
+     .cancelled{
+        @apply text-red-600
+     }
 }

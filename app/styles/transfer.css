@@ -16,8 +16,11 @@
     .transfer-form-container label{
         @apply mb-1 font-medium text-[15px] 
     }
+    .transfer-input-container{
+      @apply flex items-center bg-white border border-slate-600 rounded-[5px] mt-1.5
+    }
     .transfer-form-container input {
-        @apply w-full mt-1.5 text-[12px] 
+        @apply w-full text-[12px] outline-none border-none
     }
    
     .transfer-form-container input:disabled{
