@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import "../../../styles/notifications.css"
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../../firebase/firebase-client";
-import { getNotifications, updateNotificationStatus } from "../../../actions/payment";
+import { getNotifications, updateNotificationStatus, updateNotificationTransferStatus } from "../../../actions/payment";
 import { formatDistanceToNow } from "date-fns";
 import { toast, Toaster } from "sonner";
 
@@ -46,10 +46,19 @@ function Notifications() {
        setIsLoading(false)   
     }
 
-    function handleTransfer(accountNumber, amount){
-        localStorage.setItem("requester-info", JSON.stringify({accountNumber, amount}))
+    function handleTransfer(accountNumber, amount, reference, id){
+        localStorage.setItem("requester-info", JSON.stringify({accountNumber, amount, reference, id}))
         setTimeout(() => {
             window.location = "/app/transfer"
+        }, 1000);
+    }
+
+
+    async function handleDecline(id) {
+        await updateNotificationTransferStatus(id, "cancelled")
+        await updateNotificationStatus(id)
+        setTimeout(() => {
+            window.location = "/app/notifications"
         }, 1000);
     }
     
@@ -60,7 +69,7 @@ function Notifications() {
             </section>
            {notifications?.length > 0 ? <section className="notification-container">
                 {notifications?.map(notification=>{
-                    const {status, type, accountNumber, amount, senderId, senderName, createdAt, name, id} =  notification
+                    const {status, type, accountNumber, amount, senderId, senderName, createdAt, name, id, reference, transferStatus} =  notification
                     console.log(notifications);
                     
                     const formattedAmount =  new Intl.NumberFormat("en-US").format(amount)
@@ -83,12 +92,15 @@ function Notifications() {
                                             </div>}
                                         </h2>
                                         <h4 className="time">{time}</h4>
+                                        {(type==="request" && transferStatus !== "pending") && <span className={`text-xs md:text-sm font-medium ${transferStatus}`}>{transferStatus}</span>}
                                     </div>
                                     <button className=" text-main font-medium text-xs md:text-sm" onClick={()=>updateStatus(id)}>{isLoading ? <span className="loading loading-spinner loading-xs"></span>: "View"}</button>
+                                    
                                 </div>
-                                {(type=== "request" && senderId === uid) && <div>
-                                    <button className="notification-button" onClick={()=>handleTransfer(accountNumber,amount)}>Transfer</button>
-                                    <button className="notification-button n-btn2">Decline</button>
+                                {(type=== "request" && senderId === uid && transferStatus === "pending") && <div>
+                                    <button className="notification-button" onClick={()=>handleTransfer(accountNumber,amount, reference, id)}>Transfer</button>
+                                    <button className="notification-button n-btn2" onClick={()=>handleDecline(id)}>Decline</button>
+                                    
                                     </div>}
                            </main>
                            <hr/>

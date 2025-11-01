@@ -805,10 +805,11 @@ export function RequestMoneyModal({ uid, accountNumber }) {
         e.preventDefault()
         setIsLoading(true)
         const { amount } = Object.fromEntries(new FormData(e.currentTarget))
+        const reference = new Date().getTime().toString()
         if (amount) {
             if (amount >= 50 && amount <= 100000) {
                 // confirm request
-                const result = await saveNotification(uid, parseInt(amount), "request", accountNumber, giver?.uid, giver?.displayName, `${auth.currentUser?.displayName}`)
+                const result = await saveNotification(uid, parseInt(amount), "request", accountNumber, giver?.uid, giver?.displayName, `${auth.currentUser?.displayName}`, reference)
                 if (result?.error) {
                     setError(result?.error)
                 } else {

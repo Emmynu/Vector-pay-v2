@@ -2,18 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import { handleAccountNumber } from "../../../actions/main";
+import cancelIcon from "../../../images/cancel.png"
+import Image from "next/image";
 import "../../../styles/transfer.css"
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../../firebase/firebase-client";
 import { toast, Toaster } from "sonner";
 import OtpInput from "react-otp-input";
 import { findUser } from "../../../actions/auth";
-import { getBeneficiary, saveBeneficiary, saveNotification, saveTransaction, updateBalance, updateBalanceDecrement, updateDailyAmountUsed } from "../../../actions/payment";
+import { getBeneficiary, saveBeneficiary, saveNotification, saveTransaction, updateBalance, updateBalanceDecrement, updateDailyAmountUsed, updateNotificationTransferStatus } from "../../../actions/payment";
 import Beneficiaries from "../../../libs/beneficiaries";
 
 function TransferPage() {
     const [uid, setUid] = useState(null)
     const [amount, setAmount] = useState("")
+    const [accountNumber, setAccountNumber] = useState("")
     const [sender, setSender] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [recipient, setRecipient] = useState(null)
@@ -24,9 +27,26 @@ function TransferPage() {
     const transferModalRef = useRef(null)
     const pinModalRef = useRef(null)
 
+    
+
     useEffect(()=>{
         onAuthStateChanged(auth, user => setUid(user?.uid))
     },[])
+
+
+    useEffect(() => {
+        try {
+          const storedInfo = localStorage.getItem("requester-info");
+          
+          if (storedInfo) {
+            const parsedInfo = JSON.parse(storedInfo);
+            setAmount(parsedInfo?.amount || "");
+            setAccountNumber(parsedInfo?.accountNumber || "");
+          }
+        } catch (error) {
+          console.error("Could not load data from localStorage:", error);
+        }
+      }, []);
 
     useEffect(()=>{
         async function getUser() {
@@ -90,7 +110,7 @@ function TransferPage() {
         setIsLoading(true)
         if ((sender?.currentDailyAmountUser + parseInt(amount)) <= sender?.dailyTransactionLimit) {
             if (pin === sender?.transactionPin) {
-                const reference =  new Date().getTime().toString()
+                const reference =  JSON.parse(localStorage.getItem("requester-info"))?.reference || new Date().getTime().toString()
                 // decrease the sender balance
                 const result = await updateBalanceDecrement(sender?.uid, parseInt(amount))
                 // // increase the recipient balance            
@@ -111,13 +131,15 @@ function TransferPage() {
                                 setTransactionError(resp?.error)
                             } else {
                                 //send a transfer notification to the recipient
-                                const req = await saveNotification(recipient?.uid, parseInt(amount), "transfer", recipient?.accountNumber, sender?.uid, `${sender?.firstName} ${sender.lastName}`,`${recipient?.firstName} ${recipient?.lastName}`)
+                                const req = await saveNotification(recipient?.uid, parseInt(amount), "transfer", recipient?.accountNumber, sender?.uid, `${sender?.firstName} ${sender.lastName}`,`${recipient?.firstName} ${recipient?.lastName}`, reference)
 
                                 if (req?.error) {
                                     setTransactionError(req?.error)
                                 } else {
                                     pinModalRef.current.close()
                                     toast.success(`Transaction Successful`)
+                                    await updateNotificationTransferStatus(JSON.parse(localStorage.getItem("requester-info"))?.id, "success")
+                                    clearAccountNumberInput()
                                     window.location = "/app"   
                                 }
                             }
@@ -139,6 +161,42 @@ function TransferPage() {
             setIsLoading(false)
             setTransactionError("")
         }, 1500);
+        
+    }
+
+    async function findUserByAccountNumber(e){
+        e.preventDefault()
+        const { accountNumber } = Object.fromEntries(new FormData(e.currentTarget));
+
+        if (accountNumber) {
+            if (sender) {
+                const result = await handleAccountNumber(accountNumber);
+                if (result?.error) {
+                    toast.error(result?.error)
+                } else {
+                if (result === null) {
+                        toast.error("User not Found")
+                        setRecipient(null)
+                } else {
+                    if (result?.uid === sender?.uid) {
+                            toast.error("Self-Transfer is not allowed")
+                    } else {
+                        // show the user 
+                        setRecipient(result)
+                    }
+                }
+                }
+            }
+            
+        } else {
+            clearAccountNumberInput()
+            toast.error("Please enter a valid account number")
+        }
+    }
+
+    function clearAccountNumberInput() {
+        setAccountNumber("")
+        localStorage.removeItem("requester-info")
     }
 
     return ( 
@@ -151,38 +209,27 @@ function TransferPage() {
 
              <section className="lg:w-1/2">
                 <article className=" bg-gray-100 p-8  border-t-main border-t-[5px] rounded-md border-gray-200 border-2">
-                        <form  action={async (formData)=>{
-                            if (sender) {
-                                const result = await handleAccountNumber(formData);
-                                if (result?.error) {
-                                    toast.error(result?.error)
-                                } else {
-                                if (result === null) {
-                                        toast.error("User not Found")
-                                        setRecipient(null)
-                                } else {
-                                    if (result?.uid === sender?.uid) {
-                                            toast.error("Self-Transfer is not allowed")
-                                    } else {
-                                        // show the user 
-                                        setRecipient(result)
-                                    }
-                                }
-                                }
-                            }
-                            
-                            
-                        }} className="transfer-form-container " >
+                        <form className="transfer-form-container " onSubmit={findUserByAccountNumber}>
                             <label htmlFor="accountNumber">Recipient Account</label>
-                            <input
-                            type="number"
-                            id="accountNumber"
-                            name="accountNumber"
-                            className="input"
-                            required
-                            disabled={!sender?.transactionPin}
-                            placeholder="VectorPay account number"
-                            />
+                           <div className="transfer-input-container">
+                                <input
+                                    type="number"
+                                    id="accountNumber"
+                                    name="accountNumber"
+                                    className="input"
+                                    value={accountNumber}
+                                    onChange={(e)=>setAccountNumber(e.currentTarget.value)}
+                                    onKeyUp={()=>{
+                                        if (accountNumber.length < 1) {
+                                            clearAccountNumberInput()
+                                        }
+                                    }}
+                                    required
+                                    disabled={!sender?.transactionPin}
+                                    placeholder="VectorPay account number"
+                                    />
+                                {accountNumber > 0 && <span onClick={clearAccountNumberInput} className="cursor-pointer select-none pr-2"><Image src={cancelIcon} alt="cancel-icon" width={20} height={20}/></span>}
+                           </div>
                         </form>
 
                 { recipient !== null  && <section className="mt-7 flex rounded-[4px] justify-between items-center bg-white p-4 ">

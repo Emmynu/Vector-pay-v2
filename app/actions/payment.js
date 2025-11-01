@@ -269,7 +269,7 @@ export async function getTransactionSummary(uid) {
 }
 
 
-export async function saveNotification(uid, amount, type, accountNumber, senderId, senderName, name) {
+export async function saveNotification(uid, amount, type, accountNumber, senderId, senderName, name, reference) {
     try {
         const notification = await prisma.notifications.create({
             data: {
@@ -279,7 +279,8 @@ export async function saveNotification(uid, amount, type, accountNumber, senderI
                 amount,
                 senderId, 
                 senderName,
-                name
+                name,
+                reference
             }
         })
         return notification
@@ -317,6 +318,9 @@ export async function getNotifications(uid) {
                     { userId: uid },
                     { senderId: uid }
                 ],
+            },
+            orderBy:{
+                createdAt: "desc"
             }
         })
         
@@ -334,6 +338,23 @@ export async function updateNotificationStatus(id) {
             },
             data: { 
                 status: "read"
+            }
+        })    
+        return result
+    } catch (error) { 
+        return { error: "Sorry, An error occured Please try again"}
+
+    }
+}
+
+export async function updateNotificationTransferStatus(id, status) {
+    try {
+        const result = await prisma.notifications.update({
+            where: {
+                id: id
+            },
+            data: { 
+                transferStatus: status
             }
         })    
         return result

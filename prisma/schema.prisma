@@ -74,8 +74,11 @@ model Notifications {
   status String @default("unread")
   senderId String?
   senderName String?  
+  reference String
+  transferStatus String @default("pending")
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 

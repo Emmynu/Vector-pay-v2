@@ -36,8 +36,7 @@ export async function updateTransactionPin(uid, pin) {
 }
 
 
-export async function handleAccountNumber(formData) {
-    const { accountNumber } = Object.fromEntries(formData) 
+export async function handleAccountNumber(accountNumber) {
 
     //  find the user by accountNumber 
     try {
