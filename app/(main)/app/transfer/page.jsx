@@ -60,6 +60,51 @@ function TransferPage() {
         getUser()
     },[uid])
 
+
+
+     async function findUserByAccountNumber(e){
+        e.preventDefault()
+        const { accountNumber } = Object.fromEntries(new FormData(e.currentTarget));
+
+       if (sender.transactionPin) {
+         if (accountNumber) {
+            if (sender) {
+                const result = await handleAccountNumber(accountNumber);
+                if (result?.error) {
+                    toast.error(result?.error)
+                } else {
+                if (result === null) {
+                        toast.error("User not Found")
+                        setRecipient(null)
+                } else {
+                    if (result?.uid === sender?.uid) {
+                            toast.error("Self-Transfer is not allowed")
+                    } else {
+                        // show the user 
+                        setRecipient(result)
+                    }
+                }
+                }
+            }
+            
+        } else {
+            clearAccountNumberInput()
+            toast.error("Please enter a valid account number")
+        }
+       }else{
+            clearAccountNumberInput()
+            toast.error("Please setup your transaction pin")
+       }
+    }
+
+    function handleModalToggle() {
+        if (pinModalRef.current) {
+            pinModalRef.current.close()
+            document.getElementById("transfer-modal").showModal()
+        }
+    }
+
+
     function handleTransfer() {
 
         if (amount >= 50 && amount < 500000) {
@@ -79,32 +124,7 @@ function TransferPage() {
         }, 2000);
     }
 
-
-    function handleModalToggle() {
-        if (pinModalRef.current) {
-            pinModalRef.current.close()
-            document.getElementById("transfer-modal").showModal()
-        }
-    }
-
     
-
-    async function handleBeneficiary() {
-        const isABeneficiary = beneficiary.find(user=> user?.beneficiaryId === recipient?.uid)
-        if (!isABeneficiary) {
-                await saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
-                toast.success(`${recipient?.firstName} added to beneficiaries `)
-
-                setTimeout(() => {
-                    window.location = "/app/transfer"
-                }, 500);
-        } else {
-            toast.error(`${recipient?.firstName} is already a beneficiary`)   
-        }
-        
-    }
-
-  
 
     async function transferFunds() {
         setIsLoading(true)
@@ -164,36 +184,22 @@ function TransferPage() {
         
     }
 
-    async function findUserByAccountNumber(e){
-        e.preventDefault()
-        const { accountNumber } = Object.fromEntries(new FormData(e.currentTarget));
+    async function handleBeneficiary() {
+        const isABeneficiary = beneficiary.find(user=> user?.beneficiaryId === recipient?.uid)
+        if (!isABeneficiary) {
+                await saveBeneficiary(uid, recipient?.uid, `${recipient?.firstName} ${recipient?.lastName}`, recipient?.accountNumber)
+                toast.success(`${recipient?.firstName} added to beneficiaries `)
 
-        if (accountNumber) {
-            if (sender) {
-                const result = await handleAccountNumber(accountNumber);
-                if (result?.error) {
-                    toast.error(result?.error)
-                } else {
-                if (result === null) {
-                        toast.error("User not Found")
-                        setRecipient(null)
-                } else {
-                    if (result?.uid === sender?.uid) {
-                            toast.error("Self-Transfer is not allowed")
-                    } else {
-                        // show the user 
-                        setRecipient(result)
-                    }
-                }
-                }
-            }
-            
+                setTimeout(() => {
+                    window.location = "/app/transfer"
+                }, 500);
         } else {
-            clearAccountNumberInput()
-            toast.error("Please enter a valid account number")
+            toast.error(`${recipient?.firstName} is already a beneficiary`)   
         }
+        
     }
 
+   
     function clearAccountNumberInput() {
         setAccountNumber("")
         localStorage.removeItem("requester-info")
@@ -225,7 +231,7 @@ function TransferPage() {
                                         }
                                     }}
                                     required
-                                    disabled={!sender?.transactionPin}
+                                    
                                     placeholder="VectorPay account number"
                                     />
                                 {accountNumber > 0 && <span onClick={clearAccountNumberInput} className="cursor-pointer select-none pr-2"><Image src={cancelIcon} alt="cancel-icon" width={20} height={20}/></span>}

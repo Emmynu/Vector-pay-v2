@@ -35,7 +35,7 @@ export default function DashBoard(){
     const handleBalanceToggle =(e)=>{
         setShowBalance(e.target.checked)
         if (!showBalance) {
-            document.querySelector(".dashboard-balance").innerHTML = `₦${balance}`
+            document.querySelector(".dashboard-balance").innerHTML = balance <= 999 ? `₦${balance}.00` : `₦${balance}`
         } else {
             document.querySelector(".dashboard-balance").innerHTML = `₦****`
         }
@@ -127,7 +127,9 @@ export default function DashBoard(){
                         <h2 className={poppins.className}>Wallet Balance:</h2>
                        <article className="flex">
 
-                          <h1 className={isLoading  ? "loading loading-spinner amount loading-sm md:loading-md": "amount"}>{showBalance ? <span className="text-3xl">₦{balance ? `${ balance}` : "0.00 "}</span> : <span className="text-3xl">₦****</span>}</h1>
+                          <h1 className={isLoading  ? "loading loading-spinner amount loading-sm md:loading-md": "amount"}>{showBalance ? <span className="text-3xl">₦{balance ? 
+                          balance <= 999 ? `${ balance}.00` : balance                          : "0.00"}</span> : <span className="text-3xl">₦****</span>}</h1>
+
                          {!isLoading && <sub className=" mt-4 md:mt-5 ml-1">
                             <label className="swap">
                             {/* this hidden checkbox controls the state */}

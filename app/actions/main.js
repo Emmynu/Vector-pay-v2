@@ -13,6 +13,7 @@ export default async function logOut(){
 }
 
 export async function updateTransactionPin(uid, pin) {
+    
     try {
         await prisma.user.update({
             where: {

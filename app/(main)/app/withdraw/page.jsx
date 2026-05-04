@@ -63,7 +63,8 @@ function Withdraw() {
         setIsProcessing(true)
         if (selectedBank > 0) {
             if (accountNumber.length === 10) {
-                const result =  await fetch("https://api.korapay.com/merchant/api/v1/misc/banks/resolve", {
+                if (user?.transactionPin) {
+                    const result =  await fetch("https://api.korapay.com/merchant/api/v1/misc/banks/resolve", {
                     method:"POST",
                     headers:{
                         "Content-Type": "application/json",
@@ -87,6 +88,9 @@ function Withdraw() {
                     document.querySelector("#transfer-modal").showModal()
                 } else {
                     toast.error(result?.message)
+                }
+                } else {
+                    toast.error("Please setup your transaction pin")
                 }
             } else {
                 toast.error("Please provide a valid 10 digit account number")
@@ -198,7 +202,7 @@ function Withdraw() {
                 title="Must not be less than 10 in length"
                 />
                 {/* <p className="validator-hint">Must be between be 1 to 10</p> */}
-                <button onClick={verifyBankDetails} disabled={isProcessing || user === null || !user?.transactionPin }>{isProcessing ? <span className="loading loading-bars loading-sm"></span>: "Continue"}</button>
+                <button onClick={verifyBankDetails} disabled={isProcessing || user === null }>{isProcessing ? <span className="loading loading-bars loading-sm"></span>: "Continue"}</button>
            </section>
 
            <dialog id="transfer-modal" className="modal modal-bottom md:modal-middle" ref={transferModalRef}>
