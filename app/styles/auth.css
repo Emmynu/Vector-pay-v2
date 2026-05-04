@@ -14,7 +14,7 @@
         @apply w-[90%]
     }
     .auth-form-container{
-        @apply col-span-4 md:col-span-2  mt-[10%] md:mt-0
+        @apply col-span-4  md:col-span-2  mt-[10%] md:mt-0
     }
     .auth-logo-container{
         @apply flex items-center cursor-pointer select-none justify-center mb-7
@@ -91,3 +91,4 @@
     }
 
 }
+

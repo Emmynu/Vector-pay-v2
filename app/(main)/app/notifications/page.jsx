@@ -75,7 +75,7 @@ function Notifications() {
                     const formattedAmount =  new Intl.NumberFormat("en-US").format(amount)
                     const time =  formatDistanceToNow(createdAt)
                     return(
-                        <article className={status === "unread" ? "bg-blue-50 shadow-sm" : "bg-slate-50 shadow-sm"}>
+                        <article className={status === "unread" ? "bg-blue-100 shadow-sm" : "bg-slate-50 shadow-sm"}>
                             <img src="https://th.bing.com/th/id/OIP.LkKOiugw5AFfDfUzuPAG4QHaI5?rs=1&pid=ImgDetMain" alt="" className="w-8 md:w-10 h-8 md:h-10 rounded-full"/>
                            <main className="ml-2 md:ml-5 w-full">
                             {/* userId = senderId (sender is logged in) ___ requested money from you */}
@@ -94,7 +94,7 @@ function Notifications() {
                                         <h4 className="time">{time}</h4>
                                         {(type==="request" && transferStatus !== "pending") && <span className={`text-xs md:text-sm font-medium ${transferStatus}`}>{transferStatus}</span>}
                                     </div>
-                                    <button className=" text-main font-medium text-xs md:text-sm" onClick={()=>updateStatus(id)}>{isLoading ? <span className="loading loading-spinner loading-xs"></span>: "View"}</button>
+                                    <button className=" text-main font-medium text-xs md:text-sm " onClick={()=>updateStatus(id)} disabled={status !== "unread"}>{isLoading ? <span className="loading loading-spinner loading-xs"></span> : <span>{status !== "unread" ? "viewed": "view"}</span>}</button>
                                     
                                 </div>
                                 {(type=== "request" && senderId === uid && transferStatus === "pending") && <div>

@@ -16,6 +16,8 @@ import { usePathname } from "next/navigation";
 import { emailSchema, pinSchema } from "../../zod-schema";
 import { findUser, findUserInFirebase } from "../actions/auth";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { jsPDF } from "jspdf"
+import autoTable from 'jspdf-autotable';
 
 
 export function DashBoardHeader() {
@@ -789,7 +791,11 @@ export function RequestMoneyModal({ uid, accountNumber }) {
                 setError("Self Requests is not allowed");
                 
             } else{
-                setGiver(user)
+                if (user !== null) {
+                    setGiver(user)
+                } else {
+                  setError("User does not exist");
+                }
             }
         }
 
@@ -910,7 +916,52 @@ export function TransactionDetail({ transaction, uid }) {
         default:
             break;
     }
-    
+    function handleReceiptDownload() {
+        const receipt = new jsPDF()
+
+        // CODE FROM AI FOR PDF DESIGN
+
+        receipt.setFillColor(0, 51, 102); // Dark blue matching your button
+        receipt.rect(0, 0, 210, 40, "F");
+        
+        // 2. Header Text
+        receipt.setTextColor(255, 255, 255);
+        receipt.setFontSize(18);
+        receipt.text("Transaction Receipt", 14, 25);
+        
+        // 3. Add the Main Data Table
+        autoTable(receipt, {
+            startY: 50,
+            head: [['Description', 'Details']],
+            body: [
+            ['Amount', `NGN ${Intl.NumberFormat("en-US").format(transaction?.amount)}`],
+            ['Status', transaction.status],
+            ['Date', new Intl.DateTimeFormat("en-US", {
+                         month: "long",
+                         day:"numeric",
+                         year: "numeric",
+                         hour: "2-digit",
+                         minute: "2-digit"
+                    }).format(transaction?.createdAt)],
+            ['Reference', transaction.reference],
+            ['Type', transaction.type],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [0, 51, 102] }, // Matches header
+            styles: { fontSize: 11, cellPadding: 5 },
+            columnStyles: {
+            0: { fontStyle: 'bold', width: 50 },
+            }
+        });
+
+        // 4. Footer Note
+        const finalY = receipt.lastAutoTable.finalY;
+        receipt.setFontSize(10);
+        receipt.setTextColor(100);
+        receipt.text("Thank you for using our service.", 14, finalY + 20);
+
+        receipt.save(`VectorPay_Receipt_${transaction.reference}.pdf`);
+    }
     return <>
         <dialog id="transaction-detail" className="modal ">
         <div className="modal-box p-10">
@@ -943,6 +994,7 @@ export function TransactionDetail({ transaction, uid }) {
                     <h2>Type</h2>
                     <p className="text-slate-600">{transactionType}</p>
                 </section>
+                <button className="bg-main outline-none text-white py-2.5 mt-7 w-full px-3  text-center tracking-wide font-semibold rounded-md text-[14px] md:text-[15px]" onClick={handleReceiptDownload}>Download</button>
             </div>
         </div>
         </dialog>

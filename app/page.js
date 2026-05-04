@@ -22,7 +22,7 @@ export default  function Home() {
           <h1 className="text-[55px] leading-[1.2] font-bold"> Your <span className="text-main">Financial</span> Future!</h1>
           <p className="py-6">
             Send, receive and manage your funds effortlessly . Transfer money to friends, deposit funds into your account and withdraw cash whenever with VectorPay.</p>
-          <button className="home-btn"><Link href={"/app"}>Get Started <span className="text-xl">»</span></Link></button>
+          <span className="home-btn"><Link href={"/app"}>Get Started <span className="text-xl">»</span></Link></span>
         </div>
       </div>
     </div>
