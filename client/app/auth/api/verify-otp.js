@@ -15,8 +15,12 @@ export function useVerifyOtp() {
 
             if(response?.status === 200){
                 showToast({type: response?.data?.status, msg: null, title: response?.data?.msg})
-                Cookies.remove("2fa")
+              
                 window.location = "/dashboard"
+
+               setTimeout(() => {
+                 Cookies.remove("2fa")
+               }, 2000);
             }else{
                 showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }
