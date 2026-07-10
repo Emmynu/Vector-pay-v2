@@ -1,11 +1,5 @@
 import Link from "next/link";
-import { Bricolage_Grotesque }  from "next/font/google"
-
-const bricolage = Bricolage_Grotesque({
-  weight: "700",
-  subsets: ["vietnamese"]
-})
-
+import { bricolage } from "../utils/font";
 
 function Logo() {
     return ( 

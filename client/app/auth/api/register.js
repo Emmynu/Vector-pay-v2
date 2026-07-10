@@ -9,9 +9,9 @@ export function useRegister() {
          
             if(response?.status === 201){
                 showToast({type: response?.data?.status, msg: response?.data?.msg, title: "User successfully created"})
-              
-
-                window.location = "/auth/login"
+                setTimeout(() => {
+                    window.location = "/auth/login"
+                }, 1500);
             }else{
             showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }

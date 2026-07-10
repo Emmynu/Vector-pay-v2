@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Column
 import sqlalchemy.dialects.postgresql as pg
 import uuid
 from datetime import datetime
-
+from typing import Optional
 
 class Users(SQLModel, table=True):
     __tablename__= "users"
@@ -29,6 +29,8 @@ class Users(SQLModel, table=True):
         pg.BOOLEAN,
         default=False,
     ))
+    tier: int = Field(default= 1, ge=1, le=3)
+    transactionPin: Optional[str]
 
     createdAt: datetime = Field(
         sa_column=Column(

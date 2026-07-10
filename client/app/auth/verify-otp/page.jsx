@@ -20,7 +20,7 @@ function OTPVerification() {
     }, [Cookies.get("2fa")])
 
 
-    const { verifyOtp, isLoading } = useVerifyOtp()
+    const { verifyOtp, isLoading, resendOtp, isPending } = useVerifyOtp()
 
     async function handleOtpVerification(e) {
         e.preventDefault()
@@ -30,6 +30,9 @@ function OTPVerification() {
         
     }
 
+    async function handleResend() {
+        resendOtp("data")
+    }
 
     return ( 
         <main className="grid grid-cols-1  lg:grid-cols-3 items-center gap-12">
@@ -54,15 +57,12 @@ function OTPVerification() {
                                 <span className="bg-white border px-4.5 border-slate-700"></span>
                                 <input type="text" autoComplete="one-time-code" inputMode="numeric" maxLength="6" pattern="[0-9]{6}" required name="code" />
                             </label>
-                            <button type="submit" disabled={isLoading}  className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-full mt-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
-                                {isLoading  ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Verifying...</h2> : <p className="flex items-center">Verify Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></p> }
+                            <button type="submit" disabled={isPending || isLoading}  className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-full mt-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
+                                {isLoading  ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Verifying...</h2> : <h2 className="flex items-center" >Verify Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></h2> }
                             </button>
 
                         </form>
-                         {/* <button type="submit"   className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-full mb-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
-                                {"" ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Verifying...</h2> : <p className="flex items-center">Resend Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></p> }
-                            </button> */}
-                <p className="text-sm text-center">Didn't receive a code? Check your spam folder or click <button className="text-[#03457C] font-medium underline underline-offset-2 cursor-pointer italic">resend</button> </p>
+                <p className="text-sm text-center">Didn't receive a code? Check your spam folder or click <button className="text-[#03457C] font-medium underline underline-offset-2 cursor-pointer italic" onClick={handleResend} disabled={isPending}>{isPending ? "resending..." : "resend"}</button> </p>
 
                     </article>
                 </section>

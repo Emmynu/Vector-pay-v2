@@ -130,7 +130,7 @@ function Register() {
                                 
                             </div>
 
-                           {formData.userName && <div className="flex mt-1 font-medium  text-[#03457c]">
+                           {formData.userName && <div className="flex text-sm mt-1 font-medium  text-[#03457c]">
                                 <h2 className="flex mr-2 ">username: {formData.userName}</h2>
                                 <div ><RefreshCcw className="w-4 cursor-pointer" onClick={generateUserName}/></div>
                             </div>}
@@ -189,7 +189,7 @@ function Register() {
                         </section>
 
                        
-                        <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full disabled:text-white disabled:bg-[#03457C]/60 ">
+                        <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
                         {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
                     </button>
                     </form>

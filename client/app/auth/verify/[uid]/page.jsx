@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useVerify } from "../../api/verify"
 import { useParams } from "next/navigation"
 import Logo from "@/app/libs/ui/logo"
-import { CheckCircle, XCircle, Loader2, ArrowRight, Mail } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link"
 import { FooterRights } from "@/app/libs/ui/footer"
 
@@ -60,7 +60,7 @@ export default function VerifyAccount(){
                 </p>
                 <div className="mt-6 flex flex-col gap-3 w-full">
                   <Link
-                    href="/app"
+                    href="/dashboard"
                     className="btn border-none outline-none bg-[#03457C] rounded-full"
                   >
                     Go to dashboard <ArrowRight className="w-4 h-4" />

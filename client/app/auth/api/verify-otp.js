@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { showToast } from "@/app/libs/toast/sonner";
 
 
+
 export function useVerifyOtp() {
     const verifyOtpMutation = useCustomMutation(
         async(data)=>{
@@ -13,15 +14,31 @@ export function useVerifyOtp() {
                 }
             })            
 
+            
             if(response?.status === 200){
                 showToast({type: response?.data?.status, msg: null, title: response?.data?.msg})
               
-                window.location = "/dashboard"
-
-               setTimeout(() => {
-                 Cookies.remove("2fa")
-               }, 2000);
+                window.location = "/dashboard"    
             }else{
+                showToast({ type: response?.status, title: response?.title, msg: response?.msg})
+            }
+            
+        }
+    )
+
+    const resendMutation = useCustomMutation(
+        async(data)=>{
+            const response = await api.post("/auth/resend-otp", data, {
+                headers: {
+                    "Authorization": `Bearer ${Cookies.get("2fa")}`
+                }
+            })  
+
+            if(response?.status === 200){
+                Cookies.set("2fa", response?.data?.token)
+                showToast({type: response?.data?.status, title:response?.data?.msg})
+            }
+            else{
                 showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }
             
@@ -30,6 +47,8 @@ export function useVerifyOtp() {
 
     return {
         verifyOtp: verifyOtpMutation.mutate,
+        resendOtp: resendMutation.mutate,
+        isPending: resendMutation.isPending,
         isLoading: verifyOtpMutation.isPending
     }
 }

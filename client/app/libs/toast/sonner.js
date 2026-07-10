@@ -8,7 +8,7 @@ export  function showToast({ type, title, msg}) {
     if (type === "success") {
         toast.success(title,{
              description: msg, 
-             duration: 3000,
+             duration: 3500,
              style: {
                 color: "green",
                 borderLeft: "8px solid green",

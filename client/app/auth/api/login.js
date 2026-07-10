@@ -8,13 +8,14 @@ export function useLogin() {
         async (data)=>{
             const response = await api.post("/auth/login", data)
             
+            
             if(response?.status === 200){
                 Cookies.set("2fa", response?.data?.token,{
                     expires: 5/1440,
                     sameSite: "strict",
                     secure: false // True
                 })
-                showToast({type: response?.data?.status, msg: response?.data?.msg, title: "User successfully created"})
+                showToast({type: response?.data?.status, msg:"An OTP code has been sent to your email.", title: response?.data?.msg})
                 window.location = "/auth/verify-otp"
 
             }else{

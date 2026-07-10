@@ -1,5 +1,5 @@
 import Logo from "./logo";
-import { cols } from "./data";
+import { cols } from "../utils/data";
 
 export default function Footer() {
  

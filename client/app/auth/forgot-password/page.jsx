@@ -27,7 +27,7 @@ function ForgotPassword() {
                 <section className="">
                    <Logo />
                 </section>
-                <section className="mt-3 p-4 flex flex-col w-full">
+                <section className="mt-3 p-1.5 lg:p-4 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Password Recovery</h2>
                         <p className="text-sm font-thin">Enter your email to recover your password.</p>

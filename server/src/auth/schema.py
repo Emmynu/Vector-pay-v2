@@ -17,6 +17,7 @@ class UserSchema(BaseModel):
     accountNumber: str = Field(default=None)
     isVerified: bool = Field(default=False)
     password_reset_count:int 
+    tier: int = Field(default=1, max_digits=3)
 
     createdAt: datetime 
     updatedAt: datetime 
@@ -44,3 +45,8 @@ class ResetPasswordSchema(BaseModel):
 
 class OtpVerifySchema(BaseModel):
     code: str = Field(min_length=6)
+
+
+class ResendVerificationSchema(BaseModel):
+    name:str
+    email:str

@@ -41,7 +41,7 @@ function ResetPassword() {
                 <section className="">
                    <Logo />
                 </section>
-                <section className="mt-3 p-4 flex flex-col w-full">
+                <section className="mt-3 p-1.5 lg:p-4 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Password Recovery</h2>
                         <p className="text-sm font-thin">Enter your new password to proceed.</p>
@@ -99,7 +99,7 @@ function ResetPassword() {
                         </div>
 
                         
-                    <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full disabled:text-white disabled:bg-[#03457C]/60 ">
+                    <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
                             {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
                         </button>
                     </form>

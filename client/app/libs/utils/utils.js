@@ -6,9 +6,9 @@ export function generateUserName(first, last) {
 
     for (let i = 0; i < length; i++) {
     const userNameIndex = Math.floor(Math.random() * char.length)
-    generateduserName += char.charAt(userNameIndex)
+        generateduserName += char.charAt(userNameIndex)
     }
 
-    return generateduserName
+    return `${generateduserName}@vectorpay.io`
 
 }

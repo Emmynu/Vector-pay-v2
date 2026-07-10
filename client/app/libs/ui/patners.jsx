@@ -1,4 +1,4 @@
-import { names } from "./data";
+import { names } from "../utils/data";
 import { motion } from "motion/react";
 
 export default function Patners() {

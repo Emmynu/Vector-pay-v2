@@ -3,7 +3,7 @@
 import "../../globals.css"
 import { motion } from "motion/react"
 import { ArrowLeftRight, Wallet, Shield } from "lucide-react";
-import { services } from "./data";
+import { services } from "../utils/data";
 
 
 export default function Services() {

@@ -1,4 +1,4 @@
-def verificationMessage(verificationLink:str):
+def verificationMessage(verificationLink:str, name:str):
     return f"""
       <!DOCTYPE html>
         <html lang="en">
@@ -17,7 +17,8 @@ def verificationMessage(verificationLink:str):
                 </header>
                 <section style="padding:0 40px 24px 40px;text-align:center;">
                     <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Welcome to VectorPay</h1>
-                    <p style="margin:16px 0 0 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#4b5563;line-height:1.65;max-width:440px;display:inline-block;">
+                     <h3 style="text-align: left; margin: 40px 40px 0; font-size: 18px; ">Hi {name}, </h3>
+                    <p style="margin:10px 0 0 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#4b5563;line-height:1.65;max-width:440px;display:inline-block;">
                     Your account is almost ready. Verify your email to unlock instant payouts, global transfers, and bank-grade security — all in one place.
                     </p>
                 </section>
@@ -85,7 +86,7 @@ def verificationMessage(verificationLink:str):
 """
 
 
-def email_otp_messsage(code:str):
+def email_otp_messsage(code:str, name:str):
     return f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -103,7 +104,9 @@ def email_otp_messsage(code:str):
       </header>
       <section style="padding:0 40px 24px 40px;text-align:center;">
         <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Verify your identity</h1>
-        <p style="margin:16px 0 0 0;font-family:'Inter',Arial,sans-serif;font-size:16px;color:#4b5563;line-height:1.65;max-width:440px;display:inline-block;">
+        <h3 style="text-align: left; margin: 40px 40px 0; font-size: 18px; ">Hi {name}, </h3>
+
+        <p style="margin:10px 0 0 0;font-family:'Inter',Arial,sans-serif;font-size:16px;color:#4b5563;line-height:1.65;max-width:440px;display:inline-block;">
           Use the code below to complete your sign-in. It expires in 5 minutes for your security. Never share this code with anyone.
         </p>
       </section>
@@ -184,6 +187,7 @@ def resetPasswordMessage(resetLink:str):
                 </header>
                 <section style="padding:0 40px 24px 40px;text-align:center;">
                     <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Reset your password</h1>
+                    
                     <p style="margin:16px 0 0 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#4b5563;line-height:1.65;max-width:440px;display:inline-block;">
                     We received a request to reset your VectorPay password. Click the button below to choose a new one. This link will expire in 20 minutes for your security.
                     </p>
