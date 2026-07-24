@@ -13,7 +13,7 @@ def verificationMessage(verificationLink:str, name:str):
             <main style="display:flex;justify-content:center;padding:40px 16px;">
                 <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
                 <header style="padding:48px 40px 32px 40px;">
-                   <img src="https://xqqjyfukejgfwiotphrg.supabase.co/storage/v1/object/sign/logo/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zYjk5NmY4NS1kNjlmLTQ3ZmMtOGFmNC1hNGZmMjVmMmJlNDMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwODI2MjUsImV4cCI6NDkzNjY4MjYyNX0.hEW8yfPqCPclrBrwPizj8qQHLKVngRKjhUrYVYA1UMU" alt="VectorPay" />
+                   <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />
                 </header>
                 <section style="padding:0 40px 24px 40px;text-align:center;">
                     <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Welcome to VectorPay</h1>
@@ -100,7 +100,7 @@ def email_otp_messsage(code:str, name:str):
   <main style="display:flex;justify-content:center;padding:40px 16px;">
     <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
       <header style="padding:48px 40px 32px 40px;">
-       <img src="https://xqqjyfukejgfwiotphrg.supabase.co/storage/v1/object/sign/logo/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zYjk5NmY4NS1kNjlmLTQ3ZmMtOGFmNC1hNGZmMjVmMmJlNDMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwODI2MjUsImV4cCI6NDkzNjY4MjYyNX0.hEW8yfPqCPclrBrwPizj8qQHLKVngRKjhUrYVYA1UMU" alt="VectorPay" />
+       <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />
       </header>
       <section style="padding:0 40px 24px 40px;text-align:center;">
         <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Verify your identity</h1>
@@ -183,7 +183,7 @@ def resetPasswordMessage(resetLink:str):
             <main style="display:flex;justify-content:center;padding:40px 16px;">
                 <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
                 <header style="padding:48px 40px 32px 40px;">
-                   <img src="https://xqqjyfukejgfwiotphrg.supabase.co/storage/v1/object/sign/logo/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zYjk5NmY4NS1kNjlmLTQ3ZmMtOGFmNC1hNGZmMjVmMmJlNDMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwODI2MjUsImV4cCI6NDkzNjY4MjYyNX0.hEW8yfPqCPclrBrwPizj8qQHLKVngRKjhUrYVYA1UMU" alt="VectorPay" />
+                   <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />
                 </header>
                 <section style="padding:0 40px 24px 40px;text-align:center;">
                     <h1 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;font-size:32px;font-weight:700;color:#021F3D;letter-spacing:-0.8px;line-height:1.15;">Reset your password</h1>

@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from src.db.main import initDB
 import logging
 from src.users.routes import router as userRouter
+from src.health.routes import router as healthRouter
 
 logger = logging.Logger("uvicorn.error")
 
@@ -63,3 +64,4 @@ async def custom_500_error_handler(req: Request, err:Exception):
 
 app.include_router(authRouter, prefix="/api/{version}/auth", tags=["Auth"])
 app.include_router(userRouter, prefix="/api/{version}/users", tags=["Users"])
+app.include_router(healthRouter, prefix="/api/{version}", tags=["Health"])
