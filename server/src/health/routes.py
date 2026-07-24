@@ -3,7 +3,7 @@ from sqlmodel import text
 
 router = APIRouter()
 
-@router.get("/health")
+@router.head("/health")
 async def uptime():
     text('SELECT 1')
     return {"status": "ok!"}
