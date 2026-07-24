@@ -24,7 +24,7 @@ export default function Services() {
                     {services.map(service=>{
                         return (
                             <div className="card  card-lg shadow-sm bg-white border border-slate-200 " key={service.title}>
-                                <div className="card-body bg-linear-to-tl transition-colors from-white from-75% to-blue-300 hover:shadow-xl shadow cursor-pointer rounded-xl">
+                                <div className="card-body bg-linear-to-tr transition-colors from-white from-75% to-blue-300 hover:shadow-xl shadow cursor-pointer rounded-xl">
                                     <article >
                                         <div className=" p-3 rounded-2xl w-fit bg-linear-to-tl from-35% from-[#013868] to-blue-300">
                                             {service.icon === "p2p" ? <ArrowLeftRight className="text-white"/> : service.icon === "wallet" ? <Wallet className="text-white"/>: <Shield className="text-white"/>}

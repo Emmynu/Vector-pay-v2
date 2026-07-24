@@ -9,7 +9,7 @@ export default function Footer() {
             <div className="mx-auto max-w-7xl px-6 py-16 grid md:grid-cols-5 gap-10">
             <div className="md:col-span-1">
             <Logo />
-            <p className="mt-2 ml-4text-sm text-slate-500">Your Financial Future!.</p>
+            <p className="ml-10 text-sm text-slate-500">Your Financial Future!.</p>
             </div>
             {cols.map((c) => (
             <div key={c.title}>
@@ -22,7 +22,7 @@ export default function Footer() {
             </div> 
             ))}
             </div>
-            <div className="border-t font-bold text-sm  font-[arial]">
+            <div className="border-t border-blue-100 font-bold text-sm text-slate-600 ">
                 <div className="mx-auto max-w-7xl px-6 py-6 flex flex-wrap items-center justify-between gap-3 ">
                     <span>© 2026 VectorPay, Inc. All rights reserved.</span>
                     <span>VectorPay is a financial technology company, not a bank.</span>
@@ -35,7 +35,7 @@ export default function Footer() {
 
 export function FooterRights() {
     return(
-           <div className="border-t border-slate-300 border-border font-bold text-sm  font-[arial] p-7">
+           <div className="border-t border-slate-300 border-border font-bold text-sm  p-7">
                <div className="text-center text-xs opacity-70">
                     <span>© 2026 VectorPay, Inc. All rights reserved.</span>
                 </div>

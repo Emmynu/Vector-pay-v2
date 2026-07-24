@@ -31,9 +31,7 @@ api.interceptors.response.use(
                 msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.msg}`
             }
         }
-
     
-
        if(error?.status === 401){
      
             if(error?.config?.url?.includes("/auth/otp-verify")){

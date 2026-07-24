@@ -9,7 +9,7 @@ import { RefreshCcw } from "lucide-react"
 import { useRegister } from "../api/register";
 import { useEffect, useState } from "react";
 import { generateUserName as userNameFunc } from "@/app/libs/utils/utils";
-
+import { bricolage } from "@/app/libs/utils/font";
 
 
 

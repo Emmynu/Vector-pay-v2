@@ -1,9 +1,11 @@
-from fastapi import APIRouter
-from sqlmodel import text
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio.session import AsyncSession
+from src.db.main import session
+from sqlmodel import text, select
 
 router = APIRouter()
 
-@router.head("/health")
-async def uptime():
-    text('SELECT 1')
+@router.api_route("/health", methods=["GET", "HEAD"])
+async def uptime(session:AsyncSession = Depends(session)):
+    await session.execute(select(text('1')))
     return {"status": "ok!"}

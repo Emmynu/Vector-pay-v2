@@ -76,7 +76,7 @@ function Profile() {
                     )}
                   </div>
                   <div className="mt-4 flex items-center gap-3">
-                    <button className="btn bg-[#03457c] rounded-full border-none" onClick={()=>document.getElementById('my_modal_1').showModal()}>
+                    <button className={`btn bg-[#03457c] rounded-full border-none ${bricolage.className}`} onClick={()=>document.getElementById('my_modal_1').showModal()}>
                       <KeyRound className="w-4 h-4" />
                       {user?.transactionPin ? "Change PIN" : "Set up PIN"}
                     </button>

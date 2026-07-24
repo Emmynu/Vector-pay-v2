@@ -31,12 +31,12 @@ function Login() {
     }
 
    return ( 
-        <main className="grid grid-cols-1  lg:grid-cols-3 items-center gap-12">
+        <main className="grid grid-cols-1  lg:grid-cols-3 items-center gap-0">
            <section className="col-span-1 flex flex-col mt-[15%]  items-center lg:mt-0 mx-3">
                 <section className="">
                    <Logo />
                 </section>
-                <section className="mt-3 p-1.5 lg:p-4 flex flex-col w-full">
+                <section className="mt-3 p-1.5 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Account Login</h2>
                         <p className="text-sm font-thin">Welcome back! Enter your login details.</p>
@@ -96,7 +96,7 @@ function Login() {
 
                         <Link href={"/auth/forgot-password"} className="text-right hover:underline mt-1.5 italic text-[#03457c] font-medium  text-sm">Forgot Password?</Link>
 
-                    <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
+                    <button type="submit" disabled={isLoading} className={`btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60`}>
                         {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
                     </button>
 

@@ -3,7 +3,7 @@ import "../../globals.css"
 import Link from "next/link"
 import { motion } from "motion/react"
 import Logo from "./logo"
-
+import { bricolage } from "../utils/font"
 
 export function Nav() {
   return (
@@ -25,8 +25,8 @@ export function Nav() {
        
        <motion.div initial={{opacity:0, x:30}} animate={{opacity:1, x:0}} transition={{duration: 0.3}}>
          <div className="flex items-center gap-2 ">
-            <Link href="/auth/login" className="hidden md:inline-flex text-sm font-medium shadow-none border-2 border-[#03457C] text-[#03457C] px-5 py-2 rounded-full transition-colors transition-[all 2s linear] hover:bg-[#03457C] hover:text-white">Sign in</Link>
-            <Link href="/auth/register" className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-full bg-[#03457C] text-white hover:opacity-90 transition-colors">
+            <Link href="/auth/login" className={`hidden md:inline-flex text-xs font-medium shadow-none border-2 border-[#03457C] text-[#03457C] px-5 py-2 rounded-full transition-colors transition-[all 2s linear] hover:bg-[#03457C] hover:text-white ${bricolage.className}`}>Sign in</Link>
+            <Link href="/auth/register" className={`inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2.5 rounded-full bg-[#03457C] text-white hover:opacity-90 transition-colors ${bricolage.className}`}>
               Get Started <ArrowRight className="w-3.5 h-3.5" />
             </Link>
         </div>
