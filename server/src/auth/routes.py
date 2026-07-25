@@ -182,7 +182,7 @@ async def resend_otp_code(user = Depends(verifyOtpSecurity)):
                },
                "code" : code
         }
-        name: f"{ user["user"]["firstName"]} { user["user"]["lastName"]}"
+        name = f"{ user["user"]["firstName"]} { user["user"]["lastName"]}"
         
         token = send_otp_code(user["user"]["email"], data, code, name)
         return { "status": "success", "msg": f"A new otp code has been sent to {user["user"]["email"]}", "token": token}

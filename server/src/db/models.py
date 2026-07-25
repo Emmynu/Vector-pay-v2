@@ -20,6 +20,7 @@ class Users(SQLModel, table=True):
     lastName: str
     email:str
     userName: str
+    photoURL: Optional[str]
     password: str = Field(exclude=True)
     balance: int = Field(default=0)
     password_reset_count: int = Field(default=0)
