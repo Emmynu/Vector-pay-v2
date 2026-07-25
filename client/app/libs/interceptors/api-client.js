@@ -23,6 +23,10 @@ export const refreshApi =  axios.create({
 api.interceptors.response.use(
     (resp) =>resp,
     async (error) =>{
+
+        if(error?.status === 500){
+            alert("500")
+        }
     
         if(error?.status === 422){
             return {

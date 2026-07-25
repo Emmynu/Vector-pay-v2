@@ -6,29 +6,45 @@ import { ShieldCheck, Mail, KeyRound,Lock, ShieldAlert, IdCard, BadgeCheck } fro
 import { motion } from "motion/react";
 import { bricolage } from "@/app/libs/utils/font";
 
+
 function Profile() {
 
-  const { data: user } = useUser()
+  const { data: user, isLoading } = useUser()
   const Icon = user?.isVerified ? <ShieldCheck className="w-3.5 h-3.5"/>: <ShieldAlert className="w-3.5 h-3.5"/>
 
-    console.log(user);
-    
+    if(isLoading){
+      return (
+       <>
+         <main className="grid lg:grid-cols-3 gap-5">
+          <section className="skeleton  bg-slate-200 h-[300px] w-[300px] " style={{}}></section>
+          <section className="skeleton lg:col-span-2 bg-slate-200 h-[300px] "></section>
+        </main>
+          <section className="skeleton mt-5 bg-slate-200 h-[300px] "></section>
+       </>
+      )
+    }
     
     return (    
         <div className="grid lg:grid-cols-3 gap-5">
             
             <motion.div initial={{opacity:0 , scale: 0}} animate={{opacity:1 , scale: 1}} transition={{type: "tween", duration: "0.25", stiffness: 100}} className="rounded-2xl border border-slate-300 p-6 shadow-sm text-center">
               <section >
-                <div className="w-24 h-24 rounded-full bg-[#03457C] flex items-center justify-center text-primary-content text-3xl font-bold mx-auto">
-                   {`${user?.firstName.split(" ").map((s) => s[0]).join("").toUpperCase()} 
-                    ${user?.lastName.split(" ").map((s) => s[0]).join("").toUpperCase()}`}
+
+                <div className="flex items-center justify-center mx-auto">
+                   {!user?.photoURL ? <div className="w-22 h-22 rounded-full text-white bg-[#03457c] font-bold text-3xl flex items-center justify-center">
+                  <h2>{user?.firstName.split(" ").map((s) => s[0]).join("").toUpperCase()}</h2>
+                  <h2>{user?.lastName.split(" ").map((s) => s[0]).join("").toUpperCase()}</h2>
+                  </div>: <img src={user?.photoURL} alt={user?.firstName}/>}
                 </div>
+
+              
                 <h2 className={`mt-4 font-bold text-xl ${bricolage.className}`}>{
                   `${ user?.firstName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}
                     ${ user?.lastName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}
                   `}</h2>
-                <p className={`text-sm opacity-50 `}>{user?.userName}</p>
-                <p className="text-xs font-semibold">
+
+                  <p className={`text-sm opacity-50 `}>{user?.userName}</p>
+                  <p className="text-xs font-semibold">
                     <span className={`inline-flex items-center rounded-full gap-1 mt-3 px-2.5 py-1 ${user?.isVerified ? "bg-success/10 text-success": "bg-orange-600/10 text-orange-600"}`}>{Icon} {user?.isVerified ? `Verified ` : `Unverified`} · {`Tier ${user?.tier || "1"}`}</span>
                 </p>
             </section>

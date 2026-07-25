@@ -10,7 +10,8 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 
 function OTPVerification() {
- 
+    const { verifyOtp, isLoading, resendOtp, isPending } = useVerifyOtp()
+
     useEffect(()=>{
        const token = Cookies.get("2fa")
 
@@ -20,7 +21,6 @@ function OTPVerification() {
     }, [Cookies.get("2fa")])
 
 
-    const { verifyOtp, isLoading, resendOtp, isPending } = useVerifyOtp()
 
     async function handleOtpVerification(e) {
         e.preventDefault()
@@ -31,7 +31,7 @@ function OTPVerification() {
     }
 
     async function handleResend() {
-        resendOtp("data")
+        resendOtp()
     }
 
     return ( 
@@ -43,7 +43,7 @@ function OTPVerification() {
                 <section className="mt-3 p-4 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Verify your Identity</h2>
-                        <p className="text-sm font-thin">Please enter the 6-digit verification code to your mail</p>
+                        <p className="text-[14px] " style={{fontWeight: 350}}>Please enter the 6-digit verification code to your mail</p>
                     </article>
                    
                     <article className="mt-2.5  px-6 md:px-12">

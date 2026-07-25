@@ -9,9 +9,6 @@ import { RefreshCcw } from "lucide-react"
 import { useRegister } from "../api/register";
 import { useEffect, useState } from "react";
 import { generateUserName as userNameFunc } from "@/app/libs/utils/utils";
-import { bricolage } from "@/app/libs/utils/font";
-
-
 
 
 
@@ -43,7 +40,7 @@ function Register() {
                     ...prev,
                     userName: generatedUserName
                 }))
-            }, 600);
+            }, 200);
 
             return ()=> clearTimeout(timer)
         }
@@ -63,14 +60,14 @@ function Register() {
                 <section className="mt-5  p-4 flex flex-col items-center">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Create a VectorPay Account</h2>
-                        <p className="text-sm font-thin">Set up your account in minutes.</p>
+                        <p className={`text-[14px]`} style={{fontWeight: 350}}>Set up your account in minutes.</p>
                     </article>
                    
                     <article className="render-container mt-4">
                        <form onSubmit={handleRegister}>
 
                         <section>
-                            <h2 className="font-thin text-sm mb-0.5">Fullname: </h2>
+                            <h2 className=" text-[12px] tracking-wide mb-0.5">Fullname: </h2>
                             <div className="flex">
                                 <label className="input validator bg-input mr-2">
                                     <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -130,13 +127,13 @@ function Register() {
                                 
                             </div>
 
-                           {formData.userName && <div className="flex text-sm mt-1 font-medium  text-[#03457c]">
+                           {formData.userName && <div className="flex text-[12px] tracking-wide mt-1 font-medium  text-[#03457c]">
                                 <h2 className="flex mr-2 ">username: {formData.userName}</h2>
                                 <div ><RefreshCcw className="w-4 cursor-pointer" onClick={generateUserName}/></div>
                             </div>}
 
                            <div className="mt-2.5">
-                                <h2 className="font-thin text-sm mb-0.5">Email Address: </h2>
+                                <h2 className=" text-[12px] tracking-wide mb-0.5">Email Address: </h2>
                                 <label className="input validator bg-input  w-full">
                                     <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                         <g
@@ -156,7 +153,7 @@ function Register() {
                            </div>
 
                            <div className="mt-2.5">
-                            <h2 className="font-thin text-sm mb-0.5">Password: </h2>   
+                            <h2 className="text-[12px] tracking-wide mb-0.5">Password: </h2>   
                             <label className="input validator  bg-input w-full">
                                 <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                     <g

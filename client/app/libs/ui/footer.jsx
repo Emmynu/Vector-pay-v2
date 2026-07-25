@@ -1,5 +1,6 @@
 import Logo from "./logo";
 import { cols } from "../utils/data";
+import { montserrat } from "../utils/font";
 
 export default function Footer() {
  
@@ -9,7 +10,9 @@ export default function Footer() {
             <div className="mx-auto max-w-7xl px-6 py-16 grid md:grid-cols-5 gap-10">
             <div className="md:col-span-1">
             <Logo />
-            <p className="ml-10 text-sm text-slate-500">Your Financial Future!.</p>
+            {/* <p className="mt-4 text-xs text-slate-600">VectorPay is a financial technology company, not a bank.</p> */}
+            </div>
+            <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-10">
             </div>
             {cols.map((c) => (
             <div key={c.title}>
@@ -22,8 +25,8 @@ export default function Footer() {
             </div> 
             ))}
             </div>
-            <div className="border-t border-blue-100 font-bold text-sm text-slate-600 ">
-                <div className="mx-auto max-w-7xl px-6 py-6 flex flex-wrap items-center justify-between gap-3 ">
+            <div className="border-t border-blue-100 text-xs text-[#1F2024] ">
+                <div className={`mx-auto max-w-7xl px-6 py-7 flex flex-col md:flex-row justify-between gap-4 ${montserrat.className}`}>
                     <span>© 2026 VectorPay, Inc. All rights reserved.</span>
                     <span>VectorPay is a financial technology company, not a bank.</span>
                 </div>
@@ -35,7 +38,7 @@ export default function Footer() {
 
 export function FooterRights() {
     return(
-           <div className="border-t border-slate-300 border-border font-bold text-sm  p-7">
+           <div className="border-t border-slate-300 border-border  text-sm  p-7">
                <div className="text-center text-xs opacity-70">
                     <span>© 2026 VectorPay, Inc. All rights reserved.</span>
                 </div>

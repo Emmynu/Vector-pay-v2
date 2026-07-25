@@ -44,14 +44,14 @@ function ResetPassword() {
                 <section className="mt-3 p-1.5 lg:p-4 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Password Recovery</h2>
-                        <p className="text-sm font-thin">Enter your new password to proceed.</p>
+                        <p className="text-[14px] " style={{fontWeight: 350}}>Enter your new password to proceed.</p>
                     </article>
                    
                     <article className="mt-2.5  px-6 md:px-12">
                        <form onSubmit={handlePasswordReset}  className="flex flex-col">
                         
                          <div className="mt-2.5">
-                            <h2 className="font-thin mb-1 text-sm">New Password: </h2>
+                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">New Password: </h2>
                             <label className="input validator bg-input w-full">
                             <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <g
@@ -82,7 +82,7 @@ function ResetPassword() {
 
 
                          <div className="mt-2.5">
-                            <h2 className="font-thin mb-1 text-sm">Confirm password: </h2>
+                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">Confirm password: </h2>
                             <label className="input validator bg-input w-full">
                                 <Key className="text-slate-600 w-4"/>
                                 <input

@@ -27,7 +27,7 @@ export const nav = [
   ];
 
 export const cols = [
-    { title: "Product", links: ["Payments", "Payouts", "Cards", "Treasury", "Connect"] },
+    { title: "Product", links: ["Payments", "Payouts", "Cards", "Connect"] },
     { title: "Developers", links: ["Documentation", "API reference", "Status", "Changelog"] },
     { title: "Company", links: ["About", "Customers", "Careers", "Press"] },
     { title: "Legal", links: ["Privacy", "Terms", "Licenses", "Compliance"] },

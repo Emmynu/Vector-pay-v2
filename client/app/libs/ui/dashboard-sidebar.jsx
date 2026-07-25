@@ -8,8 +8,7 @@ import { usePathname } from "next/navigation";
 
 function Sidebar({ setOpen, user, isLoading }) {
     const pathname = usePathname()
-   
-    
+
     return ( 
          <>
             <div className="h-16 flex items-center justify-between px-5 border-b border-slate-300">
@@ -57,9 +56,10 @@ function Sidebar({ setOpen, user, isLoading }) {
             : 
             
             <div className="flex items-center gap-3 mt-auto p-4 border-t border-slate-300">
-                <div className="w-9 h-9 rounded-full text-white bg-[#03457c] flex items-center justify-center font-bold text-sm">
-                {`${user?.firstName.split(" ").map((s) => s[0]).join("").toUpperCase()} ${user?.lastName.split(" ").map((s) => s[0]).join("").toUpperCase()}`}
-                </div>
+               {!user?.photoURL ? <div className="w-9 h-9 rounded-full text-white bg-[#03457c] flex items-center justify-center font-bold text-sm">
+                    <span>{user?.firstName.split(" ").map((s) => s[0]).join("").toUpperCase()}</span>
+                   <span>{user?.lastName.split(" ").map((s) => s[0]).join("").toUpperCase()}</span>
+                </div>: <img src={user?.photoURL} alt={user?.firstName}/>}
                 <div className="min-w-0  text-black">
                     <p className="text-sm font-semibold truncate">{
                   `${ user?.firstName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}

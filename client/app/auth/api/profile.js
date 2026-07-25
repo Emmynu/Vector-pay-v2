@@ -53,7 +53,7 @@ export function useUser() {
     const logoutMutation = useCustomMutation(
         async()=>{
            await api.post("/auth/signout")
-            window.location.reload()
+            window.location="/auth/login"
         }
     )
 

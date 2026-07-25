@@ -3,6 +3,7 @@
 import { Nav } from "./libs/ui/nav";
 import Company from "./libs/ui/company";
 import Patners from "./libs/ui/patners";
+import ProductTour from "./libs/ui/product-tour";
 import Services from "./libs/ui/services";
 import CTA from "./libs/ui/cta";
 import Footer from "./libs/ui/footer";
@@ -17,6 +18,7 @@ export default function LandingPage() {
         <Company />
         <Patners/>
         <Services />
+        <ProductTour />
         <CTA />
         <Footer />
       </section>

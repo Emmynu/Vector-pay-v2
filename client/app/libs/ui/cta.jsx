@@ -12,7 +12,7 @@ export default function CTA() {
           <div className="absolute inset-0 hero-img" />
           <div className="relative">
             <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight max-w-3xl mx-auto">Ready to move money the modern way?</h2>
-            <p className="mt-5 text-lg text-white/75 max-w-xl mx-auto">Join thousands of businesses and individuala moving capital seamlessly with instant wallet transfrs and direct local banking rails.</p>
+            <p className="mt-5 text-base md:text-lg text-white/75 max-w-xl mx-auto">Join thousands of businesses and individuala moving capital seamlessly with instant wallet transfrs and direct local banking rails.</p>
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
               <Link href="/auth/register" className={`inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white  font-medium text-[#03457c] hover:bg-white/90 transition-all ${bricolage.className}`}>
                 Create an account <ArrowRight className="w-4 h-4" />

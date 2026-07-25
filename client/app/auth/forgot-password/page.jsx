@@ -30,13 +30,13 @@ function ForgotPassword() {
                 <section className="mt-3 p-1.5 lg:p-4 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Password Recovery</h2>
-                        <p className="text-sm font-thin">Enter your email to recover your password.</p>
+                        <p className="text-[14px] " style={{fontWeight: 350}}>Enter your email to recover your password.</p>
                     </article>
                    
                     <article className="mt-2.5  px-6 md:px-12">
                        <form action=""  className="flex flex-col" onSubmit={handleForgotPassword}>
                         <div className="mt-2.5 ">
-                            <h2 className="font-thin mb-1 text-sm">Email Address: </h2>
+                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">Email Address: </h2>
                             <label className="input validator bg-input  w-full">
                                 <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                     <g

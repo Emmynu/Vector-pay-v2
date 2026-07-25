@@ -39,13 +39,13 @@ function Login() {
                 <section className="mt-3 p-1.5 flex flex-col w-full">
                     <article className="text-center">
                         <h2 className="font-semibold text-2xl">Account Login</h2>
-                        <p className="text-sm font-thin">Welcome back! Enter your login details.</p>
+                        <p className="text-[14px] " style={{fontWeight: 350}}>Welcome back! Enter your login details.</p>
                     </article>
                    
                     <article className="mt-2.5  px-6 md:px-12">
                        <form action=""  className="flex flex-col" onSubmit={handleLogin}>
                         <div className="mt-2.5 ">
-                            <h2 className="font-thin mb-1 text-sm">Email Address: </h2>
+                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">Email Address: </h2>
                             <label className="input validator bg-input  w-full">
                                 <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                     <g
@@ -65,7 +65,7 @@ function Login() {
                         </div>
 
                         <div className="mt-2.5">
-                            <h2 className="font-thin mb-1 text-sm">Password: </h2>
+                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">Password: </h2>
                             <label className="input validator bg-input w-full">
                             <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <g
