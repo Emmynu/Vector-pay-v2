@@ -66,7 +66,7 @@ function Profile() {
               <h2 className="font-display font-bold text-lg">Personal details</h2>
               <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <Field isLoading={isLoading} icon={Mail} label="Email" value={user?.email} />
-                  <Field isLoading={isLoading} icon={IdCard} label="NIN" value={user.kycStatus === "verified" ? user?.kyc?.nin_number:<span className="italic">Not Provided</span>} />
+                  <Field isLoading={isLoading} icon={IdCard} label="NIN" value={user?.kycStatus === "verified" ? user?.kyc?.nin_number:<span className="italic">Not Provided</span>} />
               </div>
               <div className="mt-6 pt-6 border-t border-slate-300">
                   <h3 className="font-semibold">Account</h3>
