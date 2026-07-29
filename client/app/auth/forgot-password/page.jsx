@@ -22,8 +22,8 @@ function ForgotPassword() {
 
 
    return ( 
-        <main className="grid grid-cols-1  lg:grid-cols-3 items-center gap-12">
-           <section className="col-span-1 flex flex-col mt-[15%]  items-center lg:mt-0 mx-3">
+        <main className="grid grid-cols-1  lg:grid-cols-3 items-center ">
+           <section className="col-span-1 flex flex-col mt-[15%]  items-center lg:mt-0 mx-0 lg:mx-3">
                 <section className="">
                    <Logo />
                 </section>

@@ -6,7 +6,7 @@ export default function Provider({ children }) {
         defaultOptions: {
             queries: {
             retry: 1,
-            staleTime:3600 * 60  * 5
+            staleTime:1000 * 60  * 5
             }
         }
     })

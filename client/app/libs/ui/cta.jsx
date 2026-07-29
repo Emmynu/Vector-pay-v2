@@ -7,11 +7,11 @@ import { bricolage } from "../utils/font";
 export default function CTA() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{once:true}}  transition={{duration: 0.5}}>
-      <section className="mx-auto max-w-7xl px-6 py-24 ">
-        <div className="rounded-3xl bg-gradient-hero p-12 md:p-20 text-center  relative overflow-hidden">
+      <section className="mx-auto max-w-7xl p-2 md:px-6 py-24 ">
+        <div className="rounded-3xl bg-gradient-hero py-12 px-8 md:p-20 text-center  relative overflow-hidden">
           <div className="absolute inset-0 hero-img" />
           <div className="relative">
-            <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight max-w-3xl mx-auto">Ready to move money the modern way?</h2>
+            <h2 className="text-[31px] leading-[2.2rem] md:leading-[normal] md:text-6xl font-bold text-white tracking-tight max-w-3xl mx-auto">Start managing your money smarter.</h2>
             <p className="mt-5 text-base md:text-lg text-white/75 max-w-xl mx-auto">Join thousands of businesses and individuala moving capital seamlessly with instant wallet transfrs and direct local banking rails.</p>
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
               <Link href="/auth/register" className={`inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white  font-medium text-[#03457c] hover:bg-white/90 transition-all ${bricolage.className}`}>

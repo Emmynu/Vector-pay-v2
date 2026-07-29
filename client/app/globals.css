@@ -25,3 +25,7 @@ body{
 input::placeholder{
     @apply text-black
 }
+
+.custom-date-input-indicator::-webkit-calendar-picker-indicator{
+    filter: invert(1) brightness(100%);
+}

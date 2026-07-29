@@ -82,11 +82,11 @@ async def sign_in_user(userData:GetUserSchema, session: AsyncSession =  Depends(
                 "description": "Please provide a valid password"
                 })
     else:
-         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
                 "status": "error",
                 "msg": "Invalid Credentials",
                 "description": "Please enter a valid email address"
-                })
+            })
 
       
 @router.post("/otp-verify", status_code=status.HTTP_200_OK)

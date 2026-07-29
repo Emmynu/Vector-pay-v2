@@ -5,16 +5,16 @@ import { bricolage, montserrat } from "../utils/font";
 import { motion } from "motion/react";
 function ProductTour() {
     return ( 
-      <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{once:true}} transition={{duration: 0.5}}>
-        <div className="hero px-2 pt-10 pb-5 lg:p-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{once:true}} transition={{duration: 0.5}} id="product-tour" style={{scrollBehavior: "auto"}}>
+        <div className="hero px-2 pt-10 pb-5 lg:pl-4 lg:p-8">
         <div className="hero-content flex-col-reverse lg:flex-row-reverse">
-            <Image src={tourImg} alt="img" className="w-full lg:h-[53%] lg:w-[60%] block mt-10 lg:mt-0" loading="lazy"/>
+            <Image src={tourImg} alt="img" className="w-full lg:h-[53%] lg:w-[60%] block mt-10 lg:mt-0 lg:ml-3" loading="lazy"/>
             <div>
                 <div className="flex items-center mb-1">
                     <h3 className="ml-1 text-[#03457c] font-medium text-sm">Product Tour</h3>
                 </div>
                 <h1 className={`text-[31px] leading-[2.2rem] lg:leading-none md:text-5xl font-bold ${montserrat.className}`}>Move money in seconds, not steps</h1>
-                <p className="text-[13px] md:text-sm text-slate-600 mt-3" >
+                <p className="text-xs md:text-sm text-slate-600 mt-3" >
                         A quick walkthrough of the dashboard — balances, transfers, charts, and real-time settlements in one place.
                 
                     Fund your VectorPay wallet with a single tap — instant deposits, live balance updates, zero friction.

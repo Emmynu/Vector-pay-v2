@@ -3,18 +3,9 @@ import { Toaster } from "sonner";
 import Provider from "./libs/providers/provider";
 
 export const metadata = {
-  title: "VectorPay",
+  title: "VectorPay - Your Financial Future!",
   description: "Your Financial Future!",
-  icons: {
-    icon: [ 
-      {
-        url: "/favicon.png", // hmm
-        type: "image/png"
-      }
-    ],
-    shortcut: "/favicon.png",
-    apple: "/favicon.png"
-  }
+ 
 };
 
 export default function RootLayout({ children }) {

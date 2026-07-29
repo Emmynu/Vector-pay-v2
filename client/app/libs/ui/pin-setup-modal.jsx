@@ -1,6 +1,6 @@
 "use client"
 
-import { useUser } from "@/app/auth/api/profile";
+import { usePin } from "@/app/dashboard/api/pin";
 import { Loader2, Eye, EyeOff, X } from "lucide-react";
 import { useState } from "react";
 
@@ -8,7 +8,7 @@ function TransactionPinModal({ id, hasPin }) {
     const [show, setShow] = useState(false)
     const [pins, setPins] = useState({ currentPin: "", newPin: "", confirmPin: "" })
     const [error, setError] = useState("");
-    const { setTransactionPin, isSubmitting, updatetransactionPin } = useUser()
+    const { setTransactionPin, isSubmitting, updatetransactionPin } = usePin()
 
     
     function handleOnChange(e) {
@@ -57,7 +57,7 @@ function TransactionPinModal({ id, hasPin }) {
     } 
     
     return ( 
-        <dialog id={id} className="modal">
+        <dialog id={id} className="modal backdrop-blur-xs">
              <div className="">
                 <form className="rounded-2xl modal-box bg-white shadow-xl w-full max-w-md p-6 lg:p-8" onSubmit={handleSetUp}>
                     <div className="flex items-center justify-between">

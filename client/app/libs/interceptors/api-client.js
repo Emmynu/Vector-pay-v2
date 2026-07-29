@@ -1,4 +1,5 @@
 import axios from "axios";
+import { showToast } from "../toast/sonner";
 
 
 export const api =  axios.create({
@@ -25,7 +26,11 @@ api.interceptors.response.use(
     async (error) =>{
 
         if(error?.status === 500){
-            alert("500")
+            showToast({
+                title: "Oops...something went wrong!",
+                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: Please try again later or contact support.`,
+                // variant: "destructive"
+            })
         }
     
         if(error?.status === 422){

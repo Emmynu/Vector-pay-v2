@@ -5,50 +5,38 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useUser() {
     const queryClient = useQueryClient()
+
     const  { data, isLoading } = useQuery({
         queryKey:["get-current-user"],
         queryFn: async()=>{
             const response = await api.get("/users/profile")
             return response
         },
-        staleTime: 1000 * 60 * 15,
+        staleTime: 1000 * 60 * 5,
         retry: 1,
         
     })
 
-    const transactionPinMutation = useCustomMutation(
+    const editProfileMutation = useCustomMutation(
         async (data) => {
-           const resp =  await api.post("/users/pin/setup",data)
+            const resp = await api.post("/users/edit-profile", data)
 
-            queryClient.invalidateQueries("get-current-user")
-            
-           if(resp?.status === 200){
-                document.getElementById('my_modal_1').close()
+            await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
+
+        
+            if(resp?.status === 200){
+                document.getElementById('my-modal-2').close()
                 showToast({type: resp?.data?.status, title:resp?.data?.msg})
-           }
-           else{
+
+            }
+            else{
+                document.getElementById('my-modal-2').close()
                 showToast({type:resp?.status, title:resp?.title,  msg: resp?.msg })
-           }
-        },
-
+            }
+        }
     )
 
-    const updatetransactionPinMutation = useCustomMutation(
-        async (data) => {
-           const resp =  await api.post("/users/pin/update", data)
-
-            queryClient.invalidateQueries("get-current-user")
-
-           if(resp?.status === 200){
-                document.getElementById('my_modal_1').close()
-                showToast({type: resp?.data?.status, title:resp?.data?.msg})
-
-           }else{
-            showToast({type:resp?.status, title:resp?.title,  msg: resp?.msg })
-           }
-        },
-
-    )
+ 
 
     const logoutMutation = useCustomMutation(
         async()=>{
@@ -60,10 +48,10 @@ export function useUser() {
     return {
         data: data?.data, 
         isLoading, 
+        editProfile:editProfileMutation.mutate,
+        isEditing: editProfileMutation.isPending,
         logout:logoutMutation.mutate, 
         isLogginOut:logoutMutation.isPending,
-        setTransactionPin:transactionPinMutation.mutate,
-        updatetransactionPin:updatetransactionPinMutation.mutate,
-        isSubmitting:transactionPinMutation.isPending || updatetransactionPinMutation.isPending
+       
     }
 }

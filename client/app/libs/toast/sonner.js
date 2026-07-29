@@ -19,7 +19,16 @@ export  function showToast({ type, title, msg}) {
     }
     
     else if(type === "warning"){
-        toast.warning(title,{ description: msg, duration: 3000})
+         toast.warning(title, {
+            description:msg,
+            duration:4000,
+            style:{
+                boxShadow: "2px 6px 12px rgba(0, 0, 0, 0.3)",
+                fontSize: "12.5px",
+                color: "#f0b100",
+                borderLeft: "8px solid #f0b100",
+            }
+        })
     }
     else if(type === "error"){
         toast.error(title, {

@@ -21,7 +21,7 @@ export const nav = [
 
  export const rows = [
     { key: "twoFA", icon: ShieldCheck, label: "Two-factor authentication", desc: "Add an extra layer of protection on sign-in." },
-    { key: "biometrics", icon: Smartphone, label: "Biometric login", desc: "Use Face ID or fingerprint on trusted devices." },
+    { key: "biometrics", icon: Smartphone, label: "Biometric for payment", desc: "Use Face ID or fingerprint on trusted devices." },
     { key: "txnAlerts", icon: Bell, label: "Transaction alerts", desc: "Get notified for every debit and credit." },
     { key: "marketing", icon: Bell, label: "Product updates", desc: "Occasional emails on new features." },
   ];

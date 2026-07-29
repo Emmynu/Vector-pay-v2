@@ -27,10 +27,10 @@ function Settings() {
 
     return (
       <div className="grid lg:grid-cols-3 gap-5">
-        <motion.div initial={{opacity:0 , scale: 0}} animate={{opacity:1 , scale: 1}} transition={{type: "tween", duration: "0.35", stiffness: 100}}  className="lg:col-span-2 rounded-2xl  border border-slate-300 p-6 lg:p-8 shadow-sm">
+        <motion.div initial={{opacity:0 , scale: 0}} animate={{opacity:1 , scale: 1}} transition={{type: "tween", duration: "0.35", stiffness: 100}}  className="lg:col-span-2 rounded-2xl  border border-slate-200 p-6 lg:p-8 shadow-sm bg-white">
           <section>
             <h2 className="font-display font-bold text-lg">Preferences</h2>
-            <ul className="mt-4 divide-y divide-slate-300">
+            <ul className="mt-4 divide-y divide-slate-200">
               {rows.map(({ key, icon: Icon, label, desc }) => (
                 <li key={key} className="py-4 flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -54,7 +54,7 @@ function Settings() {
           </section>
         </motion.div>
 
-        <motion.div className="rounded-2xl  border border-slate-300 p-6 shadow-sm h-fit" initial={{ x : 80, opacity: 0}}  animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 100 }}>
+        <motion.div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm h-fit" initial={{ x : 80, opacity: 0}}  animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 100 }}>
           <aside>
             <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-primary" />
@@ -62,10 +62,10 @@ function Settings() {
             </div>
             <p className="text-sm opacity-60 mt-1">Change your password regularly.</p>
 
-            <button disabled={isLoading} className="btn outline-none border-none shadow-md bg-[#03457C] text-sm rounded-full mt-3 mb-2 w-full text-white disabled:bg-[#03457C]/60" onClick={handleResetPassword}>
+            <button disabled={isLoading} className="btn transition-colors outline-none border-none shadow-sm bg-[#03457C] text-sm rounded-full mt-3 mb-2 w-full text-white disabled:bg-[#03457C]/60" onClick={handleResetPassword}>
               {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Sending...</h2> : "Change Password"}
           </button>
-          <button disabled={isLogginOut || isLoading} className="btn btn-ghost text-error rounded-full w-full disabled:bg-[#03457C]/60" onClick={handleLogout}>{isLogginOut ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Signing out...</h2> : "Sign out"}</button>
+          <button disabled={isLogginOut || isLoading} className="btn transition-colors btn-ghost hover:bg-red-100 border-none outline-none shadow-none text-error rounded-full w-full disabled:opacity-80 disabled:bg-red-100 " onClick={handleLogout}>{isLogginOut ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Signing out...</h2> : "Sign out"}</button>
           </aside>
         </motion.div>
         </div>        
