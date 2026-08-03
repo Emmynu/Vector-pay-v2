@@ -42,4 +42,19 @@ export  function showToast({ type, title, msg}) {
             }
         })
     }
+
+    else if(type === "info"){
+        toast.info(title, {
+            description:msg,
+            duration:2000,
+            style:{
+                boxShadow: "2px 6px 12px rgba(0, 0, 0, 0.3)",
+                fontSize: "12.5px",
+                color: "black",
+                borderLeft: "8px solid black",
+            }
+        })
+    }
+    
+    
 } 

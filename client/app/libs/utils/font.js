@@ -1,6 +1,6 @@
 "use client"
 
-import { Bricolage_Grotesque, Montserrat }  from "next/font/google"
+import { Bricolage_Grotesque, Montserrat, Ubuntu }  from "next/font/google"
 
 
 
@@ -15,4 +15,7 @@ export const montserrat = Montserrat({
   subsets: ["vietnamese"]
 })
  
-
+export const ubuntu = Ubuntu({
+  weight: ["300", "500", "700"],
+  subsets: ["vietnamese"]
+})

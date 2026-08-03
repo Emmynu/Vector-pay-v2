@@ -24,12 +24,14 @@ export const refreshApi =  axios.create({
 api.interceptors.response.use(
     (resp) =>resp,
     async (error) =>{
-
-        if(error?.status === 500){
+        console.log();
+        
+        if(error.status === 500 || error?.response?.status === 500){
             showToast({
+                type: "error",
                 title: "Oops...something went wrong!",
                 msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: Please try again later or contact support.`,
-                // variant: "destructive"
+             
             })
         }
     

@@ -23,7 +23,7 @@ function DashboardHeader({ setOpen, user, isLoading }) {
             {isLoading ? 
                 <div className="skeleton bg-slate-300 h-4 w-12"></div>
               :
-             <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+             <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#E6F0FA] text-[#4A90E2] text-xs font-semibold">
               {`Tier ${user?.tier || "1"}`}
             </span>}
           </div>

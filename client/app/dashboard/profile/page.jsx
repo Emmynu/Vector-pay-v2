@@ -85,7 +85,7 @@ function Profile() {
             <motion.div className="lg:col-span-3 rounded-2xl  border border-slate-200 bg-[#FFF] p-6 lg:p-8 shadow-sm" initial={{y:90,opacity:0}} animate={{y:0, opacity:1}} transition={{type: "tween", duration: 0.3}}>
               <section>
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-[#E6F0FA] text-[#4A90E2] flex items-center justify-center shrink-0">
                   <Lock className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -117,7 +117,7 @@ function Profile() {
             <motion.div className="lg:col-span-3 rounded-2xl  border border-slate-200 bg-[#FFF] p-6 lg:p-8 shadow-sm" initial={{y:90,opacity:0}} animate={{y:0, opacity:1}} transition={{type: "tween", duration: 0.3}}>
               <section >
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-[#E6F0FA] text-[#4A90E2] flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">

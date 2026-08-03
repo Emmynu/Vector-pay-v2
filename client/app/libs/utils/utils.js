@@ -12,3 +12,9 @@ export function generateUserName(first, last) {
     return `${generateduserName}@vectorpay.io`
 
 }
+
+export function formatNumber(value){
+    const newValue = new Intl.NumberFormat("en-US",{currency:"NGN", style:"currency", minimumFractionDigits: 2}).format(value)
+
+    return newValue
+}

@@ -56,9 +56,3 @@ class AuthServices():
        
         return True if user is not None else False
     
-    # async def upgrade_user_tier(self, email:str, session:AsyncSession, tier:int):
-    #   new_tier =  await session.execute(update(Users).where(Users.email == email).values(tier = tier))
-
-    #   await session.commit()
-
-    #   return True if new_tier is not None else False
