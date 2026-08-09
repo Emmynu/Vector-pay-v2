@@ -5,7 +5,7 @@ import {
   Legend,
 } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
-import { ubuntu } from "../utils/font";
+import { quicksand, ubuntu } from "../utils/font";
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -32,6 +32,10 @@ export function TransactionChart() {
   const options= {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+     duration: 5000, 
+     easing: 'easeInOutQuart',
+    },
     cutout: "75%", // Sleeker, thinner ring
     plugins: {
       legend: {
@@ -42,9 +46,9 @@ export function TransactionChart() {
           pointStyle: "circle",
           padding: 16,
           font: {
-            size: 10,
-            weight: "500",
-            family: ubuntu.style.fontFamily,
+            size: 11,
+            weight: "700",
+            family: quicksand.style.fontFamily,
           },
           color: "#475569",
         },

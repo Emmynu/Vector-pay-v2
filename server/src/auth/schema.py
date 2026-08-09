@@ -26,5 +26,4 @@ class OtpVerifySchema(BaseModel):
 
 
 class ResendVerificationSchema(BaseModel):
-    name:str
     email:str

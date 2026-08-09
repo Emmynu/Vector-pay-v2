@@ -13,8 +13,18 @@ export function generateUserName(first, last) {
 
 }
 
-export function formatNumber(value){
-    const newValue = new Intl.NumberFormat("en-US",{currency:"NGN", style:"currency", minimumFractionDigits: 2}).format(value)
+export function formatAmount(value){
+    const newValue = new Intl.NumberFormat("en-NG",{currency:"NGN", style:"currency", minimumFractionDigits: 2}).format(value)
 
     return newValue
+}
+
+export function formatDate(date) {
+//    const newDate = new Date(date)
+    const formattedDate = new Date(date).toLocaleString(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short"
+            })
+
+    return formattedDate
 }

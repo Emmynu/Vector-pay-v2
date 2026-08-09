@@ -4,12 +4,14 @@ from .schema import CreateUserSchema
 from .utils import hashPassword
 from sqlmodel import select, update
 from .utils import generateAccountNumber
+from src.db.enums import DailyLimit
 
 
 class AuthServices():
 
     async def userExists(self, session: AsyncSession, email:str):
        user =  await session.execute(select(Users).where(Users.email == email))
+       
 
        return True if user.first() is not None else False
 
@@ -39,7 +41,7 @@ class AuthServices():
     
     
     async def verify_user_account(self, email:str, session:AsyncSession):
-        user = await session.execute(update(Users).where(Users.email == email).values(isVerified = True, tier = 2)
+        user = await session.execute(update(Users).where(Users.email == email).values(isVerified = True, tier = 2, dailyLimit = DailyLimit.TIER_TWO)
         )
         await session.commit()
        

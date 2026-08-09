@@ -33,7 +33,7 @@ function ForgotPassword() {
                         <p className="text-[14px] " style={{fontWeight: 350}}>Enter your email to recover your password.</p>
                     </article>
                    
-                    <article className="mt-2.5  px-6 md:px-12">
+                    <article className="mt-2.5  px-6 md:px-8">
                        <form action=""  className="flex flex-col" onSubmit={handleForgotPassword}>
                         <div className="mt-2.5 ">
                             <h2 className="text-[12px] tracking-wide mb-1 text-sm">Email Address: </h2>
@@ -50,14 +50,14 @@ function ForgotPassword() {
                                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                                     </g>
                                 </svg>
-                                <input type="email" placeholder="mail@site.com" required name="email" />
+                                <input type="email" disabled={isLoading} placeholder="mail@site.com" required name="email" />
                             </label>
                             <div className="validator-hint hidden mb-0.5">Enter valid email address</div>
                         </div>
 
                         <Link href={"/auth/login"} className="text-right hover:underline mt-1.5 italic text-[#03457c] font-medium  text-sm">Remember Password?</Link>
-                        <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full disabled:text-white disabled:bg-[#03457C]/60 ">
-                            {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
+                        <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-[#fff] py-6 rounded-md my-2.5 w-full disabled:text-white disabled:bg-[#03457C]/60 ">
+                            {isLoading ? <h2 className="flex items-center"><span className="loading loading-xs loading-spinner mr-1"></span>Loading...</h2> : "Continue"}
                         </button>
                     </form>
                     </article>

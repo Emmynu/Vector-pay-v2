@@ -7,30 +7,45 @@ import { ShieldCheck, Mail, KeyRound,Lock, ShieldAlert, IdCard, BadgeCheck, Badg
 import { motion } from "motion/react";
 import { bricolage } from "@/app/libs/utils/font";
 import { showToast } from "@/app/libs/toast/sonner";
+import { useVerify } from "@/app/auth/api/verify";
 
 
 function Profile() {
 
   const { data: user, isLoading } = useUser()
+  const { resendVerificationLink, isResending } = useVerify()
   const Icon = user?.isVerified ? <ShieldCheck className="w-3.5 h-3.5"/>: <ShieldAlert className="w-3.5 h-3.5"/>
   const rejectionReason = "The name provided doesnt match the name on the NIN slip."
   
 
 
-  function handleKycModal() {
-    if(!user?.isVerified){
-      showToast({type: "error", title: "Verification Failed", msg:"Please verify your account"})
+ async function handleKycModal() {
+    if(user?.isVerified){
+      document.getElementById('my-modal-3')?.showModal()
     }
-    else{
-      document.getElementById('my-modal-3').showModal()
-    }
+  else{
+
+      const data = {
+        email: user?.email
+      }
+      const response =  await resendVerificationLink(data)
+
+      if(response.status === 200){
+          showToast({type: response?.data?.status, title:response?.data?.msg, msg:response?.data?.description})
+      }else{
+          showToast({type:response?.status, title:response?.title,  msg: response?.msg })
+      }
+
+  }
   }
 
 
     return (    
         <div className="grid lg:grid-cols-3 gap-5">
             
-            <motion.div initial={{opacity:0 , scale: 0}} animate={{opacity:1 , scale: 1}} transition={{type: "tween", duration: "0.25", stiffness: 100}} className="rounded-2xl border text-y border-slate-200 bg-[#FFF] p-6 shadow-sm text-center">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "tween", duration: 0.35 }} className="rounded-2xl border text-y border-slate-200 bg-[#FFF] p-6 shadow-sm text-center">
              {isLoading ? <section>
               <div className="flex flex-col items-center justify-center mx-auto">
                 <div className="skeleton w-22 h-22 rounded-full bg-slate-200"></div>
@@ -75,9 +90,9 @@ function Profile() {
                     <Field isLoading={isLoading} label="Wallet" value={"VectorPay Wallet"} />
                   </div>
               </div>
-              <button disabled={isLoading} className={`btn bg-[#03457c] text-white hover:opacity-90 transition-opacity shadow-none border-none outline-none rounded-full mt-6 disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`}  onClick={()=>document.getElementById('my-modal-2').showModal()} >Edit profile</button>
+              <button disabled={isLoading || isResending} className={`btn bg-[#03457c] text-white hover:opacity-90 transition-opacity shadow-none border-none outline-none rounded-full mt-6 disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`}  onClick={()=>document.getElementById('my-modal-2').showModal()} >Edit profile</button>
               
-              {(user?.kycStatus === "unverified" || user?.kycStatus ==="declined") && <button disabled={isLoading } className={`ml-1.5 btn bg-transparent border-2 border-[#03457c] hover:bg-[#03457C] hover:text-white transition-colors shadow-none text-[#03457C] outline-none rounded-full mt-6 disabled:opacity-60 disabled:cursor-not-allowed ${bricolage.className}`} onClick={handleKycModal}><ShieldCheck className="w-5 h-5"/> Verify with NIN</button>}
+              {(user?.kycStatus === "unverified" || user?.kycStatus ==="declined") && (<button disabled={isLoading || isResending } className={`ml-1.5 btn bg-transparent border-2 border-[#03457c] hover:bg-[#03457C] hover:text-white transition-colors shadow-none text-[#03457C] outline-none rounded-full mt-6 disabled:opacity-60 disabled:cursor-not-allowed ${bricolage.className}`} onClick={handleKycModal}><ShieldCheck className="w-5 h-5"/>{isResending ? "Verifying...": "Verify with NIN" }</button>)}
               </section>
             </motion.div>
 
@@ -103,7 +118,7 @@ function Profile() {
                     )}
                   </div>
                   <div className="mt-4 flex items-center gap-3">
-                    <button disabled={isLoading} className={`btn bg-[#03457c] disabled:bg-[#03457c]/60 disabled:cursor-not-allowed text-white text-sm rounded-full border-none ${bricolage.className}`} onClick={()=>document.getElementById('my_modal_1').showModal()}>
+                    <button disabled={isLoading || isResending} className={`btn bg-[#03457c] disabled:bg-[#03457c]/60 disabled:cursor-not-allowed text-white text-sm rounded-full border-none ${bricolage.className}`} onClick={()=>document.getElementById('my_modal_1').showModal()}>
                       <KeyRound className="w-4 h-4" />
                       {user?.transactionPin ? "Change PIN" : "Set up PIN"}
                     </button>
@@ -126,7 +141,7 @@ function Profile() {
                     Verify your identity with your National Identification Number (NIN) to raise your transaction limits
                     and unlock all VectorPay features.
                   </p>
-                 {user?.kycStatus === "unverified" && <button disabled={isLoading} className={`btn bg-[#03457C] text-white mt-2 border-none text-sm rounded-full p-6 font-medium disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`} onClick={handleKycModal}>Start NIN verification</button>}
+                 {user?.kycStatus === "unverified" && <button disabled={isLoading || isResending} className={`btn bg-[#03457C] text-white mt-2 border-none text-sm rounded-full p-6 font-medium disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`} onClick={handleKycModal}>{isResending ? <h3><span className="loading loading-xs loading-spinner mr-1"></span><span>Sending...</span></h3> : "Start NIN verification"}</button>}
 
                    {user?.kycStatus === "pending" && (
                 <div className="mt-4 p-2.5 md:p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center gap-3">
@@ -151,8 +166,8 @@ function Profile() {
                     <p className="text-sm font-semibold text-red-500">Verification failed</p>
                   </div>
                   {rejectionReason && <p className="text-xs md:text-sm opacity-70 mt-2">{rejectionReason}</p>}
-                  <button onClick={handleKycModal} className="btn bg-transparent outline-none hover:bg-red-400 text-xs md:text-sm shadow-none hover:shadow-md border-2 border-red-400 text-red-600 hover:text-white rounded-full mt-3">
-                    Re-submit NIN
+                  <button onClick={handleKycModal} disabled={isLoading || isResending} className="btn bg-transparent outline-none hover:bg-red-400 text-xs md:text-sm shadow-none hover:shadow-md border-2 border-red-400 text-red-600 hover:text-white rounded-full mt-3 disabled:opacity-60">
+                    {isResending ? <h3><span className="loading loading-xs loading-spinner mr-1"></span><span>Sending...</span></h3> : "Re-submit NIN"}
                   </button>
                 </div>
               )}

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.db.main import session
@@ -6,16 +6,20 @@ from src.auth.services import AuthServices
 from src.auth.schema import CreateUserSchema, GetUserSchema, ForgotPasswordSchema, ResetPasswordSchema, OtpVerifySchema, ResendVerificationSchema
 from src.auth.utils import verifyHash, send_reset_password_link, verifyIdToken, loadUnsafeIdToken, generateOTP, generateJWTToken, saveCookies, send_verification_link, send_otp_code
 from .dependencies import OtpBearer, RefreshTokenBearer
+from src.limiter import limiter
+from src.account.services import AccountService
 
 
 router =  APIRouter()
 authService = AuthServices()
+accountService = AccountService()
 verifyOtpSecurity =  OtpBearer()
 refreshTokenBearer = RefreshTokenBearer()
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(userData:CreateUserSchema, session: AsyncSession = Depends(session)):
+@limiter.limit("2/minute")
+async def register_user(userData:CreateUserSchema, request:Request , session: AsyncSession = Depends(session)):
    
         userExists =  await authService.userExists(session=session, email=userData.email)
 
@@ -46,12 +50,15 @@ async def register_user(userData:CreateUserSchema, session: AsyncSession = Depen
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def sign_in_user(userData:GetUserSchema, session: AsyncSession =  Depends(session)):
+@limiter.limit("2/minute")
+async def sign_in_user(userData:GetUserSchema,  request:Request, session: AsyncSession =  Depends(session)):
     email =  userData.email
     password =  userData.password
     userExist = await authService.get_user(session=session, email=email)
 
     if(userExist):
+       await accountService.reset_daily_spent(userExist, session)
+       
        verifiedPassword = verifyHash(password=password, hash=userExist.password)
 
        if(verifiedPassword):
@@ -90,7 +97,8 @@ async def sign_in_user(userData:GetUserSchema, session: AsyncSession =  Depends(
 
       
 @router.post("/otp-verify", status_code=status.HTTP_200_OK)
-async def verify_otp(userData:OtpVerifySchema, response:Response, user = Depends(verifyOtpSecurity)):
+@limiter.limit("3/minute")
+async def verify_otp(userData:OtpVerifySchema,  request:Request, response:Response, user = Depends(verifyOtpSecurity)):
    
     if(user["code"] == userData.code):
 
@@ -113,7 +121,8 @@ async def verify_otp(userData:OtpVerifySchema, response:Response, user = Depends
         })
 
 @router.post("/verify/{token}", status_code=status.HTTP_200_OK)
-async def verify_account(token: str, session:AsyncSession = Depends(session)):
+@limiter.limit("1/minute")
+async def verify_account(token: str,  request:Request, session:AsyncSession = Depends(session)):
     token = verifyIdToken(token=token, salt="verify-salt", max=1200)
 
     if(not token):
@@ -153,10 +162,22 @@ async def verify_account(token: str, session:AsyncSession = Depends(session)):
         
 
 @router.post("/resend-verification",  status_code=status.HTTP_200_OK)
-async def resend_verification_link(userData:ResendVerificationSchema):
+@limiter.limit("3/minute")
+async def resend_verification_link(userData:ResendVerificationSchema, request:Request, session:AsyncSession= Depends(session)):
     try:
-        send_verification_link(userData.email, userData.name)
-        return { "status": "success", "msg": f"A new verification link has been sent to {userData.email}"}
+        user = await authService.get_user(session, userData.email)
+
+        if(not user):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                "status": "error",
+                "msg": "Invalid Credentials",
+                "description": "Please enter a valid email address"
+            })
+
+        name = f"{user.firstName} {user.lastName}"
+
+        send_verification_link(userData.email, name)
+        return { "status": "success", "msg": f"Verification Link Sent", "description":"We've emailed an upgrade link to your inbox. Click it to verify your identity and complete your account upgrade." }
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
             "status": "error",
@@ -167,7 +188,8 @@ async def resend_verification_link(userData:ResendVerificationSchema):
 
 
 @router.post("/resend-otp", status_code=status.HTTP_200_OK)
-async def resend_otp_code(user = Depends(verifyOtpSecurity)):
+@limiter.limit("3/minute")
+async def resend_otp_code(request:Request, user = Depends(verifyOtpSecurity)):
     try:
         code = generateOTP()
 
@@ -196,7 +218,8 @@ async def resend_otp_code(user = Depends(verifyOtpSecurity)):
 
 
 @router.post("/forgot-password" , status_code=status.HTTP_200_OK)
-async def forgot_password(userData:ForgotPasswordSchema, session:AsyncSession = Depends(session)):
+@limiter.limit("3/minute")
+async def forgot_password(userData:ForgotPasswordSchema, request:Request, session:AsyncSession = Depends(session)):
     user =  await authService.get_user(email=userData.email, session=session)
 
     if(not user):
@@ -214,17 +237,18 @@ async def forgot_password(userData:ForgotPasswordSchema, session:AsyncSession = 
     
 
 @router.post("/reset-password",  status_code=status.HTTP_200_OK)
-async def reset_password(userData:ResetPasswordSchema,  resp:Response, session:AsyncSession = Depends(session)):
+@limiter.limit("3/minute")
+async def reset_password(userData:ResetPasswordSchema, request:Request,  resp:Response, session:AsyncSession = Depends(session)):
 
     email = loadUnsafeIdToken(userData.token)
 
     user = await authService.get_user(session, email)
 
     if (not user):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
-                "status": "error",
-                "msg": "Invalid Credentials",
-                "description": "Please enter a valid email address"
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+            "status": "error",
+            "msg": "Invalid Credentials",
+            "description": "Please enter a valid email address"
         })
     
     if (user is not None):
@@ -254,7 +278,8 @@ async def reset_password(userData:ResetPasswordSchema,  resp:Response, session:A
             })
 
 @router.post("/refresh",  status_code=status.HTTP_200_OK)
-async def refresh(resp:Response, user=Depends(refreshTokenBearer)):
+@limiter.limit("3/minute")
+async def refresh(resp:Response, request:Request, user=Depends(refreshTokenBearer)):
     accessToken = generateJWTToken(type="access", data=user["user"])
 
     saveCookies(response=resp, key="access", val=accessToken, exp=1200)
@@ -262,7 +287,8 @@ async def refresh(resp:Response, user=Depends(refreshTokenBearer)):
     
 
 @router.post("/signout")
-async def sign_out(resp:Response):
+@limiter.limit("3/minute")
+async def sign_out(resp:Response,  request:Request,):
       saveCookies(resp, "access", "", 0)
       saveCookies(resp, "refresh", "", 0)
 

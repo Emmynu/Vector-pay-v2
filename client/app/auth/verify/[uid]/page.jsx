@@ -7,20 +7,22 @@ import Logo from "@/app/libs/ui/logo"
 import { CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link"
 import { FooterRights } from "@/app/libs/ui/footer"
+import { useEffect, useState } from "react"
 
 
 export default function VerifyAccount(){
-    const { verifyAccount } =  useVerify()
+    const { verifyAccount, isLoading } =  useVerify()
     const { uid: token } = useParams()
+    const [status, setStatus] = useState(null)
 
-    const { data, isLoading } =  useQuery({
-        queryKey: ["verify user's account"],
-        queryFn: async () => {
-          return await verifyAccount(token)   
-        },
-        retry: 1
-    })
-
+    
+    useEffect(()=>{
+      async function verify() {
+         const data =   await verifyAccount(token)
+        setStatus(data)
+      }
+      verify()
+    },[token])
     
     return (
          <div className="min-h-screen flex flex-col">
@@ -47,7 +49,7 @@ export default function VerifyAccount(){
               </>
             )}
 
-            {data?.data?.status === "success" && (
+            {status?.data?.status === "success" && (
               <>
                 <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-6">
                   <CheckCircle className="w-8 h-8 text-success" />
@@ -75,7 +77,7 @@ export default function VerifyAccount(){
               </>
             )}
 
-            {data?.status === "error" && (
+            {status?.status === "error" && (
               <>
                 <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mb-6">
                   <XCircle className="w-8 h-8 text-error" />

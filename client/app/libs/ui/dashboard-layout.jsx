@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen flex">
         {/* Sidebar */}
-        <aside className={`fixed lg:sticky top-0 left-0 z-40 bg-white h-screen w-68 border-r border-slate-200 flex-col transition-transform lg:flex ${
+        <aside className={`fixed lg:sticky top-0 left-0 z-40 bg-white h-screen w-80 lg:w-68 border-r border-slate-200 flex-col transition-transform lg:flex ${
             open ? "flex translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
             <Sidebar setOpen={()=>setOpen((prev)=> !prev)} user={data} isLoading={isLoading}/>
@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }) {
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0 ">
             <DashboardHeader setOpen={()=>setOpen((prev)=> !prev)} user={data} isLoading={isLoading}/>
-            <main className="flex-1 p-4  lg:p-8 bg-[#eff6ff]/20">{children}</main>
+            <main className="flex-1 p-4 mt-3 md:mt-0 lg:p-8 bg-[#E6F0FA]/20">{children}</main>
         </div>
     </div>
   );

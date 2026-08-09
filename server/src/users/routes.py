@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.auth.services import AuthServices
 from src.auth.dependencies import AccessTokenBearer
@@ -6,7 +6,8 @@ from src.db.main import session
 from .schema import EditProfileSchema, UpdateTransactionPinSchema, TransactionPinSchema, UserSchema, KycUploadSchema
 from .services import UserService
 from src.auth.utils import verifyHash
-from src.db.models import KycStatus
+from src.db.enums import KycStatus
+from src.limiter import limiter
 
 
 router = APIRouter()
@@ -16,13 +17,15 @@ userService =  UserService()
 
 
 @router.get("/profile",  status_code=status.HTTP_200_OK, response_model=UserSchema)
-async def profile(user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
+@limiter.limit("15/minute")
+async def profile(request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
     current_user = await authService.get_user(email=user["user"]["email"], session=session)
     return current_user
 
 
 @router.post("/edit-profile")
-async def edit_user_profile(userData:EditProfileSchema, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
+@limiter.limit("3/minute")
+async def edit_user_profile(userData:EditProfileSchema, request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
     try:
         await userService.edit_user_profile(session=session, userData=userData, email=user["user"]["email"])
 
@@ -38,7 +41,8 @@ async def edit_user_profile(userData:EditProfileSchema, user = Depends(accessTok
 
 
 @router.post("/pin/setup")
-async def transaction_pin_setup(userData:TransactionPinSchema, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
+@limiter.limit("3/minute")
+async def transaction_pin_setup(userData:TransactionPinSchema, request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
   
     userInfo = await authService.get_user(session=session, email=user["user"]["email"])
 
@@ -61,7 +65,8 @@ async def transaction_pin_setup(userData:TransactionPinSchema, user = Depends(ac
     
 
 @router.post("/pin/update")
-async def update_transaction_pin(userData:UpdateTransactionPinSchema, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
+@limiter.limit("3/minute")
+async def update_transaction_pin(userData:UpdateTransactionPinSchema, request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
    userInfo = await authService.get_user(session=session, email=user["user"]["email"])
 
    if(userInfo.transactionPin is None):
@@ -93,9 +98,11 @@ async def update_transaction_pin(userData:UpdateTransactionPinSchema, user = Dep
 
         
 @router.post("/kyc/upload")
-async def kyc_upload(uploadSchema:KycUploadSchema, userData=Depends(accessTokenBearer), session:AsyncSession=Depends(session)):
+@limiter.limit("3/minute")
+async def kyc_upload(uploadSchema:KycUploadSchema, request:Request, userData=Depends(accessTokenBearer), session:AsyncSession=Depends(session)):
 
     user = await authService.get_user(session, userData["user"]["email"])
+    isLinked = await userService.check_kyc_link(uploadSchema.nin_number, session)
 
     if(not user.isVerified):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
@@ -104,6 +111,15 @@ async def kyc_upload(uploadSchema:KycUploadSchema, userData=Depends(accessTokenB
             "description": f"Please verify your account"
         })
 
+
+    if(isLinked):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+            "status": "error",
+            "msg": "Verification Failed",
+            "description": f"This information has already been added to an account."
+    })
+
+    
     if((user.kycStatus == KycStatus.UNVERIFIED and not user.kyc)):
         try:
             uploadStatus = await userService.upload_kyc(session, uploadSchema, user.id)
@@ -180,7 +196,7 @@ async def kyc_upload(uploadSchema:KycUploadSchema, userData=Depends(accessTokenB
         return {"status": "success", "msg": "Upload Successful", "description": "Your KYC process is currently under review. Please await verification."}
 
 
-     
+
      
      
        

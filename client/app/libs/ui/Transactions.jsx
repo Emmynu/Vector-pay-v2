@@ -1,40 +1,147 @@
-import Link from "next/link";
-import { transactions } from "../utils/data";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { formatNumber } from "../utils/utils";
-import { ubuntu, montserrat } from "../utils/font";
+"use client"
+import { useTransactions } from "@/app/dashboard/api/transactions";
+import { useEffect, useState } from "react";
+import { useUser } from "@/app/auth/api/profile";
+import { bricolage, quicksand, montserrat } from "../utils/font";
+import TransactionsTable from "./transactions-table";
+import TransactionDetailsModal from "./transactions-details-modal";
+import { generateReceipt } from "../utils/receipt";
+import { showToast } from "../toast/sonner";
 
-function RecentTransactions() {
-    return ( 
-        <section  className="mt-6 md:col-span-3 shadow-md bg-white rounded-2xl border border-slate-200 px-5 py-8">
-            <header className="flex justify-between items-center">
-                <h2 className="font-medium text-[#03457C] text-xs md:text-sm" style={montserrat.style}>Recent Transactions</h2>
-                <Link href={"/dashboard/transactions"} className="text-[#03457C] text-xs font-medium hover:opacity-70" style={ubuntu.style}>View All</Link>
-            </header>
 
-            <section className="mt-3">{transactions.slice(0,5).map(transaction=>{
-                return(
-                    <article key={transaction.id} className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <div className={`py-1.5 px-2.5 mt-3 rounded-[100%] ${transaction.type === "debit" ? "bg-[#E6F0FA]": "bg-emerald-100"}`}>
-                            {transaction.type === "debit" ? <ArrowDownLeft className="w-4 text-[#4A90E2]"/>:<ArrowUpRight className="w-4 text-emerald-400"/>}
-                            </div>
+export default function Transactions() {
+    const { fetchTransactions, isLoading, transactions } = useTransactions();
+    const [selectedTransactionId, setSelectedId] = useState(null)
+    const [isDownloading, setIsDownloading] = useState(null)
 
-                            <div className="ml-1.5 mt-2">
-                                <h2 className="text-[11px] md:text-xs text-[#03457C] font-medium" style={montserrat.style}>{transaction.description}</h2>
-                                <h6 className="text-[11px] md:text-xs tracking-wide opacity-65">{transaction.counterparty}</h6>
-                            </div>
-                        </div>
+    const [paginationData, setPaginationData] = useState({
+    currentPage: 1,
+    total: 0,
+    hasMore: false,
+    limit: 10,
+    });
+    const { data: user } = useUser();
 
-                        <h4 style={montserrat.style} className={`text-[10px] md:text-xs  ${transaction.type === "debit" ? "text-green-400": "text-[#03457C]"}`}>{formatNumber(transaction.amount)}</h4>
-                    </article>
-                )
-                        
+    const skip = (paginationData.currentPage - 1) * paginationData?.limit;
 
-            })}
-            </section>
-            </section>
-     );
+    useEffect(() => {
+    if (!Number.isNaN(skip)) {
+        fetchTransactions({ skip, limit: paginationData.limit });
+    }
+    }, [paginationData.currentPage, paginationData.limit]);
+
+    useEffect(() => {
+    if (transactions?.data) {
+        setPaginationData((v) => ({
+        ...v,
+        hasMore: transactions?.data?.has_more,
+        total: transactions?.data?.total || 0,
+        }));
+    }
+    }, [transactions]);
+
+    function handleNext() {
+    if (paginationData.hasMore) {
+        setPaginationData((v) => ({
+        ...v,
+        currentPage: v.currentPage + 1,
+        }));
+    }
+    }
+
+    function handlePrev() {
+    if (paginationData.currentPage > 1) {
+        setPaginationData((v) => ({
+        ...v,
+        currentPage: v.currentPage - 1,
+        }));
+    }
+    }
+
+    function handleSelect(id){
+        setSelectedId(id)
+        document.getElementById("my-modal-5").showModal()
+    }
+
+
+    function handleDownload(transaction) {
+        setIsDownloading(true)
+        generateReceipt(transaction, user?.id)
+
+        setTimeout(() => {
+            setIsDownloading(false)
+            document.getElementById("my-modal-5").close()
+            showToast({type: "success", msg: "Receipt Downloaded succesfully"})
+        }, 1500);
+  }
+
+    const totalPages = Math.ceil(paginationData.total / paginationData.limit) || 1;
+
+    return(
+        <section className="w-full space-y-6 bg-white rounded-xl border border-gray-200 p-7">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 ">
+                <div>
+                <h2 className="text-xl font-bold " style={bricolage.style}>
+                    All transactions
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5" style={quicksand.style}>
+                    View and manage your recent account activities
+                </p>
+                </div>
+
+                {paginationData.total > 0 && (
+                <span className="text-[10px] sm:text-[11px] font-medium text-[#03457C] bg-[#E6F0FA] px-3 py-1.5 rounded-full border border-none self-start sm:self-auto" style={montserrat.style}>
+                    Total: {paginationData.total} transactions
+                </span>
+                )}
+            </div>
+
+      
+            <div className="space-y-4">
+                {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 ">
+                    <div className="w-8 h-8 border-3 border-[#E6F0FA] border-t-[#03457C] rounded-full animate-spin"></div>
+                    <p className="mt-3 text-xs text-[#03457C] font-medium skeleton skeleton-text" style={montserrat.style}>
+                    Fetching transactions...
+                    </p>
+                </div>
+                ) : (
+                <TransactionsTable
+                    data={transactions?.data?.transactions || []}
+                    id={user?.id}
+                    handleSelect={handleSelect}
+                    handleDownload={handleDownload}
+                />
+                )}
+
+                
+                <div className="flex items-center justify-between pt-2">
+                <p className="text-xs text-gray-500">
+                    Page <span className="font-semibold text-gray-800">{paginationData.currentPage}</span> of{" "}
+                    <span className="font-semibold text-gray-800">{totalPages}</span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                    <button
+                    onClick={handlePrev}
+                    disabled={paginationData.currentPage === 1 || isLoading}
+                    className="inline-flex cursor-pointer items-center justify-center px-4 py-2 text-xs font-semibold text-[#03457C] bg-white border border-gray-200 rounded-lg hover:bg-[#E6F0FA] hover:border-[#4A90E2]/30 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all duration-150 shadow-sm"
+                    >
+                    Previous
+                    </button>
+
+                    <button
+                    onClick={handleNext}
+                    disabled={!paginationData.hasMore || isLoading}
+                    className="inline-flex cursor-pointer items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-[#03457C] rounded-lg hover:bg-[#023158] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-sm"
+                    >
+                    Next
+                    </button>
+                </div>
+                </div>
+            </div>
+             <TransactionDetailsModal id={"my-modal-5"} transactionId={selectedTransactionId} currentUserId={user?.id} handleDownload={handleDownload} isDownloading={isDownloading}/>
+    </section>
+    )
 }
-
-export default RecentTransactions;

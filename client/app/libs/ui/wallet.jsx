@@ -4,6 +4,7 @@ import { showToast } from "../toast/sonner";
 import { bricolage, ubuntu } from "../utils/font";
 import { Wallet, Plus, EyeOff, Eye, ArrowUpRight, ArrowDownLeft, Copy } from "lucide-react"
 import { useUser } from "@/app/auth/api/profile";
+import Link from "next/link";
 
 function DashboardWallet() {    
     const [showBalance, setShowBalance] = useState(false)
@@ -29,14 +30,14 @@ function DashboardWallet() {
 
             </article>
 
-            <h1 className={`text-4xl select-none tracking-wide font-bold ${bricolage.className}`}>{showBalance ? <CountUp start={0} end={100000 ||user?.balance} duration={0.9} prefix="₦"  decimal="," />: <p className="mt-2">*****</p>}</h1>
+            {isLoading ? <span className="loading loading-spinner loading-sm text-white mt-2 mb-3"/>  : <h1 className={`text-4xl select-none tracking-wide font-bold ${bricolage.className}`}>{showBalance ? <CountUp start={0} end={user?.balance} duration={0.9} prefix="₦"  decimal="," />: <p className="mt-2">*****</p>}</h1>}
 
             <section className={`${showBalance && "mt-3" } flex items-center`}>
-                <button className="flex items-center btn bg-white  text-[#03457c] hover:opacity-80 shadow-xs border-none rounded-full" ><Plus className="w-4 -mr-1"/><h2  className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Deposit</h2></button>
+                <button disabled={isLoading} className="flex items-center btn bg-white  text-[#03457c] hover:opacity-80 disabled:opacity-60 shadow-xs border-none rounded-full" ><Plus className="w-4 -mr-1"/><h2  className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Deposit</h2></button>
 
-                <button className="flex items-center ml-1 md:ml-2 btn bg-transparent hover:opacity-80 text-white shadow-xs border-none rounded-full" ><ArrowUpRight className="w-4 -mr-1"/><h2 className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Transfer</h2></button>
+                <Link href={"/dashboard/transfer"} disabled={isLoading} className="flex items-center ml-1 md:ml-2 btn bg-transparent hover:opacity-80 disabled:opacity-60  text-white shadow-xs border-none rounded-full" ><ArrowUpRight className="w-4 -mr-1"/><h2 className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Transfer</h2></Link>
 
-                <button className="flex items-center ml-1 md:ml-2 btn bg-transparent hover:opacity-80 text-white shadow-xs border-none rounded-full"><ArrowDownLeft className="w-4 -mr-1"/> <h2 className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Withdraw</h2></button>
+                <Link href={"/dashboard/withdraw"} disabled={isLoading} className="flex items-center ml-1 md:ml-2 btn bg-transparent hover:opacity-80 disabled:opacity-60 text-white shadow-xs border-none rounded-full"><ArrowDownLeft className="w-4 -mr-1"/> <h2 className={`${ubuntu.className} font-medium text-xs md:text-sm`}>Withdraw</h2></Link>
             </section>
 
             <div className="divider my-2"></div>

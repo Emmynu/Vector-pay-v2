@@ -8,9 +8,9 @@ def verificationMessage(verificationLink:str, name:str):
                 <title>Welcome to VectorPay</title>
                 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
             </head>
-            <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+            <body style="margin:0;padding:0;background:#fff;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
             
-            <main style="display:flex;justify-content:center;padding:40px 16px;">
+            <main style="display:flex;justify-content:center;padding:40px 16px;background:#fff;">
                 <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
                 <header style="padding:48px 40px 32px 40px;">
                    <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />
@@ -96,8 +96,8 @@ def email_otp_messsage(code:str, name:str):
   <title>Your VectorPay verification code</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  <main style="display:flex;justify-content:center;padding:40px 16px;">
+<body style="margin:0;padding:0; background-color:#ffff;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <main style="display:flex;justify-content:center;padding:40px 16px;background:#fff;">
     <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
       <header style="padding:48px 40px 32px 40px;">
        <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />
@@ -178,9 +178,9 @@ def resetPasswordMessage(resetLink:str):
                 <title>Welcome to VectorPay</title>
                 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
             </head>
-            <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+            <body style="margin:0;padding:0;background:#fff;font-family:'Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
             
-            <main style="display:flex;justify-content:center;padding:40px 16px;">
+            <main style="display:flex;justify-content:center;padding:40px 16px;background:#fff;">
                 <article style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
                 <header style="padding:48px 40px 32px 40px;">
                    <img src="https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/object/sign/uploads/logo.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTNmYjdhMi01YmYyLTQ3NzMtYTVmMS03M2Y2MjNhMmVjMjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2xvZ28uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ4OTkwMjcsImV4cCI6MzMzMjA4OTkwMjd9.ht7OUhcKcCFfn5BOgSVpG2s6WExXEQxvJaziPaMD20A" alt="VectorPay" />

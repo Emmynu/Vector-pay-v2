@@ -6,11 +6,12 @@ import image from "@/app/libs/images/credits.jpg"
 import "../../globals.css"
 import { ArrowRight, RefreshCcw } from "lucide-react"
 import { useVerifyOtp } from "../api/verify-otp";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 function OTPVerification() {
     const { verifyOtp, isLoading, resendOtp, isPending } = useVerifyOtp()
+    const [code, setCode] = useState(undefined)
 
     useEffect(()=>{
        const token = Cookies.get("2fa")
@@ -21,13 +22,15 @@ function OTPVerification() {
     }, [Cookies.get("2fa")])
 
 
+    function handleOtpPaste(e) {
+        const pastedOtpCode =  e.clipboardData.getData("text").trim().replace(/\D/g, '')
+        setCode(pastedOtpCode)
+        verifyOtp({code:pastedOtpCode})
+    }
 
     async function handleOtpVerification(e) {
         e.preventDefault()
-        const data = Object.fromEntries(new FormData(e.currentTarget))
-
-        verifyOtp(data)
-        
+        verifyOtp({code})   
     }
 
     async function handleResend() {
@@ -55,10 +58,10 @@ function OTPVerification() {
                                 <span className="bg-white border px-4.5 border-slate-700"></span>
                                 <span className="bg-white border px-4.5 border-slate-700"></span>
                                 <span className="bg-white border px-4.5 border-slate-700"></span>
-                                <input type="text" autoComplete="one-time-code" inputMode="numeric" maxLength="6" pattern="[0-9]{6}" required name="code" />
+                                <input type="text" autoComplete="one-time-code" inputMode="numeric" maxLength="6" pattern="[0-9]{6}" required name="code"  onPaste={handleOtpPaste} onChange={(e)=>setCode(e.target.value)} value={code}/>
                             </label>
                             <button type="submit" disabled={isPending || isLoading}  className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-full mt-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
-                                {isLoading  ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Verifying...</h2> : <h2 className="flex items-center" >Verify Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></h2> }
+                                {isLoading  ? <h2 className="flex items-center"><span  className="loading loading-xs loading-spinner mr-1"></span>Verifying...</h2> : <h2 className="flex items-center" >Verify Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></h2> }
                             </button>
 
                         </form>

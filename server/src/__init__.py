@@ -8,6 +8,10 @@ from src.db.main import initDB
 import logging
 from src.users.routes import router as userRouter
 from src.health.routes import router as healthRouter
+from src.account.routes import router as accountRouter
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.errors import RateLimitExceeded
+from .limiter import limiter
 
 logger = logging.Logger("uvicorn.error")
 
@@ -37,6 +41,23 @@ app.add_middleware(
         allow_credentials=True
 )
 
+app.state.limiter = limiter
+
+app.add_middleware(SlowAPIMiddleware)
+
+
+
+@app.exception_handler(RateLimitExceeded)
+async def custom_limit_exception_handler(req: Request, err:RateLimitExceeded):
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "status": "error",
+            "msg": "Too many request. Please try again later.",
+            "description": err.detail
+        }
+    )
+
 
 @app.exception_handler(RequestValidationError)
 async def custom_422_exception_handler(req: Request, err:RequestValidationError):
@@ -46,12 +67,12 @@ async def custom_422_exception_handler(req: Request, err:RequestValidationError)
         content={
             "status": "error",
             "msg": "Validation Error",
-            "description": err.errors()
+            "description": err.errors()[0]
         }
     )
 
 @app.exception_handler(Exception)
-async def custom_500_error_handler(req: Request, err:Exception):
+async def custom_500_error_handler(request: Request, err:Exception):
     logger.error(err)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -64,4 +85,5 @@ async def custom_500_error_handler(req: Request, err:Exception):
 
 app.include_router(authRouter, prefix="/api/{version}/auth", tags=["Auth"])
 app.include_router(userRouter, prefix="/api/{version}/users", tags=["Users"])
+app.include_router(accountRouter, prefix="/api/{version}/account", tags=["Account"])
 app.include_router(healthRouter, prefix="/api/{version}", tags=["Health"])

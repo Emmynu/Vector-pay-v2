@@ -29,8 +29,17 @@ api.interceptors.response.use(
         if(error.status === 500 || error?.response?.status === 500){
             showToast({
                 type: "error",
-                title: "Oops...something went wrong!",
-                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: Please try again later or contact support.`,
+                title: `${error?.response?.data?.msg}` || "Oops...something went wrong!",
+                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description || "Please try again later or contact support."}`,
+             
+            })
+        }
+
+        if(error.status === 429 || error?.response?.status === 429){
+            showToast({
+                type: "error",
+                title: `${error?.response?.data?.msg}`,
+                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.description}`,
              
             })
         }

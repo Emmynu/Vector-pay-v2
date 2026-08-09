@@ -2,7 +2,9 @@ from pydantic import BaseModel, Field
 from typing import Optional
 import uuid
 from datetime import date, datetime
-from src.db.models import KycStatus
+from src.db.enums import KycStatus, DailyLimit
+
+
 
 class TransactionPinSchema(BaseModel):
     pin:str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$",examples=["1234"])
@@ -50,8 +52,15 @@ class UserSchema(BaseModel):
     photoURL: Optional[str] 
     kycStatus: KycStatus
     kyc: Optional[KycSchema]
+    dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
+    dailySpent: int = Field(default=0)
+    # transactions: List[TransactionResponseModel]
 
     createdAt: datetime 
     updatedAt: datetime 
 
 
+class ResolveAccountResponseModel(BaseModel):
+    status: str
+    data: list
+    

@@ -1,7 +1,8 @@
 from .schema import TransactionPinSchema, EditProfileSchema, KycUploadSchema
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from src.db.models import Users, Kyc, KycStatus
-from sqlmodel import update
+from src.db.models import Users, Kyc
+from src.db.enums import KycStatus
+from sqlmodel import update, select
 from src.auth.utils import hashPassword
 
 class UserService():
@@ -62,3 +63,11 @@ class UserService():
    await session.commit()
 
    return True if status is not None else False
+
+  async def check_kyc_link(self, nin_number:str,session:AsyncSession):   # checking if kyc info is already linked to an account
+   isLinked = await session.execute(select(Kyc).where(Kyc.nin_number == nin_number))
+
+   result = isLinked.scalars().first()
+          
+   return True if result is not None  else False
+

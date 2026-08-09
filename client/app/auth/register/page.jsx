@@ -9,13 +9,14 @@ import { RefreshCcw } from "lucide-react"
 import { useRegister } from "../api/register";
 import { useEffect, useState } from "react";
 import { generateUserName as userNameFunc } from "@/app/libs/utils/utils";
+import CustomPasswordInput from "@/app/libs/ui/customInput";
 
 
 
 function Register() {
     const { registerUser, isPending:isLoading } =  useRegister()
     const [formData, setFormData] =  useState({firstName: "", lastName: "", userName: "", email:"".toLowerCase(), password: ""})
-    
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
     useEffect(()=>{
        generateUserName()
@@ -92,6 +93,7 @@ function Register() {
                                         pattern="[A-Za-z][A-Za-z0-9]*"
                                         minLength="3"
                                         maxLength="30"
+                                        disabled={isLoading}
                                         title="Only letters, numbers or dash"
                                     />
                                 </label>
@@ -115,6 +117,7 @@ function Register() {
                                         name="lastName"
                                         onChange={handleFormData}
                                         value={formData.lastName}
+                                        disabled={isLoading}
                                         placeholder="Lasttname"
                                         pattern="[A-Za-z][A-Za-z0-9]*"
                                         minLength="3"
@@ -152,42 +155,13 @@ function Register() {
                                 <div className="validator-hint hidden mb-0.5">Enter valid email address</div>
                            </div>
 
-                           <div className="mt-2.5">
-                            <h2 className="text-[12px] tracking-wide mb-0.5">Password: </h2>   
-                            <label className="input validator  bg-input w-full">
-                                <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <g
-                                    strokeLinejoin="round"
-                                    strokeLinecap="round"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    >
-                                    <path
-                                        d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-                                    ></path>
-                                    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-                                    </g>
-                                </svg>
-                                <input
-                                    type="password"
-                                    required
-                                    name="password"
-                                    onChange={handleFormData}
-                                    // value={formData.password}
-                                    placeholder="Password"
-                                    minLength="8"
-                                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                                    title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                                />
-                            </label>
-                            <p className="validator-hint hidden mb-0.5">Must be more than 8 characters, including<br />At least one number <br />At least one lowercase letter <br />At least one uppercase letter</p>
-                            </div>
+                           <CustomPasswordInput isPasswordVisible={isPasswordVisible} setIsPasswordVisible={setIsPasswordVisible} value={formData.password} onChange={handleFormData} isLoading={isLoading} 
+                           />
                         </section>
 
                        
                         <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
-                        {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
+                        {isLoading ? <h2 className="flex items-center"><span className="loading loading-xs loading-spinner mr-1"></span>Loading...</h2> : "Continue"}
                     </button>
                     </form>
                     </article>

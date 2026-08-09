@@ -8,13 +8,16 @@ import { Key, RefreshCcw } from "lucide-react"
 import { showToast } from "@/app/libs/toast/sonner";
 import { useSearchParams } from "next/navigation";
 import { useResetPassword } from "../api/reset-password";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
+import CustomPasswordInput from "@/app/libs/ui/customInput";
 
 
 function ResetPassword() {
     const params = useSearchParams()
     const token = params?.get("token")
     const { resetPassword, isLoading } = useResetPassword()
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+    
 
     function handlePasswordReset(e) {
         e.preventDefault()
@@ -37,7 +40,7 @@ function ResetPassword() {
 
    return ( 
         <main className="grid grid-cols-1  lg:grid-cols-3 items-center">
-           <section className="col-span-1 flex flex-col mt-[15%]  items-center lg:mt-0 mx-0 md:mx-3">
+           <section className="col-span-1 flex flex-col mt-[15%]  items-center lg:mt-0 mx-0 ">
                 <section className="">
                    <Logo />
                 </section>
@@ -47,60 +50,16 @@ function ResetPassword() {
                         <p className="text-[14px] " style={{fontWeight: 350}}>Enter your new password to proceed.</p>
                     </article>
                    
-                    <article className="mt-2.5  px-6 md:px-12">
+                    <article className="mt-2.5  px-6 md:px-8">
                        <form onSubmit={handlePasswordReset}  className="flex flex-col">
                         
-                         <div className="mt-2.5">
-                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">New Password: </h2>
-                            <label className="input validator bg-input w-full">
-                            <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <g
-                                strokeLinejoin="round"
-                                strokeLinecap="round"
-                                strokeWidth="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                                >
-                                <path
-                                    d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-                                ></path>
-                                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-                                </g>
-                            </svg>
-                            <input
-                                type="password"
-                                required
-                                name="password"
-                                placeholder="Password"
-                                minLength="8"
-                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                                title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                            />
-                            </label>
-                            <p className="validator-hint hidden mb-0.5">Must be more than 8 characters, including<br />At least one number <br />At least one lowercase letter <br />At least one uppercase letter</p>
-                        </div>
+                       <CustomPasswordInput isPasswordVisible={isPasswordVisible} setIsPasswordVisible={setIsPasswordVisible} isLoading={isLoading}/>
 
-
-                         <div className="mt-2.5">
-                            <h2 className="text-[12px] tracking-wide mb-1 text-sm">Confirm password: </h2>
-                            <label className="input validator bg-input w-full">
-                                <Key className="text-slate-600 w-4"/>
-                                <input
-                                    type="password"
-                                    required
-                                    name="passwordConfirm"
-                                    placeholder="Confirm password"
-                                    minLength="8"
-                                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                                    title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                                />
-                            </label>
-                            <p className="validator-hint hidden mb-0.5">Must be more than 8 characters, including<br />At least one number <br />At least one lowercase letter <br />At least one uppercase letter</p>
-                        </div>
+                       <CustomPasswordInput isPasswordVisible={isPasswordVisible} setIsPasswordVisible={setIsPasswordVisible} name={"passwordConfirm"} placeholder={"Confirm password"} isLoading={isLoading}/>
 
                         
-                    <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-base py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
-                            {isLoading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>Loading...</h2> : "Continue"}
+                    <button type="submit" disabled={isLoading} className="btn outline-none border-none bg-[#03457C] text-white py-6 rounded-md my-2.5 w-full text-white disabled:bg-[#03457C]/60 ">
+                            {isLoading ? <h2 className="flex items-center"><span className="loading loading-xs loading-spinner mr-1"></span>Loading...</h2> : "Continue"}
                         </button>
                     </form>
                     </article>
