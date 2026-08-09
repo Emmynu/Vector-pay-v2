@@ -9,7 +9,7 @@ import { generateReceipt } from "../utils/receipt";
 import { showToast } from "../toast/sonner";
 
 
-export default function Transactions() {
+export default function AllTransactions() {
     const { fetchTransactions, isLoading, transactions } = useTransactions();
     const [selectedTransactionId, setSelectedId] = useState(null)
     const [isDownloading, setIsDownloading] = useState(null)

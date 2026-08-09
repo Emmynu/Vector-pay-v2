@@ -1,6 +1,6 @@
 "use client";
 
-import Transactions from "../../libs/ui/transactions";
+import AllTransactions from "@/app/libs/ui/transactions";
 import { motion } from "motion/react";
 
 
@@ -12,7 +12,7 @@ function TransactionHistory() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}>
-            <Transactions />
+            <AllTransactions />
         </motion.div>
     </div>
   );
