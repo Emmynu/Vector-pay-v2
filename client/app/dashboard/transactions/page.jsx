@@ -1,6 +1,6 @@
 "use client";
 
-import Transactions from "@/app/libs/ui/transactions";
+import Transactions from "../../libs/ui/transactions";
 import { motion } from "motion/react";
 
 
