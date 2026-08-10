@@ -6,6 +6,7 @@ from src.db.enums import Operators
 from decimal import Decimal
 from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, Reset_daily_spent_schema
 from datetime import datetime, timezone
+from src.users.schema import UserSchema
 
 
 
@@ -26,16 +27,14 @@ class AccountService():
     return True if result is not None else False
 
 
-  async def reset_daily_spent(self, user:Users, session:AsyncSession):
+  async def reset_daily_spent(self, user:UserSchema, session:AsyncSession):
     now = datetime.now(timezone.utc)
 
-    reset_daily_schema = Reset_daily_spent_schema(
-      lastSpentDate=now,
-      dailySpent=0
-    )
-
     if(now.date() > user.lastSpentDate.date()):
-      await session.execute(update(Users).where(Users.id == user.id).values(reset_daily_schema))
+      await session.execute(update(Users).where(Users.id == user.id).values(
+        lastSpentDate=now,
+        dailySpent=0
+      ))
       await session.commit()
 
 

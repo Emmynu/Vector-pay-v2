@@ -50,7 +50,7 @@ async def register_user(userData:CreateUserSchema, request:Request , session: As
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-@limiter.limit("2/minute")
+@limiter.limit("5/minute")
 async def sign_in_user(userData:GetUserSchema,  request:Request, session: AsyncSession =  Depends(session)):
     email =  userData.email
     password =  userData.password

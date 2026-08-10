@@ -54,6 +54,7 @@ class UserSchema(BaseModel):
     kyc: Optional[KycSchema]
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
+    lastSpentDate:datetime
     # transactions: List[TransactionResponseModel]
 
     createdAt: datetime 

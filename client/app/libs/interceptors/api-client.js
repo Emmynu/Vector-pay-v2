@@ -30,7 +30,7 @@ api.interceptors.response.use(
             showToast({
                 type: "error",
                 title: `${error?.response?.data?.msg}` || "Oops...something went wrong!",
-                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description || "Please try again later or contact support."}`,
+                msg: `ERR_${error?.response?.statusText || error.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description || "Please try again later or contact support."}`,
              
             })
         }
