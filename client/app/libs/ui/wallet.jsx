@@ -12,15 +12,21 @@ import VerifyPaymentModal from "./verify-payment-modal";
 
 function DashboardWallet() {    
     const [showBalance, setShowBalance] = useState(false)
-    const [reference, setReference] = useState(window?.localStorage.getItem("reference") || null)
+    const [reference, setReference] = useState(null)
 
     const { data:user, isLoading } = useUser()
 
 
     useEffect(()=>{
-        if(reference){
-            document.getElementById("verify-payment-modal").showModal()
+        // localStorage?.getItem("reference") || 
+        if(typeof window !== undefined){
+            setReference(localStorage?.getItem("reference"))
+
+            if(reference){
+                document.getElementById("verify-payment-modal").showModal()
+            }
         }
+        
     },[reference])
 
     function handleBalanceToggle() {
