@@ -19,8 +19,7 @@ export function useLogin() {
                 window.location = "/auth/verify-otp"
 
             }else{
-            showToast({ type: response?.status, title: response?.title, msg: response?.msg})
-
+                showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }
 
         }

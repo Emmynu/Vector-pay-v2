@@ -3,6 +3,7 @@
 import { usePin } from "@/app/dashboard/api/pin";
 import { Loader2, Eye, EyeOff, X } from "lucide-react";
 import { useState } from "react";
+import { bricolage } from "../utils/font";
 
 function TransactionPinModal({ id, hasPin }) {
     const [show, setShow] = useState(false)
@@ -62,7 +63,7 @@ function TransactionPinModal({ id, hasPin }) {
                 <form className="rounded-2xl modal-box bg-white shadow-xl w-full max-w-md p-6 lg:p-8" onSubmit={handleSetUp}>
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="font-display font-bold text-xl">
+                            <h3 className="font-display font-bold text-xl" style={bricolage.style}>
                             {hasPin ? "Change transaction PIN" : "Set up transaction PIN"}
                             </h3>
                             <p className="text-xs opacity-60 mt-1">4-digit PIN · Never share with anyone</p>
@@ -147,10 +148,10 @@ function TransactionPinModal({ id, hasPin }) {
                     </p>
                     </div>
                     <div className="mt-6 flex gap-3 justify-end">
-                    <button type="button" className="btn btn-ghost rounded-full" onClick={()=>document.getElementById('my_modal_1').close()}>
+                    <button type="button" className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my_modal_1').close()} disabled={isSubmitting}>
                         Cancel
                     </button>
-                    <button type="submit" disabled={isSubmitting} className="btn bg-[#03457C] border-none rounded-full">
+                    <button type="submit" disabled={isSubmitting} className="btn bg-[#03457C] border-none rounded-full text-white disabled:opacity-70 hover:opacity-80">
                         {isSubmitting ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" /> Saving...
@@ -161,6 +162,7 @@ function TransactionPinModal({ id, hasPin }) {
                         "Set PIN"
                         )}
                     </button>
+
                     </div>
                 </form>
                 </div>

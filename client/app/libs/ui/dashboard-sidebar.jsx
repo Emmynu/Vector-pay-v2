@@ -4,6 +4,7 @@ import Logo from "./logo";
 import { X } from "lucide-react"
 import { nav } from "../utils/data";
 import { usePathname } from "next/navigation";
+import { montserrat } from "../utils/font";
 
 
 function Sidebar({ setOpen, user, isLoading }) {
@@ -30,11 +31,12 @@ function Sidebar({ setOpen, user, isLoading }) {
                     key={item.to}
                     href={item.to}
                     onClick={()=>setOpen(false)}
-                    className={`flex items-center gap-3 text-black px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-3 text-black px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                     active
                         ? "bg-[#03457C] text-white"
                         : "hover:bg-[#03457C] hover:text-white transition-colors"
                     }`}
+                    style={montserrat.style}
                 >
                     <Icon className="w-4 h-4" />
                     {item.label}

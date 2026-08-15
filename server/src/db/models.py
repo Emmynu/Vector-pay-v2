@@ -110,6 +110,7 @@ class Transactions(SQLModel, table=True):
     type: TransactionType = Field(default=TransactionType.TRANSFER)
     amount: int
     narration: Optional[str] = Field(default=None, min_length=3)
+    reference: str 
     date: datetime = Field(sa_column=Column(
         pg.TIMESTAMP,
         default=datetime.now(),

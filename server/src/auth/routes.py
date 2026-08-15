@@ -277,6 +277,8 @@ async def reset_password(userData:ResetPasswordSchema, request:Request,  resp:Re
                     "description": "An error occured verifying your account."
             })
 
+
+
 @router.post("/refresh",  status_code=status.HTTP_200_OK)
 @limiter.limit("3/minute")
 async def refresh(resp:Response, request:Request, user=Depends(refreshTokenBearer)):
@@ -284,6 +286,7 @@ async def refresh(resp:Response, request:Request, user=Depends(refreshTokenBeare
 
     saveCookies(response=resp, key="access", val=accessToken, exp=1200)
     return {"status": "success", "msg": "A new access token has been created", }
+    
     
 
 @router.post("/signout")
@@ -293,3 +296,4 @@ async def sign_out(resp:Response,  request:Request,):
       saveCookies(resp, "refresh", "", 0)
 
       return { "status" : "success", "msg": "Logout successfully" }
+

@@ -33,7 +33,7 @@ export function TransactionChart() {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-     duration: 5000, 
+     duration: 1000, 
      easing: 'easeInOutQuart',
     },
     cutout: "75%", // Sleeker, thinner ring

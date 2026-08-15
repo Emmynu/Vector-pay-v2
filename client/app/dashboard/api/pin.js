@@ -8,8 +8,7 @@ export function usePin() {
 
        const transactionPinMutation = useCustomMutation(
         async (data) => {
-           const resp =  await api.post("/users/pin/setup",data)
-
+           const resp =  await api.post("/account/pin/setup",data)
  
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"] })
             
@@ -27,7 +26,7 @@ export function usePin() {
 
     const updatetransactionPinMutation = useCustomMutation(
         async (data) => {
-           const resp =  await api.post("/users/pin/update", data)
+           const resp =  await api.post("/account/pin/update", data)
 
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"] })
             
@@ -41,12 +40,26 @@ export function usePin() {
             showToast({type:resp?.status, title:resp?.title,  msg: resp?.msg })
            }
         },
-
     )
+
+    const resetTransactionPin = useCustomMutation(async()=>{
+        const response = await api.post("/account/pin/reset")
+
+        await queryClient.invalidateQueries({ queryKey: ["get-current-user"] })
+        
+        if(response?.status === 200){
+            showToast({type: response?.data?.status, title:response?.data?.msg})
+
+        }else{
+            showToast({type:response?.status, title:response?.title,  msg: response?.msg })
+        }
+    })
 
     return {
         setTransactionPin:transactionPinMutation.mutate,
         updatetransactionPin:updatetransactionPinMutation.mutate,
-        isSubmitting:transactionPinMutation.isPending || updatetransactionPinMutation.isPending
+        isSubmitting:transactionPinMutation.isPending || updatetransactionPinMutation.isPending,
+        resetTransactionPin:resetTransactionPin.mutate,
+        isResetting: resetTransactionPin.isPending 
     }
 }

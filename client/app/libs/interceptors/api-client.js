@@ -24,31 +24,32 @@ export const refreshApi =  axios.create({
 api.interceptors.response.use(
     (resp) =>resp,
     async (error) =>{
-        console.log();
+        const { statusText, data } = error?.response
         
-        if(error.status === 500 || error?.response?.status === 500){
+        if(error.status === 500 ){
             showToast({
-                type: "error",
-                title: `${error?.response?.data?.msg}` || "Oops...something went wrong!",
-                msg: `ERR_${error?.response?.statusText || error.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description || "Please try again later or contact support."}`,
-             
+                type: data?.status,
+                title: data.msg || "Internal Server Error",
+                msg: `ERR_${statusText}_${error?.status}: ${data?.description}`,
             })
         }
 
-        if(error.status === 429 || error?.response?.status === 429){
+        if(error.status === 429){
             showToast({
-                type: "error",
-                title: `${error?.response?.data?.msg}`,
-                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.description}`,
+                type: data?.status,
+                title: data.msg || "Too Many Request",
+                msg: `ERR_${statusText}_${error?.status}: ${data?.description}`,
              
             })
         }
     
         if(error?.status === 422){
+            const errorMessage = data?.description.map(error=> error).join(", ")
+            
             return {
-                status:  error?.response?.data?.status,
-                title:"Oops...something went wrong!",
-                msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.msg}`
+                status:  data?.status,
+                title: data.msg || "Validation Error",
+                msg: `ERR_${statusText}_${error?.status}: ${errorMessage}`
             }
         }
     
@@ -60,9 +61,9 @@ api.interceptors.response.use(
 
             if(error?.config?.url?.includes("/auth/login")){
                 return {
-                    status: error?.response?.data?.detail?.status,
-                    title: error?.response?.data?.detail?.msg,
-                    msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description}`
+                    status: data?.detail?.status,
+                    title: data?.detail?.msg,
+                    msg: `ERR_${statusText}_${error.status}: ${data?.detail?.description}`
                 }
             }
             
@@ -86,9 +87,9 @@ api.interceptors.response.use(
         
 
         return {
-            status:  error?.response?.data?.detail?.status,
-            title: error?.response?.data?.detail?.msg,
-            msg: `ERR_${error?.response?.statusText}_${error?.response?.status}: ${error?.response?.data?.detail?.description}`
+            status:  data?.detail?.status,
+            title: data?.detail?.msg,
+            msg: `ERR_${statusText}_${error?.status}: ${data?.detail?.description}`
         }
     }
 )

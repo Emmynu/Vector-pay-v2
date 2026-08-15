@@ -9,7 +9,7 @@ export function useUser() {
     const  { data, isLoading } = useQuery({
         queryKey:["get-current-user"],
         queryFn: async()=>{
-            const response = await api.get("/users/profile")
+            const response = await api.get("/account/profile")
             return response
         },
         staleTime: 1000 * 60 * 5,
@@ -19,7 +19,7 @@ export function useUser() {
 
     const editProfileMutation = useCustomMutation(
         async (data) => {
-            const resp = await api.post("/users/edit-profile", data)
+            const resp = await api.post("/account/edit-profile", data)
 
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
 

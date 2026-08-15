@@ -71,11 +71,19 @@ export default function AllTransactions() {
         setTimeout(() => {
             setIsDownloading(false)
             document.getElementById("my-modal-5").close()
-            showToast({type: "success", msg: "Receipt Downloaded succesfully"})
         }, 1500);
   }
 
     const totalPages = Math.ceil(paginationData.total / paginationData.limit) || 1;
+    const transactionData = {
+        data:transactions?.data?.transactions ?? [],
+        id: user?.id,
+        handleSelect: handleSelect,
+        handleDownload: handleDownload,
+        isLoading,
+    }
+
+
 
     return(
         <section className="w-full space-y-6 bg-white rounded-xl border border-gray-200 p-7">
@@ -99,29 +107,14 @@ export default function AllTransactions() {
 
       
             <div className="space-y-4">
-                {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 ">
-                    <div className="w-8 h-8 border-3 border-[#E6F0FA] border-t-[#03457C] rounded-full animate-spin"></div>
-                    <p className="mt-3 text-xs text-[#03457C] font-medium skeleton skeleton-text" style={montserrat.style}>
-                    Fetching transactions...
-                    </p>
-                </div>
-                ) : (
                 <TransactionsTable
-                    data={transactions?.data?.transactions || []}
-                    id={user?.id}
-                    handleSelect={handleSelect}
-                    handleDownload={handleDownload}
+                   {...transactionData}
                 />
-                )}
-
-                
                 <div className="flex items-center justify-between pt-2">
                 <p className="text-xs text-gray-500">
                     Page <span className="font-semibold text-gray-800">{paginationData.currentPage}</span> of{" "}
                     <span className="font-semibold text-gray-800">{totalPages}</span>
                 </p>
-
                 <div className="flex items-center gap-2">
                     <button
                     onClick={handlePrev}

@@ -79,7 +79,7 @@ function EditProfileModal({ id, user }) {
              <div className="modal-box bg-white">
                 <form className=" rounded-2xl  w-full max-w-lg px-0 md:px-6 py-4" onSubmit={handleProfileUpdate}>
                     <div className="flex items-center justify-between">
-                        <h3 className={`font-bold text-xl ${montserrat.className}`}>Edit profile</h3>
+                        <h3 className={`font-bold text-xl ${montserrat.className}`} style={bricolage.style}>Edit profile</h3>
                         <button type="button" onClick={()=>document.getElementById('my-modal-2').close()}className="cursor-pointer">
                             <X className="w-5 h-5" />
                         </button>
@@ -147,7 +147,7 @@ function EditProfileModal({ id, user }) {
                 </section>
 
                 <div className="mt-6 flex items-center justify-end gap-2">
-                    <button type="button" disabled={isEditing || isUploading}  className="btn rounded-full border-none disabled:bg-gray-600 disabled:text-white" onClick={()=>document.getElementById('my-modal-2').close()}>
+                    <button type="button" disabled={isEditing || isUploading}  className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my-modal-2').close()}>
                         Cancel
                     </button>
                     <button type="submit" className="btn outline-none border-none shadow-md bg-[#03457C] text-sm rounded-full mt-3 mb-2 w-fit text-white disabled:bg-[#03457C]/60" disabled={isEditing || isUploading} >

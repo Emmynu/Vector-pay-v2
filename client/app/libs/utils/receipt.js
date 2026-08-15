@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { showToast } from "../toast/sonner";
 
 const BRAND = "#03457C";
 const TINT = "#E6F0FA";
@@ -60,7 +61,8 @@ const BODY = "Quicksand";
 
 // --- Receipt ----------------------------------------------------------------
 export async function generateReceipt(data, currentUserId) {
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  try {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
   registerFonts(doc, await loadFonts());
 
   const W = doc.internal.pageSize.getWidth();
@@ -150,4 +152,8 @@ export async function generateReceipt(data, currentUserId) {
   doc.text("vectorpay.io  ·  loluwasimi54@gmail.com", W / 2, fy + 36, { align: "center" });
 
   doc.save(`vectorpay-receipt-${(data.id || Date.now()).toString().slice(0, 8)}.pdf`);
+  showToast({type: "success", title: "Receipt Downloaded succesfully"})
+  } catch (error) {
+      showToast({type: "error", title: "Failed to Download Receipt"})
+  }
 }

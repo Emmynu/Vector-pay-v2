@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {  ArrowUpRight, WalletCards, Building2 } from "lucide-react";
+import {  ArrowUpRight, Wallet, Building2} from "lucide-react";
 import { formatAmount, formatDate } from "../utils/utils";
 import { ubuntu, montserrat, quicksand } from "../utils/font";
 import { useTransactions } from "@/app/dashboard/api/transactions";
@@ -42,26 +42,22 @@ function RecentTransactions() {
                     pending: "text-amber-700",
                     failed: "text-rose-700",
                     };
-                const typeMap = {
-                    deposit: "bg-green-50",
-                    transfer: "bg-[#E6F0FA]",
-                    withdraw: "bg-purple-100",
-                    };
+              
 
-                const transactionTypeIcon = transaction?.type === "deposit" ? <WalletCards className="w-4 text-green-600"/> : transaction?.type === "withdraw" ? <Building2 className="text-purple-700 w-4"/> : <ArrowUpRight className="w-4 text-[#4A90E2]"/>
+                const transactionTypeIcon = transaction?.type === "deposit" ? <Wallet className="w-4 "/> : transaction?.type === "withdraw" ? <Building2 className="w-4"/> : <ArrowUpRight className="w-4"/>
 
                 return(
                     <article key={transaction.id} className="flex items-center justify-between my-1">
                         <div className="flex items-center ">
-                            <div className={`py-1.5 px-2.5 mt-3 rounded-[100%] ${typeMap[transaction?.type]}`}>
+                            <div className={`py-1.5 px-2.5 mt-3 rounded-[100%]  bg-[#E6F0FA] text-[#4A90E2] `}>
                             {transactionTypeIcon}
                             </div>
 
                             <div className="ml-1.5 mt-2">
 
-                                <h2 className="text-[11px] md:text-xs mt-2 text-[#03457C] font-medium" style={montserrat.style}>{isCredit ? `Transfer from ${sender?.firstName} ${sender?.lastName.slice(0,1)}.`: `Transfer to ${recipient?.firstName} ${recipient?.lastName.slice(0,1)}.`}</h2>
+                                <h2 className="text-[11px] md:text-xs mt-2 text-[#03457C] font-medium" style={montserrat.style}>{transaction?.type === "deposit" ? transaction?.narration : isCredit ? `Transfer from ${sender?.firstName} ${sender?.lastName.slice(0,1).toUpperCase()}.`: `Transfer to ${recipient?.firstName} ${recipient?.lastName.slice(0,1).toUpperCase()}.` }</h2>
 
-                                <h6 className="text-[11px] md:text-xs -mt-0.5 tracking-wide opacity-65 flex items-center" style={quicksand.style}>
+                                <h6 className="text-[11px] md:text-xs -mt-0.5 tracking-wide opacity-75 flex items-center" style={quicksand.style}>
                                     <span className="-mr-1.5">{formatDate(transaction.date)}</span> 
                                     <Dot /> 
                                     {/* <span className={`-mr-1.5 -ml-1 `}>{transaction.type}</span> 
@@ -71,9 +67,9 @@ function RecentTransactions() {
                             </div>
                         </div>
 
-                        <h4 style={montserrat.style}className={`font-semibold text-xs ${isCredit ?"text-green-600" : "text-red-600"
+                        <h4 style={montserrat.style}className={`font-semibold text-xs ${transaction?.type === "deposit" || (transaction?.type === "transfer" && isCredit) ?"text-green-600" : "text-red-600"
                         }`}>
-                            {isCredit ? `+${formatAmount(transaction?.amount)}` : `-${formatAmount(transaction?.amount)}`}</h4>
+                            {transaction?.type === "deposit" || (transaction?.type === "transfer" && isCredit) ? `+${formatAmount(transaction?.amount)}` : `-${formatAmount(transaction?.amount)}`}</h4>
                     </article>
                 )
                         

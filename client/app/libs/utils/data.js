@@ -81,3 +81,6 @@ export const transactions = [
   { id: "TXN10287", date: "2026-06-30", description: "Transfer to Musa I.", counterparty: "UBA ****3310", type: "debit", amount: 32000, status: "failed" },
   { id: "TXN10286", date: "2026-06-29", description: "Airtime purchase", counterparty: "MTN", type: "debit", amount: 5000, status: "successful" },
 ];
+
+
+export const suggestedAmount = ["2000", "5000", "10000", "20000"]

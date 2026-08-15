@@ -95,12 +95,12 @@ function TransactionDetailsModal({ id, transactionId, currentUserId, handleDownl
           <div className="pt-4.5 space-y-5">
             
             <div className={`flex flex-col items-center`}>
-               <h3 className={`p-3 rounded-full  ${isSender ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"}`}> {isSender ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}</h3>
+               <h3 className={`p-3 rounded-full  ${transaction?.type === "withdraw" || (transaction?.type === "transfer" && !isSender) ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"}`}> {transaction?.type === "withdraw" || (transaction?.type === "transfer" && !isSender) ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}</h3>
               </div>
             
             <div className="flex flex-col items-center justify-center text-center space-y-2 pb-2">
               <div className="text-4xl font-extrabold tracking-tight text-slate-900" style={bricolage.style}>
-                {isSender ? "-" : "+"}{formatAmount(data?.amount)}
+                {transaction?.type === "withdraw" || (transaction?.type === "transfer" && !isSender) ? "-" : "+"}{formatAmount(data?.amount)}
               </div>
               <div>{getStatusBadge(data.status)}</div>
             </div>
@@ -137,7 +137,7 @@ function TransactionDetailsModal({ id, transactionId, currentUserId, handleDownl
                     Account Number
                   </span>
                   <span className="font-mono text-slate-700" style={quicksand.style}>
-                    {isSender ? data.recipient?.accountNumber : data.sender?.accountNumber}
+                    {(isSender ? data.recipient?.accountNumber : data.sender?.accountNumber) || "N/A"}
                   </span>
                 </div>
               )}

@@ -7,6 +7,7 @@ import {
 import "@/app/globals.css"
 import { uploadFile } from "../supabase/supabase";
 import { useKyc } from "@/app/dashboard/api/kyc";
+import { bricolage } from "../utils/font";
 
 
 export default function KYCModal({ id }) {
@@ -79,15 +80,15 @@ export default function KYCModal({ id }) {
   };
 
   return (
-     <dialog id={id} className="modal bg-black/60 backdrop-blur-xs ">
+     <dialog id={id} className="modal bg-black/60 backdrop-blur-xs">
             <div className="modal-box  bg-white" onClick={()=>document.getElementById('my-modal-3').close()}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit} className="bg-white rounded-2xl w-full max-w-lg p-6 lg:p-8">
+            <form onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit} className="bg-white rounded-2xl w-full max-w-lg py-4 px-3 md:p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="font-display font-bold text-xl">Verify your identity</h3>
+                        <h3 className="font-display font-bold text-xl" style={bricolage.style}>Verify your identity</h3>
                         <p className="text-xs opacity-60 mt-1">Manual KYC · National Identification Number</p>
                     </div>
-                    <button type="button" onClick={()=>document.getElementById('my-modal-3').close()} className="btn btn-ghost text-black hover:text-white btn-sm btn-square">
+                    <button type="button" onClick={()=>document.getElementById('my-modal-3').close()} className="btn bg-transparent border-none shadow-none text-black btn-sm btn-square">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -124,7 +125,7 @@ export default function KYCModal({ id }) {
 
                     <label className="block">
                         <span className=" text-xs font-semibold opacity-70">Upload NIN slip</span>
-                        <div className="bg-white w-full mt-1 border-2 border-dashed border-base-200 rounded-xl p-2.5 flex items-center gap-3 hover:border-primary/40 text-sm transition cursor-pointer">
+                        <div className="bg-white w-full mt-1 border-2 border-dashed border-black rounded-xl p-2.5 flex items-center gap-3 hover:border-[#03457C]/40 text-sm transition cursor-pointer placeholder:opacity-70">
                             <Upload className="w-4 h-4 opacity-60" />
                             <input
                                 type="file"
@@ -146,7 +147,7 @@ export default function KYCModal({ id }) {
                 {error && <h2 className="text-xs mt-2 text-red-600 truncate">{error}</h2>}
 
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button type="button" onClick={()=>document.getElementById('my-modal-3').close()} className="btn rounded-full">
+                    <button type="button" disabled={isSubmitting || isUploading} onClick={()=>document.getElementById('my-modal-3').close()} className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full">
                         Cancel
                     </button>
                     <button type="submit" disabled={isSubmitting || isUploading || !valid} className="btn bg-[#03457C] disabled:bg-[#03457C]/60 shadow-sm text-white rounded-full border-none">
@@ -192,7 +193,7 @@ function Input({
         minLength={minLength}
         maxLength={maxLength}
         pattern={pattern}
-        className={`input validator mt-1 w-full px-4 py-2.5 rounded-xl border border-base-200 bg-[#ffff] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm placeholder:text-black/60 ${className}`}
+        className={`input validator mt-1 w-full px-4 py-2.5 rounded-xl border border-black bg-[#ffff] focus:outline-none focus:ring-2 focus:ring-[#03457C]/20 focus:border-[#03457C] transition text-sm text-black placeholder:opacity-85 ${className}`}
       />
       <span className="validator-hint hidden text-red-500">{error}</span>
     </label>

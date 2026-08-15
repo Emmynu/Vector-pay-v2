@@ -8,11 +8,13 @@ import { bricolage, montserrat } from "@/app/libs/utils/font";
 import { motion, AnimatePresence } from "motion/react";
 import { useTransfer } from "../api/transfer";
 import { PinModal } from "@/app/libs/ui/pin-payment-modal";
+import { showToast } from "@/app/libs/toast/sonner";
 
 export default function TransferPage() {
   const { data: user } = useUser();
   const [form, setForm] = useState({ account: "", amount: "", note: "", recipient: null });
   const [lookupError, setLookupError] = useState("");
+  
 
 
   const { accountLookup, isLookupLoading } = useTransfer();
@@ -51,6 +53,12 @@ export default function TransferPage() {
 
   function handleTransfer() {
     if (!form.recipient) return;
+
+    if(!user?.transactionPin){
+      showToast({ type: "error", title: "Transaction PIN Required", msg:'You need to set up a transaction PIN before making transfers.' })
+      return;
+    }
+
     document.getElementById("my-modal-4").showModal()
   }
 

@@ -10,17 +10,15 @@ export function useTransactions(){
             return response
     })
 
-    // const { data, isLoading,  } = useQuery({
-    //     queryKey: ["single-transaction"],
-    //     queryFn: async({ id })=>{
-            
-    //     }
-    // })
-
     const fetchSingleTransaction = useCustomMutation(
         async({ transactionId })=>{
  
             const response = await api.get(`/account/transactions/${transactionId}`)
+            return response
+    })
+
+    const verifyTransaction = useCustomMutation(async({ reference })=>{
+            const response = await api.get(`/account/transaction/verify/${reference}`)
             return response
     })
 
@@ -31,6 +29,8 @@ export function useTransactions(){
         transactions: transactions_mutation.data,
         fetchSingleTransaction:fetchSingleTransaction.mutate,
         isFetching: fetchSingleTransaction.isPending,
-        transaction:fetchSingleTransaction.data
+        transaction:fetchSingleTransaction.data,
+        verifyTransaction: verifyTransaction.mutateAsync,
+        isVerifying:verifyTransaction.isPending
     }
 }

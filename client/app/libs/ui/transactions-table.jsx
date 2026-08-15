@@ -1,10 +1,10 @@
 import { useTable, tableFeatures } from "@tanstack/react-table";
 import { transactionsColumn } from "./transaction-column";
-import { bricolage, quicksand } from "../utils/font";
+import { bricolage, quicksand, montserrat } from "../utils/font";
 
 const features = tableFeatures({});
 
-export default function TransactionsTable({ data, id, handleSelect, handleDownload }) {
+export default function TransactionsTable({ data, id, handleSelect, handleDownload, isLoading }) {
   const table = useTable({
     key: "transactions-table",
     data,
@@ -29,7 +29,16 @@ export default function TransactionsTable({ data, id, handleSelect, handleDownlo
           ))}
         </thead>
         <tbody className="divide-y  divide-gray-100" style={quicksand.style}>
-          {table.getRowModel().rows.length > 0 ? (
+          {isLoading ? (
+            <tr >
+              <td className="flex items-center text-center justify-center py-12"> 
+                <div className="w-5 h-5 mr-1 border-3 border-[#E6F0FA] border-t-black rounded-full animate-spin"></div>
+                    <p className="text-xs text-[#0000] font-medium skeleton skeleton-text" style={montserrat.style}>
+                    Fetching transactions...
+                    </p>
+                </td>    
+            </tr>
+          ): (table.getRowModel().rows.length > 0 ? (
             table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
@@ -51,7 +60,8 @@ export default function TransactionsTable({ data, id, handleSelect, handleDownlo
                 No transactions found.
               </td>
             </tr>
-          )}
+          ))}
+      
         </tbody>
       </table>
     </div>

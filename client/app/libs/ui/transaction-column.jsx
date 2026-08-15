@@ -25,7 +25,8 @@ export const transactionsColumn = (id, handleSelect, handleDownload) => [
       const sender = row.original.sender;
       const recipient = row.original.recipient;
 
-      let title = "Transfer";
+      let title =  row.original.type === "deposit" ? row.original.narration :  "transfer";
+
       if (isCredit && sender) {
         title = `Transfer from ${sender.firstName} ${sender.lastName ? sender.lastName.slice(0, 1).toUpperCase() + "." : ""}`;
       } else if (!isCredit && recipient) {
@@ -84,14 +85,23 @@ export const transactionsColumn = (id, handleSelect, handleDownload) => [
     header: "Amount",
     cell: ({ row }) => {
       const isCredit = row.original.recipientId === id;
+      const type = row.original.type 
       const rawAmount = Number(row.original.amount) || 0;
+      let color = null
+
+      if(type === "deposit" || (type === "transfer" && isCredit)){
+        color = "text-green-600"
+      } 
+      else if(type === "withdraw" || (type === "transfer" && !isCredit)){
+          color = "text-red-600"
+      }    
       return (
         <span
           className={`font-semibold text-sm ${
-            isCredit ? "text-green-600" : "text-red-600"
+           color
           }`}
         >
-          {isCredit ? `+${formatAmount(rawAmount)}` : `-${formatAmount(rawAmount)}`}
+          {(type === "deposit" || (type === "transfer" && isCredit)) ? `+${formatAmount(rawAmount)}` : `-${formatAmount(rawAmount)}`}
         </span>
       );
     },

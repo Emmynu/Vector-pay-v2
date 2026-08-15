@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from src.db.main import initDB
 import logging
-from src.users.routes import router as userRouter
 from src.health.routes import router as healthRouter
 from src.account.routes import router as accountRouter
 from slowapi.middleware import SlowAPIMiddleware
@@ -53,7 +52,7 @@ async def custom_limit_exception_handler(req: Request, err:RateLimitExceeded):
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         content={
             "status": "error",
-            "msg": "Too many request. Please try again later.",
+            "msg": "Too many request.",
             "description": err.detail
         }
     )
@@ -62,12 +61,21 @@ async def custom_limit_exception_handler(req: Request, err:RateLimitExceeded):
 @app.exception_handler(RequestValidationError)
 async def custom_422_exception_handler(req: Request, err:RequestValidationError):
     logger.error(err)
+
+    error_details = []
+    for error in err.errors():
+        field_name = ".".join([str(loc) for loc in error["loc"] if loc not in ("body", "query", "path")])
+        
+        error_details.append(
+            f"{field_name or "request"}: {error["msg"]}"
+        )
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "status": "error",
             "msg": "Validation Error",
-            "description": err.errors()[0]
+            "description": error_details
         }
     )
 
@@ -84,6 +92,5 @@ async def custom_500_error_handler(request: Request, err:Exception):
     )
 
 app.include_router(authRouter, prefix="/api/{version}/auth", tags=["Auth"])
-app.include_router(userRouter, prefix="/api/{version}/users", tags=["Users"])
 app.include_router(accountRouter, prefix="/api/{version}/account", tags=["Account"])
 app.include_router(healthRouter, prefix="/api/{version}", tags=["Health"])
