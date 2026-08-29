@@ -97,9 +97,9 @@ def saveCookies(response:Response, key:str, val:str, exp:int):
       key=key,
       value=val,
       httponly=True, 
-      samesite="lax", #Todo: set to none before deployment
+      samesite="none", #Todo: set to none before deployment
       path="/",
-      secure=False,  #Todo: set True before deployment
+      secure=True,  #Todo: set True before deployment
       max_age=exp,
    )
 
