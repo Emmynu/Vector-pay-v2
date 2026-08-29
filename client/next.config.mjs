@@ -4,7 +4,7 @@ const nextConfig = {
         return[
             {
                 source: "/api/v1/:path*",
-                destination:"https://next-tuts-jet.vercel.app/api/v1/:path*"
+                destination:"https://vector-pay.onrender.com/api/v1/:path*"
             }
         ]
     }
