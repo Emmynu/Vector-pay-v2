@@ -42,35 +42,6 @@ export const services = [
 export const names = ["Zorachat", "Kora Pay", "ZendApp", "Polaris", "Bearcart", "Vatebra Limited"];
 
 
-export const chartData = {
-  labels: ["Transaction History"],
-  datasets: [
-    {
-      label: 'Deposit',
-      data:["100000"],
-      backgroundColor: '#4A90E2',
-    },
-
-    {
-      label: 'Transfer',
-      data: ["50000"],
-      backgroundColor: '#E6F0FA',
-    },
-
-      {
-      label: 'Withdraw',
-      data: ["200000"],
-      backgroundColor: '#03457C',
-    },
-    
-  ]
-  // { day: "Wed", inflow: 150000, outflow: 90000 },
-  // { day: "Thu", inflow: 70000, outflow: 55000 },
-  // { day: "Fri", inflow: 210000, outflow: 130000 },
-  // { day: "Sat", inflow: 95000, outflow: 42000 },
-  // { day: "Sun", inflow: 175000, outflow: 88000 },
-}
-
 export const transactions = [
   { id: "TXN10293", date: "2026-07-05", description: "Transfer to Chidi A.", counterparty: "GTBank ****4521", type: "debit", amount: 45000, status: "successful" },
   { id: "TXN10292", date: "2026-07-05", description: "Wallet top-up", counterparty: "Card ****1122", type: "credit", amount: 200000, status: "successful" },
@@ -84,3 +55,14 @@ export const transactions = [
 
 
 export const suggestedAmount = ["2000", "5000", "10000", "20000"]
+
+export const addOnsData = [
+  {
+    label: "transfer",
+    data: ["Transfers are processed instantly, 24/7.", "No fees on VectorPay-to-VectorPay transfers.", "Dispute a transaction? Contact support."]
+  },
+  {
+    label: "withdraw",
+    data: ["Withdrawals are settled under 5 minutes.", "Daily withdrawal cap based on your tier","No fee on interbank transfers", `Dispute a transaction? Contact support.`]
+  }
+]

@@ -17,6 +17,9 @@ verifyOtpSecurity =  OtpBearer()
 refreshTokenBearer = RefreshTokenBearer()
 
 
+
+
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 @limiter.limit("2/minute")
 async def register_user(userData:CreateUserSchema, request:Request , session: AsyncSession = Depends(session)):
@@ -25,25 +28,39 @@ async def register_user(userData:CreateUserSchema, request:Request , session: As
 
         if(userExists):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={
-                "status": "error",
-                "msg": "Oops!...something went wrong",
-                "description": "User already exists"
+               "status": "error",
+                "msg": "Account creation failed.",
+                "description": "An account with this email address already exists."
             })
         else:    
-            try:
-                user = await authService.create_user(session=session, userData=userData)
-                name = f"{userData.firstName} {userData.lastName}"
+            user = await authService.create_user(session=session, userData=userData, request=request)
 
+            if(not user):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                    "status": "error",
+                    "msg": "Registration failed.",
+                    "description": "Unable to create user profile with the provided details."
+                })
+            
+            name = f"{userData.firstName} {userData.lastName}"
+
+            
+            try:
                 #TODO: Integrate email 
-                
-                send_verification_link(userData.email, name)
+                await send_verification_link(userData.email, name, request=request)
+
+                await session.commit()
+                await session.refresh(user)
+
                 return { "status": "success", "msg": f"A verification link has been sent to {userData.email}", "user": user}
             
             except Exception as e:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                await session.rollback()
+
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
                 "status": "error",
-                "msg": "Oops!...something went wrong",
-                "description": str(e)
+                "msg": "Registration could not be completed.",
+                "description": "An internal error occurred while processing your request. Please try again later."
                 })
 
 
@@ -74,12 +91,13 @@ async def sign_in_user(userData:GetUserSchema,  request:Request, session: AsyncS
                 "lastName": userExist.lastName,
                 "userName": userExist.userName,
                 "accountNumber": userExist.accountNumber,
+                "tier": userExist.tier,
                },
                "code" : code
            }
-           
+            
            name = f"{userExist.firstName} {userExist.lastName}"
-           token = send_otp_code(userExist.email, data, code, name)
+           token = await send_otp_code(userExist.email, data, code, name, request)
           
            return { "status": "success", "msg": "Login successful", "user": userExist, "token": token}
        else: 
@@ -164,7 +182,7 @@ async def verify_account(token: str,  request:Request, session:AsyncSession = De
 @router.post("/resend-verification",  status_code=status.HTTP_200_OK)
 @limiter.limit("3/minute")
 async def resend_verification_link(userData:ResendVerificationSchema, request:Request, session:AsyncSession= Depends(session)):
-    try:
+        
         user = await authService.get_user(session, userData.email)
 
         if(not user):
@@ -176,14 +194,17 @@ async def resend_verification_link(userData:ResendVerificationSchema, request:Re
 
         name = f"{user.firstName} {user.lastName}"
 
-        send_verification_link(userData.email, name)
-        return { "status": "success", "msg": f"Verification Link Sent", "description":"We've emailed an upgrade link to your inbox. Click it to verify your identity and complete your account upgrade." }
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-            "status": "error",
-            "msg": "Oops!...something went wrong",
-            "description": str(e)
-    })
+        try:
+            await send_verification_link(userData.email, name, request=request)
+
+            return { "status": "success", "msg": f"Verification Link Sent", "description":"We've emailed an upgrade link to your inbox. Click it to verify your identity and complete your account upgrade." }
+        
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                "status": "error",
+                "msg": "Oops!...something went wrong",
+                "description": str(e)
+        })
 
 
 
@@ -206,7 +227,7 @@ async def resend_otp_code(request:Request, user = Depends(verifyOtpSecurity)):
         }
         name = f"{ user["user"]["firstName"]} { user["user"]["lastName"]}"
         
-        token = send_otp_code(user["user"]["email"], data, code, name)
+        token = await send_otp_code(user["user"]["email"], data, code, name, request)
         return { "status": "success", "msg": f"A new otp code has been sent to {user["user"]["email"]}", "token": token}
     
     except Exception as e: 
@@ -230,7 +251,7 @@ async def forgot_password(userData:ForgotPasswordSchema, request:Request, sessio
         })
 
     if(user is not None):
-        token = send_reset_password_link(userData, user)
+        token = await send_reset_password_link(user, request)
         return { "status": "success", "msg": f"Password reset link has been sent to {userData.email}", "token": token }
   
     

@@ -55,6 +55,7 @@ class UserProfileResponse(BaseModel):
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
     lastSpentDate:datetime
+    location:str
     # transactions: List[TransactionResponseModel]
 
     createdAt: datetime 
@@ -106,6 +107,7 @@ class TransactionCreateSchema(BaseModel):
     reference: str
     senderId:Optional[uuid.UUID]
     recipientId:Optional[uuid.UUID]
+    withdrawal_info: Optional[dict]
 
 
 class UserSchema(BaseModel):
@@ -133,7 +135,9 @@ class TransactionResponseModel(BaseModel):
     senderId:Optional[uuid.UUID] 
     sender: Optional[UserSchema]
     recipientId:Optional[uuid.UUID] 
-    recipient:Optional[UserSchema] 
+    recipient:Optional[UserSchema]
+    withdrawal_info: Optional[dict]
+    reference:str
 
     class Config:
         from_attributes = True
@@ -145,6 +149,26 @@ class TransactionResponsePaginated(BaseModel):
     limit: int
     has_more: bool
 
+
+    class Config:
+        from_atrributes = True
+
+class TransactionChartResponse(BaseModel):
+    labels:List[str]
+    deposit: int
+    transfer: int
+    withdraw: int
+    total: int
+    currentMonth: str
+
+    class Config:
+        from_atrributes = True
+    
+
+class TransactionResponse(BaseModel):
+    transactions: TransactionResponsePaginated
+    chartData: TransactionChartResponse
+
     
 class Reset_daily_spent_schema(BaseModel):
     dailySpent:int
@@ -154,3 +178,18 @@ class Reset_daily_spent_schema(BaseModel):
 class DepositSchema(BaseModel):
     amount:int = Field(ge=10, description="Amount must be greater than 10")
 
+class BankResponse(BaseModel):
+    id:int
+    bank_name:str
+    code:str
+
+class ResolveBankAccountSchema(BaseModel):
+    account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
+    bank_code: str = Field(description="Get bank code from /banks route")
+
+class WithdrawalSchema(BaseModel):
+    account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
+    bank_code: str = Field(description="Get bank code from /banks route")
+    amount:int = Field(ge=10, le=50000, description="Amount must be greater than 10")
+    narration:Optional[str] = Field(min_length=3)
+    pin:str = Field(min_length=4, max_length=4, examples=["1234"], pattern=r"^\d{4}$")

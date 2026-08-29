@@ -1,6 +1,6 @@
 "use client"
 import { X, Upload, RefreshCcw } from "lucide-react"
-import { bricolage, montserrat } from "../utils/font";
+import { bricolage, montserrat, quicksand } from "../utils/font";
 import { useEffect, useRef, useState } from "react";
 import { uploadFile } from "../supabase/supabase";
 import { useUser } from "@/app/auth/api/profile";
@@ -101,10 +101,10 @@ function EditProfileModal({ id, user }) {
                         </div>
                         <div className="flex-1">
                             <p className={`text-sm font-medium ${bricolage.className}`}>Profile photo</p>
-                            <p className="text-xs opacity-60">PNG or JPG. Square images work best.</p>
+                            <p className="text-[11px] opacity-60" style={quicksand.style}>PNG or JPG. Square images work best.</p>
                             
-                            <div className="mt-2 flex gap-2">
-                                <button type="button"  className="btn btn-sm transition-all btn-outline border-2 font-medium hover:bg-[#03457C] hover:text-[#fff] tracking-wide border-[#03457c] text-[#03457C] rounded-full" onClick={()=>fileRef.current.click()} disabled={isEditing || isUploading}>
+                            <div className="mt-1 flex gap-1">
+                                <button type="button"  className="btn btn-sm transition-all btn-outline border-2 font-medium hover:bg-[#03457C] hover:text-[#fff] tracking-wide border-[#03457c] text-[#03457C] rounded-full" onClick={()=>fileRef.current.click()} disabled={isEditing || isUploading} style={bricolage.style}>
                                     <Upload className="w-3.5 h-3.5" /> Upload
                                 </button>
                                 {draft?.avatar && (
@@ -112,14 +112,14 @@ function EditProfileModal({ id, user }) {
                                 type="button"
                                 onClick={() => setDraft((d) => ({ ...d, avatar: "" }))}
                                 disabled={isEditing || isUploading}
-                                className="text-red-600 transition-all hover:bg-red-200  font-medium text-sm cursor-pointer hover:px-5 py-2 rounded-full"
-                                >
+                                className="text-red-600 transition-all bg-red-50  font-medium text-xs cursor-pointer px-5 py-2 rounded-full"
+                                style={bricolage.style}>
                                 Remove
                                 </button>
                                 )}
                                                            
                             </div>
-                            <h2 className="my-1.5 text-[11px] font-medium text-red-600">{error}</h2>
+                           
                             <input
                             ref={fileRef}
                             type="file"
@@ -132,25 +132,28 @@ function EditProfileModal({ id, user }) {
                 <section className="mt-7 space-y-4">
                     
                     <div className="flex flex-col w-full ">
-                        <label className="text-xs mb-1" style={{fontWeight: 350}} htmlFor="firstName">First Name</label>
-                        <input className="border px-2 py-1.5 rounded-md text-sm " value={draft?.firstName} minLength={3} onChange={(v) => setDraft({ ...draft, firstName: v.target.value.trim() })} name="firstName"/>
+                        <label className={`${quicksand.className} font-normal text-xs mb-1`}  htmlFor="firstName">First Name</label>
+                        <input className="border px-2 py-1.5 font-normal rounded-md text-[13px] " value={draft?.firstName} minLength={3} onChange={(v) => setDraft({ ...draft, firstName: v.target.value.trim() })} style={quicksand.style} name="firstName"/>
                     </div>
 
                     <div className="flex flex-col w-full ">
-                        <label className="text-xs mb-1" style={{fontWeight: 350}} htmlFor="lastName">Last Name</label>
-                        <input className="border px-2 py-1.5 rounded-md text-sm " value={draft?.lastName} minLength={3} onChange={(v) => setDraft({ ...draft, lastName: v.target.value.trim() })} name="lastName"/>
+                        <label className={`${quicksand.className} fon-nfont-normal text-xs mb-1`}  htmlFor="lastName">Last Name</label>
+                        <input className="border px-2 py-1.5 font-normal rounded-md text-[13px] " value={draft?.lastName} minLength={3} onChange={(v) => setDraft({ ...draft, lastName: v.target.value.trim() })} style={quicksand.style} name="lastName"/>
                     </div>
 
-                    <p className="text-xs opacity-60 pt-1">
+                    <h2 className="my-1.5 text-[11px] font-medium text-red-600" style={quicksand.style}>{error}</h2>
+                    
+                    <p className="text-xs opacity-60" style={quicksand.style}>
+
                     NIN can only be updated through identity verification.
                     </p>
                 </section>
 
                 <div className="mt-6 flex items-center justify-end gap-2">
-                    <button type="button" disabled={isEditing || isUploading}  className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my-modal-2').close()}>
+                    <button type="button" disabled={isEditing || isUploading}  className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my-modal-2').close()} style={bricolage.style}>
                         Cancel
                     </button>
-                    <button type="submit" className="btn outline-none border-none shadow-md bg-[#03457C] text-sm rounded-full mt-3 mb-2 w-fit text-white disabled:bg-[#03457C]/60" disabled={isEditing || isUploading} >
+                    <button type="submit" className="btn outline-none border-none shadow-md bg-[#03457C] text-sm rounded-full mt-3 mb-2 w-fit text-white disabled:bg-[#03457C]/60" disabled={isEditing || isUploading} style={bricolage.style}>
                         {isEditing || isUploading ? <h2 className="flex items-center"><span><RefreshCcw className="animate-spin w-4 mr-1"/></span>{isEditing ? "Saving...": "Uploading..."}</h2> : "Save changes"}
                        
                     </button>

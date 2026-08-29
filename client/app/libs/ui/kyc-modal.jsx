@@ -7,14 +7,14 @@ import {
 import "@/app/globals.css"
 import { uploadFile } from "../supabase/supabase";
 import { useKyc } from "@/app/dashboard/api/kyc";
-import { bricolage } from "../utils/font";
+import { bricolage, quicksand } from "../utils/font";
 
 
 export default function KYCModal({ id }) {
   const [nin, setNin] = useState({ninNumber: "", fullName: "", dob: "", ninSlip: ""})
   const [error, setError] = useState(false);
-  const [inputError, setInputError] = useState(false);
-      const [isUploading, setIsUploading] = useState(false)
+//   const [inputError, setInputError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false)
 
   const { uploadKyc, isSubmitting } = useKyc()
 
@@ -25,11 +25,11 @@ export default function KYCModal({ id }) {
 
   useEffect(()=>{
     if(!allowedTypes.includes(nin.ninSlip?.type)){
-        setInputError("Please upload PDF, JPEG, JPG or PNG image.")
+        setError("Please upload PDF, JPEG, JPG or PNG image.")
     }
 
     setTimeout(() => {
-        setInputError("")
+        setError("")
     }, 3000);
 
   },[nin.ninSlip])
@@ -46,7 +46,6 @@ export default function KYCModal({ id }) {
   
     setTimeout(() => {
         setError("")
-        setInputError("")
     }, 3000);
 
     if(valid){
@@ -71,8 +70,11 @@ export default function KYCModal({ id }) {
             }
 
             //upload data
-            uploadKyc(data)
-            setNin({ninNumber: "", fullName: "", dob: "", ninSlip: ""})
+            const kycResponse = await uploadKyc(data)
+
+            if(kycResponse?.status !== "error"){
+                setNin({ninNumber: "", fullName: "", dob: "", ninSlip: ""})
+            }
         }
 
     }
@@ -86,7 +88,7 @@ export default function KYCModal({ id }) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h3 className="font-display font-bold text-xl" style={bricolage.style}>Verify your identity</h3>
-                        <p className="text-xs opacity-60 mt-1">Manual KYC · National Identification Number</p>
+                        <p className="text-xs opacity-60 mt-0l5" style={quicksand.style}>Manual KYC · National Identification Number</p>
                     </div>
                     <button type="button" onClick={()=>document.getElementById('my-modal-3').close()} className="btn bg-transparent border-none shadow-none text-black btn-sm btn-square">
                         <X className="w-4 h-4" />
@@ -112,7 +114,7 @@ export default function KYCModal({ id }) {
                         pattern="[0-9]*"
                     />
                     <label className="block">
-                        <span className="text-xs font-semibold opacity-70">Date of birth</span>
+                        <span className="text-xs font-semibold opacity-70"  style={quicksand.style}>Date of birth</span>
                         <Input
                         type="date"
                         value={nin.dob}
@@ -124,33 +126,34 @@ export default function KYCModal({ id }) {
                     </label>
 
                     <label className="block">
-                        <span className=" text-xs font-semibold opacity-70">Upload NIN slip</span>
-                        <div className="bg-white w-full mt-1 border-2 border-dashed border-black rounded-xl p-2.5 flex items-center gap-3 hover:border-[#03457C]/40 text-sm transition cursor-pointer placeholder:opacity-70">
+                        <span className=" text-xs font-semibold opacity-70" style={quicksand.style}>Upload NIN slip</span>
+                        <div className="bg-white w-full mt-1 border-2 border-dashed border-black rounded-xl p-2.5 flex items-center gap-3 hover:border-[#03457C]/40 text-[13px]  transition cursor-pointer placeholder:opacity-70">
                             <Upload className="w-4 h-4 opacity-60" />
                             <input
                                 type="file"
                                 accept="image/*, application/pdf"
                                 onChange={(e) => setNin({...nin, ninSlip:e.target.files[0]})}
                                 className="text-sm file:hidden flex-1"
-                                title="Invalid FIl"
+                                title="Invalid File Format"
+                                style={quicksand.style}
                             />
                            
                         </div>
-                        {inputError && <h2 className="mt-1 text-xs text-red-600">{inputError} </h2>}
+                        {/* {inputError && <h2 className="mt-1 text-xs text-red-600">{inputError} </h2>} */}
                     </label>
 
-                    <p className="text-xs opacity-60">
+                    <p className="text-xs opacity-60" style={quicksand.style}>
                         Your details will be reviewed manually. You'll be notified once your verification is complete.
                     </p>
                 </div>
 
-                {error && <h2 className="text-xs mt-2 text-red-600 truncate">{error}</h2>}
+                {error && <h2 className="text-[11px] mt-2 text-red-600 truncate font-semibold" style={quicksand.style}>{error}</h2>}
 
                 <div className="mt-6 flex gap-3 justify-end">
-                    <button type="button" disabled={isSubmitting || isUploading} onClick={()=>document.getElementById('my-modal-3').close()} className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full">
+                    <button type="button" disabled={isSubmitting || isUploading} onClick={()=>document.getElementById('my-modal-3').close()} className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" style={bricolage.style}>
                         Cancel
                     </button>
-                    <button type="submit" disabled={isSubmitting || isUploading || !valid} className="btn bg-[#03457C] disabled:bg-[#03457C]/60 shadow-sm text-white rounded-full border-none">
+                    <button type="submit" disabled={isSubmitting || isUploading || !valid} className="btn bg-[#03457C] disabled:bg-[#03457C]/60 shadow-sm text-white rounded-full border-none" style={bricolage.style}>
                         {isSubmitting || isUploading ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" /><span>{isUploading ? "Uploading...": " Submitting..."}</span>
@@ -183,7 +186,7 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold opacity-70">{label}</span>
+      <span className="text-xs font-semibold opacity-70" style={quicksand.style}>{label}</span>
       <input
         type={type}
         value={value}
@@ -193,9 +196,9 @@ function Input({
         minLength={minLength}
         maxLength={maxLength}
         pattern={pattern}
-        className={`input validator mt-1 w-full px-4 py-2.5 rounded-xl border border-black bg-[#ffff] focus:outline-none focus:ring-2 focus:ring-[#03457C]/20 focus:border-[#03457C] transition text-sm text-black placeholder:opacity-85 ${className}`}
+        className={`input validator mt-0.5 w-full px-4 py-2.5 rounded-xl border border-black bg-[#ffff] focus:outline-none focus:ring-2 focus:ring-[#03457C]/20 focus:border-[#03457C] transition text-[13px] text-black placeholder:opacity-85 ${className}`} style={quicksand.style}
       />
-      <span className="validator-hint hidden text-red-500">{error}</span>
+      <span className="validator-hint hidden text-[11px] text-red-500 font-semibold" style={quicksand.style}>{error}</span>
     </label>
   );
 }

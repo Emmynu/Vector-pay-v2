@@ -69,7 +69,7 @@ function AmountModal({ id }) {
 
           <div className="flex my-3.5">
               {suggestedAmount.map(amount=>{
-                  return <h2 className="ml-2 px-2.5 py-1 cursor-pointer text-xs font-semibold rounded-full bg-[#E6F0FA] text-[#03457C]/80" key={amount} style={quicksand.style} onClick={()=>setAmount(amount)}>{formatAmount(amount)}</h2>
+                  return <h2 className="ml-2 px-2.5 py-1 cursor-pointer text-xs font-semibold rounded-full bg-[#E6F0FA]/50 text-[#03457C]/65" key={amount} style={quicksand.style} onClick={()=>setAmount(amount)}>{formatAmount(amount)}</h2>
               })}
           </div>
 

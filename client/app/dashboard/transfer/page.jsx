@@ -1,14 +1,14 @@
 "use client";
 
-import { ArrowUpRight, Wallet, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowUpRight,  Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUser } from "@/app/auth/api/profile";
-import { formatAmount } from "@/app/libs/utils/utils";
-import { bricolage, montserrat } from "@/app/libs/utils/font";
+import { bricolage, quicksand } from "@/app/libs/utils/font";
 import { motion, AnimatePresence } from "motion/react";
 import { useTransfer } from "../api/transfer";
 import { PinModal } from "@/app/libs/ui/pin-payment-modal";
 import { showToast } from "@/app/libs/toast/sonner";
+import AddOns from "@/app/libs/ui/add-ons";
 
 export default function TransferPage() {
   const { data: user } = useUser();
@@ -71,10 +71,10 @@ export default function TransferPage() {
         className="lg:col-span-2 rounded-2xl bg-[#fff] border border-slate-200 p-6 lg:p-8 shadow-sm"
       >
         <section>
-          <h2 className="font-display font-bold text-base" style={montserrat.style}>
+          <h2 className="font-display font-bold md:text-lg" style={bricolage.style}>
             Send money
           </h2>
-          <p className="opacity-60 text-[13px] md:text-sm">
+          <p className="opacity-60 text-[13px] " style={quicksand.style}>
             Instant peer-to-peer transfers with zero fees.
           </p>
 
@@ -86,7 +86,7 @@ export default function TransferPage() {
             className="mt-6 space-y-4"
           >
             <div>
-              <label className="text-[12px] tracking-wide mb-1 text-sm font-medium">
+              <label className="text-xs mb-0.5 font-medium" style={quicksand.style}>
                 Account number
               </label>
               <div className="relative flex items-center">
@@ -99,7 +99,8 @@ export default function TransferPage() {
                   onChange={(e) =>
                     setForm({ ...form, account: e.target.value.replace(/\D/g, "") })
                   }
-                  className="input bg-white w-full placeholder:opacity-65 mt-1.5 rounded-xl border border-black font-mono tracking-wider pr-10"
+                  style={quicksand.style}
+                  className="input bg-white w-full placeholder:opacity-65 mt-1 text-[13px] rounded-xl border border-black font-mono tracking-wider pr-10"
                   placeholder="0123456789"
                 />
                 {isLookupLoading && (
@@ -116,11 +117,11 @@ export default function TransferPage() {
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    className="mt-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center space-x-2.5 text-emerald-700"
+                    className="mt-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center space-x-1.5 text-emerald-700"
                   >
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider">
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={bricolage.style}>
                         {`${form.recipient?.firstName} ${form.recipient?.lastName}`|| "Recipient Verified"}
                       </p>
                     </div>
@@ -142,7 +143,7 @@ export default function TransferPage() {
             </div>
 
             <div>
-              <label className="text-[12px] tracking-wide mb-1 text-sm font-medium">
+              <label className="text-xs tracking-wide mb-1 font-medium" style={quicksand.style}>
                 Amount (NGN)
               </label>
               <input
@@ -150,39 +151,42 @@ export default function TransferPage() {
                 inputMode="decimal"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              className={`input input-bordered w-full placeholder:opacity-65 mt-1.5 rounded-xl border bg-[#fff] ${form.amount && Number(form.amount) < 10
+                style={quicksand.style}
+              className={`input input-bordered text-[13px] w-full placeholder:opacity-65 mt-1 rounded-xl border bg-[#fff] ${form.amount && Number(form.amount) < 10
                   ? "border-rose-500 focus:outline-rose-500"
                   : "border-black"
               }`}
                 placeholder="0.00"
               />
               {form.amount && Number(form.amount) < 10 && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                <p style={quicksand.style}  className="text-[11px] text-red-600 mt-1.5 font-medium">
                   Minimum transfer amount is ₦10.00
                 </p>
               )}
             </div>
 
             <div>
-              <label className="text-[12px] tracking-wide mb-1 text-sm font-medium">
+              <label className="text-xs tracking-wide mb-0.5  font-medium" style={quicksand.style}>
                 Narration (optional)
               </label>
               <input
                 value={form.note}
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
-                className="input input-bordered w-full placeholder:opacity-65 mt-1.5 rounded-xl border border-black bg-[#fff]"
+                className="input input-bordered w-full placeholder:opacity-65 mt-1 text-[13px] rounded-xl border border-black bg-[#fff]"
                 placeholder="What's this for?"
                 minLength={3}
+                style={quicksand.style}
               />
             </div>
 
             <button
               disabled={!form.recipient || isLookupLoading}
-              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60  rounded-full w-full mt-2 transition-all"
+              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 text-sm rounded-full w-full mt-2 transition-all"
               type="submit"
+              style={bricolage.style}
             >
-              <ArrowUpRight className="w-4 h-4" />
-              Send transfer
+              <ArrowUpRight className="w-4 h-4 -mr-0.5" />
+              <p className="text-[13px] mt-0.5">Send transfer</p>
             </button>
           </form>
         </section>
@@ -193,24 +197,9 @@ export default function TransferPage() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
-        <aside className="rounded-2xl bg-[#fff] border border-slate-200 p-6 shadow-sm h-fit">
-          <p className="text-xs md:text-sm opacity-60 flex items-center">
-            <Wallet className="w-3.5 mr-1" /> Available balance
-          </p>
-          <p
-            className="text-[30px] font-display font-bold mt-1"
-            style={bricolage.style}
-          >
-            {formatAmount(user?.balance) || "₦0.00"}
-          </p>
-          <div className="mt-2 pt-3 border-t border-slate-300 text-[11px] md:text-xs space-y-1 opacity-70">
-            <p>· Transfers are processed instantly, 24/7.</p>
-            <p>· No fees on VectorPay-to-VectorPay transfers.</p>
-            <p>· Interbank transfers may incur a ₦25 fee.</p>
-          </div>
-        </aside>
+        <AddOns balance={user?.balance}/>
       </motion.div>
-      <PinModal id={"my-modal-4"} formData={form} setForm={setForm}/>
+      <PinModal id={"my-modal-4"} formData={form} setForm={setForm} type="transfer"/>
     </div>
   );
 }

@@ -3,9 +3,9 @@ import { useUser } from "@/app/auth/api/profile";
 import  EditProfileModal from "@/app/libs/ui/profile-edit";
 import TransactionPinModal from "@/app/libs/ui/pin-setup-modal";
 import KYCModal from "@/app/libs/ui/kyc-modal";
-import { ShieldCheck, Mail, KeyRound,Lock, ShieldAlert, IdCard, BadgeCheck, BadgeInfo, Loader2, RotateCcw } from "lucide-react";
+import { ShieldCheck, Mail, KeyRound,Lock, ShieldAlert, BadgeCheck, BadgeInfo, Loader2, RotateCcw, Wallet2, CreditCard, MapPin } from "lucide-react";
 import { motion } from "motion/react";
-import { bricolage } from "@/app/libs/utils/font";
+import { bricolage, montserrat, quicksand } from "@/app/libs/utils/font";
 import { showToast } from "@/app/libs/toast/sonner";
 import { useVerify } from "@/app/auth/api/verify";
 import { usePin } from "../api/pin";
@@ -19,7 +19,7 @@ function Profile() {
   const Icon = user?.isVerified ? <ShieldCheck className="w-3.5 h-3.5"/>: <ShieldAlert className="w-3.5 h-3.5"/>
   const rejectionReason = "The name provided doesnt match the name on the NIN slip."
   
-
+  console.log(user)
 
  async function handleKycModal() {
     if(user?.isVerified){
@@ -77,25 +77,25 @@ function Profile() {
                     ${ user?.lastName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}
                   `}</h2>
 
-                  <p className={`text-sm opacity-50 `}>{user?.userName}</p>
+                  <p className={`text-xs opacity-50 `} style={quicksand.style}>{user?.userName}</p>
                   <p className="text-xs font-semibold">
-                    <span className={`inline-flex items-center rounded-full gap-1 mt-3 px-2.5 py-1 ${user?.isVerified ? "bg-success/10 text-success": "bg-orange-600/10 text-orange-600"}`}>{Icon} {user?.isVerified ? `Verified ` : `Unverified`} · {`Tier ${user?.tier || "1"}`}</span>
+                    <span className={`inline-flex items-center rounded-full gap-1 mt-2 px-2.5 py-1 ${user?.isVerified ? "bg-success/10 text-success": "bg-orange-600/10 text-orange-600"}`} style={quicksand.style}>{Icon} {user?.isVerified ? `Verified ` : `Unverified`} · {`Tier ${user?.tier || "1"}`}</span>
                 </p>
               </section>}
             </motion.div>
 
             <motion.div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-[#FFF] p-4 md:p-6 lg:p-8 shadow-sm" initial={{ x : 80, opacity: 0}}  animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 100 }}>
                 <section>
-              <h2 className="font-display font-bold text-lg">Personal details</h2>
+              <h2 className="font-display font-bold text-lg" style={bricolage.style}>Personal details</h2>
               <div className="mt-4 grid sm:grid-cols-2 gap-4">
                   <Field isLoading={isLoading} icon={Mail} label="Email" value={user?.email} />
-                  <Field isLoading={isLoading} icon={IdCard} label="NIN" value={user?.kycStatus === "verified" ? user?.kyc?.nin_number:<span className="italic">Not Provided</span>} />
+                  <Field isLoading={isLoading} icon={MapPin} label="Location" value={user?.location} />
               </div>
               <div className="mt-6 pt-6 border-t border-slate-300">
-                  <h3 className="font-semibold">Account</h3>
+                  <h3 className="font-semibold text-sm" style={bricolage.style}>Account</h3>
                   <div className="mt-3 grid sm:grid-cols-2 gap-4">
-                    <Field isLoading={isLoading} label="Account number" value={user?.accountNumber} mono />
-                    <Field isLoading={isLoading} label="Wallet" value={"VectorPay Wallet"} />
+                    <Field isLoading={isLoading} icon={CreditCard} label="Account number" value={user?.accountNumber} mono />
+                    <Field isLoading={isLoading} icon={Wallet2} label="Wallet" value={"VectorPay Wallet"} />
                   </div>
               </div>
               <button disabled={isLoading || isResending || isResetting} className={`btn bg-[#03457c] text-white hover:opacity-90 transition-opacity shadow-none border-none outline-none rounded-full mt-6 disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`}  onClick={()=>document.getElementById('my-modal-2').showModal()} >Edit profile</button>
@@ -114,8 +114,8 @@ function Profile() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-display font-bold text-lg">Transaction PIN</h3>
-                      <p className="text-xs md:text-sm opacity-70 mt-1">
+                      <h3 className="font-display font-bold text-base" style={montserrat.style}>Transaction PIN</h3>
+                      <p className="text-xs md:text-[13px] opacity-70 mt-0.5" style={quicksand.style}>
                         A 4-digit PIN used to authorize transfers, withdrawals and other sensitive actions.
                       </p>
                     </div>
@@ -125,7 +125,7 @@ function Profile() {
                       </span>
                     )}
                   </div>
-                  <div className="mt-4 flex items-center gap-3">
+                  <div className="mt-3 flex items-center gap-3">
                     <button disabled={isLoading || isResending || isResetting} className={`btn bg-[#03457c] disabled:bg-[#03457c]/60 disabled:cursor-not-allowed text-white text-sm rounded-full border-none ${bricolage.className}`} onClick={()=>document.getElementById('my_modal_1').showModal()}>
                       <KeyRound className="w-4 h-4" />
                       {user?.transactionPin ? "Change PIN" : "Set up PIN"}
@@ -157,15 +157,15 @@ function Profile() {
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-lg">Identity verification (KYC)</h3>
-                  <p className="text-xs md:text-sm opacity-70 mt-1">
+                  <h3 className="font-display font-bold" style={montserrat.style}>Identity verification (KYC)</h3>
+                  <p className="text-xs md:text-[13px] opacity-70 mt-0.5" style={quicksand.style}>
                     Verify your identity with your National Identification Number (NIN) to raise your transaction limits
                     and unlock all VectorPay features.
                   </p>
                  {user?.kycStatus === "unverified" && <button disabled={isLoading || isResending || isResetting} className={`btn bg-[#03457C] text-white mt-2 border-none text-sm rounded-full p-6 font-medium disabled:bg-[#03457c]/60 disabled:cursor-not-allowed ${bricolage.className}`} onClick={handleKycModal}>{isResending ? <h3><span className="loading loading-xs loading-spinner mr-1"></span><span>Sending...</span></h3> : "Start NIN verification"}</button>}
 
-                   {user?.kycStatus === "pending" && (
-                <div className="mt-4 p-2.5 md:p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center gap-3">
+                {user?.kycStatus === "pending" && (
+                <div className="mt-2.5 p-2.5 md:p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center gap-3">
                   <BadgeInfo className="w-7 md:w-4 h-4 text-warning" />
                   <p className="text-xs md:text-sm text-black/70">
                     Your NIN submission is under manual review. This usually takes about 5-7 working days.
@@ -174,20 +174,20 @@ function Profile() {
               )}
 
               {user?.kycStatus === "verified" && (
-                <div className="mt-4 p-2.5 md:p-4 rounded-xl bg-success/10 border border-success/20 flex items-center gap-3">
+                <div className="mt-2.5 p-2.5 md:p-4 rounded-xl bg-success/10 border border-success/20 flex items-center gap-3">
                   <BadgeCheck className="w-7 md:w-4 h-4 text-success" />
                   <p className="text-xs md:text-sm text-black/70">Your identity has been verified. You now have full access.</p>
                 </div>
               )}
 
               {user?.kycStatus === "declined" && (
-                <div className="mt-4 p-2.5 md:p-4 rounded-xl bg-red-50 border border-red-300">
-                  <div className="flex items-center gap-3">
-                    <ShieldAlert className="w-4 h-4 text-red-500" />
-                    <p className="text-sm font-semibold text-red-500">Verification failed</p>
+                <div className="mt-2.5 p-2.5 md:p-4 rounded-xl bg-red-50 border border-red-300">
+                  <div className="flex items-center gap-1">
+                    <ShieldAlert className="w-4.5 h-4.5 text-red-500" />
+                    <p className="text-[13px] font-semibold text-red-500" style={montserrat.style}>Verification failed</p>
                   </div>
-                  {rejectionReason && <p className="text-xs md:text-sm opacity-70 mt-2">{rejectionReason}</p>}
-                  <button onClick={handleKycModal} disabled={isLoading || isResending || isResetting} className="btn bg-transparent outline-none hover:bg-red-400 text-xs md:text-sm shadow-none hover:shadow-md border-2 border-red-400 text-red-600 hover:text-white rounded-full mt-3 disabled:opacity-60">
+                  {rejectionReason && <p className="text-xs md:text-[13px] opacity-70 mt-1" style={quicksand.style}>{rejectionReason}</p>}
+                  <button onClick={handleKycModal} disabled={isLoading || isResending || isResetting} className="btn bg-transparent outline-none hover:bg-red-500 text-xs md:text-sm shadow-none hover:shadow-md border-2 border-red-400 text-red-600 hover:text-white rounded-full mt-3 disabled:opacity-60">
                     {isResending ? <h3><span className="loading loading-xs loading-spinner mr-1"></span><span>Sending...</span></h3> : "Re-submit NIN"}
                   </button>
                 </div>
@@ -216,12 +216,12 @@ function Field({
 }) {
   return (
   <>
-    <div className="p-4 rounded-xl border border-slate-400">
-      <div className="flex items-center gap-2 text-xs opacity-60">
+    <div className="p-4 rounded-xl border border-slate-400 ">
+      <div className="flex items-center gap-1 text-xs opacity-60" style={quicksand.style}>
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
       </div>
-      {isLoading ? <div className="skeleton mt-3 w-38 h-3 bg-slate-200"></div>: <p className={`mt-1 font-medium ${mono ? "font-mono tracking-wider" : ""}`}>{value}</p>}
+      {isLoading ? <div className="skeleton mt-3 w-38 h-3 bg-slate-200"></div>: <p className={`mt-1 font-bold ${mono ? "font-mono tracking-wide" : ""} text-sm`} style={quicksand.style}>{value}</p>}
     </div>
   </>
   );

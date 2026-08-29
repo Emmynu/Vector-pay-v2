@@ -4,7 +4,7 @@ import Logo from "./logo";
 import { X } from "lucide-react"
 import { nav } from "../utils/data";
 import { usePathname } from "next/navigation";
-import { montserrat } from "../utils/font";
+import { bricolage, montserrat, quicksand } from "../utils/font";
 
 
 function Sidebar({ setOpen, user, isLoading }) {
@@ -12,7 +12,7 @@ function Sidebar({ setOpen, user, isLoading }) {
 
     return ( 
          <>
-            <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200">
+            <div className="h-15 flex items-center justify-between px-5 border-b border-slate-200">
                 <Logo />
             <button className="lg:hidden border-none outline-none btn shadow-none bg-[#03457c] text-white btn-sm btn-square" onClick={() => setOpen(false)}>
                 <X className="w-4 h-4" />
@@ -62,12 +62,12 @@ function Sidebar({ setOpen, user, isLoading }) {
                     <span>{user?.firstName.split(" ").map((s) => s[0]).join("").toUpperCase()}</span>
                    <span>{user?.lastName.split(" ").map((s) => s[0]).join("").toUpperCase()}</span>
                 </div>: <img src={user?.photoURL} alt={user?.firstName} className="w-9 h-9 rounded-full"/>}
-                <div className="min-w-0  text-black">
-                    <p className="text-sm font-semibold truncate">{
+                <div className="min-w-0  text-black" style={bricolage.style}>
+                    <p className="text-[13px] font-semibold truncate">{
                   `${ user?.firstName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}
                     ${ user?.lastName.split(" ").map(word=> word.charAt(0).toUpperCase() + word.slice(1))}
                   `}</p>
-                    <p className="text-xs opacity-60 truncate">{user?.userName}</p>
+                    <p className="text-xs opacity-60 truncate -mt-0.5" style={quicksand.style}>{user?.userName}</p>
                 </div>
             </div>}
             {/* </div> */}

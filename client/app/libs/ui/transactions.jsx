@@ -10,8 +10,8 @@ import { showToast } from "../toast/sonner";
 
 
 export default function AllTransactions() {
-    const { fetchTransactions, isLoading, transactions } = useTransactions();
     const [selectedTransactionId, setSelectedId] = useState(null)
+    // const [selectedTransactionReference, setSelectedReference] = useState(null)
     const [isDownloading, setIsDownloading] = useState(null)
 
     const [paginationData, setPaginationData] = useState({
@@ -24,18 +24,22 @@ export default function AllTransactions() {
 
     const skip = (paginationData.currentPage - 1) * paginationData?.limit;
 
-    useEffect(() => {
-    if (!Number.isNaN(skip)) {
-        fetchTransactions({ skip, limit: paginationData.limit });
-    }
-    }, [paginationData.currentPage, paginationData.limit]);
+    const { isLoading, transactions, fetchTransactions } = useTransactions({ skip: skip, limit: paginationData.limit });
+
 
     useEffect(() => {
-    if (transactions?.data) {
+        if (!Number.isNaN(skip)) {
+            fetchTransactions()
+        }
+    }, [paginationData.currentPage, paginationData.limit]);
+    
+
+    useEffect(() => {
+    if (transactions) {
         setPaginationData((v) => ({
         ...v,
-        hasMore: transactions?.data?.has_more,
-        total: transactions?.data?.total || 0,
+        hasMore: transactions?.has_more,
+        total: transactions?.total || 0,
         }));
     }
     }, [transactions]);
@@ -74,9 +78,11 @@ export default function AllTransactions() {
         }, 1500);
   }
 
+  
+
     const totalPages = Math.ceil(paginationData.total / paginationData.limit) || 1;
     const transactionData = {
-        data:transactions?.data?.transactions ?? [],
+        data:transactions?.transactions ?? [],
         id: user?.id,
         handleSelect: handleSelect,
         handleDownload: handleDownload,
@@ -93,7 +99,7 @@ export default function AllTransactions() {
                 <h2 className="text-xl font-bold " style={bricolage.style}>
                     All transactions
                 </h2>
-                <p className="text-xs text-gray-500 mt-0.5" style={quicksand.style}>
+                <p className="text-[13px] text-gray-500 mt-0.5" style={quicksand.style}>
                     View and manage your recent account activities
                 </p>
                 </div>
@@ -134,7 +140,7 @@ export default function AllTransactions() {
                 </div>
                 </div>
             </div>
-             <TransactionDetailsModal id={"my-modal-5"} transactionId={selectedTransactionId} currentUserId={user?.id} handleDownload={handleDownload} isDownloading={isDownloading}/>
+             <TransactionDetailsModal id={"my-modal-5"} transactionId={selectedTransactionId} currentUserId={user?.id} handleDownload={handleDownload} isDownloading={isDownloading} />
     </section>
     )
 }

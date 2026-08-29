@@ -2,13 +2,17 @@ from fastapi import APIRouter, HTTPException, status, Depends, Request,Query
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.auth.dependencies import AccessTokenBearer
 from src.db.main import session
-from .services import AccountService
+from .services import AccountService, headers
 from src.db.enums import Operators, KycStatus
-from .schema import AccountNumberSchema, ResolveAccountResponse, ResolveAccountResponseData, TransferSchema, TransactionCreateSchema, TransactionType, TransactionStatus, TransactionResponsePaginated, TransactionResponseModel, UserProfileResponse, EditProfileSchema,TransactionPinSchema, UpdateTransactionPinSchema, KycUploadSchema, DepositSchema
+from .schema import AccountNumberSchema, ResolveAccountResponse, ResolveAccountResponseData, TransferSchema, BankResponse, TransactionType, TransactionStatus, TransactionResponse, TransactionResponseModel, UserProfileResponse, EditProfileSchema,TransactionPinSchema, UpdateTransactionPinSchema, KycUploadSchema, DepositSchema, ResolveBankAccountSchema, WithdrawalSchema
 from src.auth.services import AuthServices
 from src.auth.utils import verifyHash, createIdToken
 from src.limiter import limiter
 from src.config import config
+import requests
+from typing import List
+from datetime import datetime, timezone
+
 
 
 router = APIRouter()
@@ -151,6 +155,16 @@ async def kyc_upload(uploadSchema:KycUploadSchema, request:Request, userData=Dep
             "description": f"This information has already been added to an account."
     })
 
+
+    if uploadSchema.dob >= datetime.now().date():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Invalid Date of Birth",
+                "description": "Date of birth must be a past date."
+            }
+        )
     
     if((user.kycStatus == KycStatus.UNVERIFIED and not user.kyc)):
         try:
@@ -313,14 +327,19 @@ async def transaction_webhook(request:Request, session:AsyncSession = Depends(se
     signature = request.headers.get("x-paystack-signature")
 
     if(body["event"] == "charge.success"):
-        # update transaction status to successful
-        await accountService.updateTransactionStatus(session, TransactionStatus.SUCCESSFUL, body["data"]["reference"])
+        try:
+            # update transaction status to successful
+            await accountService.updateTransactionStatus(session, TransactionStatus.SUCCESSFUL, body["data"]["reference"])
+    
+            await accountService.updateBalance(session, email=body["data"]["customer"]["email"], operator=Operators.INCREMENT, amount=int(body["data"]["amount"]/100))
+            
+            await session.commit()
+        
+            return {"status": "success", "msg": f"Successfully deposited ₦{body['data']['amount'] / 100} into your account."}
+        except: 
+            await session.rollback()
 
-        await accountService.updateBalance(session, email=body["data"]["customer"]["email"], operator=Operators.INCREMENT, amount=int(body["data"]["amount"]/100))
-       
 
- 
-    return {"status": "success", "msg": f"Successfully deposited ₦{body['data']['amount'] / 100} into your account."}
 
 @router.get("/transaction/verify/{reference}")
 async def verify_transaction(reference:str, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
@@ -339,23 +358,30 @@ async def verify_transaction(reference:str, user = Depends(accessTokenBearer), s
     db_status = db_resp.status 
 
     if(paystack_status == "success" and db_status == TransactionStatus.SUCCESSFUL):
-        return {"status": "success","msg": "Transaction Successful", "description": "Payment confimed and account balance updated successfully"}
+        return {"status": "success","msg": "Payment Successful", "description": "Payment confimed and account balance has been updated successfully"}
 
     if(paystack_status == "success" and db_status != TransactionStatus.SUCCESSFUL):
+        await accountService.updateBalance(session, email=paystack_resp["data"]["customer"]["email"], operator=Operators.INCREMENT, amount=int(paystack_resp["data"]["amount"]/100))
+
         await accountService.updateTransactionStatus(session, TransactionStatus.SUCCESSFUL, reference)
-        return {"status": "success","msg": "Transaction Successful", "description": "Payment confimed and account balance updated successfully"}
+
+        await session.commit()
+
+        return {"status": "success","msg": "Payment Successful", "description": "Payment confimed and account balance has been updated successfully"}
 
     if(paystack_status in["pending", "ongoing"]):
-        return {"status": "pending", "msg": "Transaction Pending", "description": "Payment is still processing."}
+        return {"status": "pending", "msg": "Payment Pending", "description": "Payment is still processing. Please be patient while we confirm payment status"}
         
 
     if(paystack_status in ["failed", "abandoned"]):
         await accountService.updateTransactionStatus(session, TransactionStatus.FAILED, reference)
+
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
             "status" : "error",
-            "msg": "Transaction Failed",
+            "msg": "Payment Failed",
             "description": "Transaction was declined by the payment provider"
         })
+
 
 
 @router.post("/transfer")
@@ -448,42 +474,43 @@ session: AsyncSession = Depends(session)):
             }
         )
 
-    # Decrement sender balance
-    current_user_response = await accountService.updateBalance(
-        session, userId=current_user.id, operator=Operators.DECREMENT, amount=transferInfo.amount
-    )
-    if not current_user_response:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "status": "error",
-                "msg": "Transaction Failed",
-                "description": "An error occurred while debitting the sender account."
-            }
-        )
-
-    # Increment recipient balance
-    recipient_info_response = await accountService.updateBalance(
-        session, userId=recipient_info.id, operator=Operators.INCREMENT, amount=transferInfo.amount
-    )
     
-    if not recipient_info_response:
-        
-        await accountService.updateBalance(
-            session, userId=current_user.id, operator=Operators.INCREMENT, amount=transferInfo.amount
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "status": "error",
-                "msg": "Transaction Failed",
-                "description": "An error occurred while crediting the recipient account."
-            }
-        )
     
 
     try:
+        # Decrement sender balance
+        current_user_response = await accountService.updateBalance(
+            session, userId=current_user.id, operator=Operators.DECREMENT, amount=transferInfo.amount
+        )
+
+        if(not current_user_response):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "status": "error",
+                    "msg": "Transaction Failed",
+                    "description": "Unable to update sender balance. Please try again or contact support."
+                }
+            )
+
+
+        # Increment recipient balance
+        recipient_info_response = await accountService.updateBalance(
+            session, userId=recipient_info.id, operator=Operators.INCREMENT, amount=transferInfo.amount
+        )
+
+        if(not recipient_info_response):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "status": "error",
+                    "msg": "Transaction Failed",
+                    "description": "Unable to update recipient balance. Please try again or contact support."
+                }
+            )
+
+        
+               
         updated_daily_spent =  await accountService.update_daily_spent(int(transferInfo.amount), current_user.id, session)
     
         if(not updated_daily_spent):
@@ -510,6 +537,8 @@ session: AsyncSession = Depends(session)):
                 }
             )
 
+
+        await session.commit()
         
         return {
             "status": "success",
@@ -520,13 +549,8 @@ session: AsyncSession = Depends(session)):
     except HTTPException:
         raise
     except Exception as e:
-        await accountService.updateBalance(
-            session, operator=Operators.INCREMENT, amount=transferInfo.amount, userId=current_user.id  
-        )
 
-        await accountService.updateBalance(
-            session, userId=recipient_info.id, operator=Operators.DECREMENT, amount=transferInfo.amount
-        )
+        await session.rollback()
 
         transaction_response = await accountService.record_transaction(session,transferInfo.amount, TransactionStatus.FAILED, current_user.id, transferInfo.narration, recipient_info.id,reference)
         
@@ -540,17 +564,216 @@ session: AsyncSession = Depends(session)):
         )
 
 
+@router.get("/banks", response_model=List[BankResponse])
+@limiter.limit("20/minute")
+async def get_all_banks(request:Request, user = Depends(accessTokenBearer)):
+    banks = []
+    try:
+        all_banks =  requests.get(f"{config.PAYSTACK_BASE_URL}/bank", headers=headers).json()
 
-@router.get("/transactions", response_model=TransactionResponsePaginated)
+        if(all_banks["data"]):
+            for bank in all_banks["data"]:
+                banks.append({
+                    "id": bank["id"],
+                    "bank_name": bank["name"],
+                    "code": bank["code"]
+                })
+
+        return banks
+    except: 
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+            "status" : "error",
+            "msg" : "Failed to fetch banks",
+            "description": "An error occured while fetching banks. Please try again."
+        })
+
+
+@router.post("/bank-details/resolve")
+@limiter.limit("10/minute")
+async def resolve_bank_details(request:Request, body:ResolveBankAccountSchema, user = Depends(accessTokenBearer)):
+
+    banks = await get_all_banks(request, user)
+    bankName = None 
+    
+    for bank in banks:
+        if(bank["code"] == body.bank_code):
+            bankName = bank["bank_name"]
+
+    
+    if(banks):
+            user_bank_info = await accountService.resolve_bank_details(body) 
+
+            if(not user_bank_info):
+                
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                    "status": "error",
+                    "msg": "Account not found",
+                    "description": "No account matching this account number"
+                })
+        
+            return {
+                "status": "success",
+                "account_number": user_bank_info["data"]["account_number"],
+                "account_name":  user_bank_info["data"]["account_name"],
+                "bank_name": bankName
+            }
+
+
+@router.post("/withdraw")
+@limiter.limit("10/minute")
+async def withdraw(request:Request, withdrawalBody:WithdrawalSchema, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
+
+    current_user =  await authService.get_user(session, user["user"]["email"])
+    
+
+    await accountService.reset_daily_spent(current_user, session)
+
+    if current_user.transactionPin is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "status": "error",
+                "msg": "Transaction PIN Required",
+                "description": "You need to set up a transaction PIN before making transfers."
+            }
+        )
+
+    body = ResolveBankAccountSchema(
+        account_number=withdrawalBody.account_number,
+        bank_code=withdrawalBody.bank_code
+    )
+
+    user_bank_info = await resolve_bank_details(request, body, user)
+
+    if(user_bank_info["status"] == "error"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+            "status": "error",
+            "msg": "Account not found",
+            "description": "No account matching this account number"
+        })
+    
+
+    if withdrawalBody.amount < 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Invalid Amount",
+                "description": "Amount cannot be less than ₦10."
+            }
+        )
+
+    user_limit = int(current_user.dailyLimit.value)
+    
+    if (current_user.dailySpent + withdrawalBody.amount) > user_limit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Daily Limit Exceeded",
+                "description": f"This transfer exceeds your daily limit of ₦{user_limit}."
+            }
+        )
+
+
+    if(int(withdrawalBody.amount) > current_user.balance):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Insufficient Balance",
+                "description": "Please top up your account to proceed with this transaction."
+            }
+        )
+
+    isPinValid = verifyHash(withdrawalBody.pin, current_user.transactionPin)
+
+    if(not isPinValid):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "status": "error",
+                "msg": "Incorrect PIN",
+                "description": "The transaction PIN provided is invalid."
+            }
+        )
+
+
+    withdrawal_info = {
+        "account_number":withdrawalBody.account_number,
+        "bank_name": user_bank_info["bank_name"],
+        "account_name": user_bank_info["account_name"]
+    }
+
+    reference = createIdToken(current_user.email, f"withdraw")
+
+
+    try:
+        new_balance = await accountService.updateBalance(session, Operators.DECREMENT, withdrawalBody.amount, current_user.id)
+
+        if(not new_balance):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                "status" : "error",
+                "msg": "Withdrawal Failed",
+                "description": "Failed to update balance."
+            })
+        
+
+        await accountService.record_transaction(session, withdrawalBody.amount, TransactionStatus.PENDING, current_user.id, withdrawalBody.narration, None, reference, TransactionType.WITHDRAW, withdrawal_info)
+
+        await accountService.update_daily_spent(withdrawalBody.amount, current_user.id, session)
+
+        message = (
+            f"🚨 NEW WITHDRAWAL REQUEST 🚨\n\n"
+            f"Amount:₦{withdrawalBody.amount:,.2f}\n"
+            f"Bank:{withdrawal_info["bank_name"]}\n"
+            f"Account:{withdrawalBody.account_number} ({withdrawal_info["account_name"]})\n"
+            f"Ref:`{reference}`\n\n"
+        )
+
+        await accountService.send_telegram_notification(message)
+
+        await session.commit()
+
+        return {
+            "status": "success",
+            "message": "Withdrawal Initiated",
+            "description": "Your funds are on the way! Payouts usually arrive in 5–10 minutes. You can track this in your transaction history."
+        }
+    
+    except Exception as e:
+        await session.rollback()
+
+        await accountService.record_transaction(session, withdrawalBody.amount, TransactionStatus.FAILED, current_user.id, withdrawalBody.narration, None, reference, TransactionType.WITHDRAW, withdrawal_info=withdrawal_info)
+
+        # await accountService.update_daily_spent((-withdrawalBody.amount), current_user.id, session)
+
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+            "status":"error",
+            "msg": "Withdrawal Failed",
+            "description": str(e)
+        })
+    
+
+
+#response_model=TransactionResponse
+@router.get("/transactions")
 @limiter.limit("15/minute")
 async def transactions(request:Request, session:AsyncSession = Depends(session), skip:int = Query(0, ge=0), limit: int = Query(10, ge=5, le=100), userData=Depends(accessTokenBearer)):
   
   transactions =   await accountService.getTransactions(session, userData["user"]["id"], skip, limit)
-  return transactions
+  chartData = await accountService.getTransactionMonthlyChartData(session, userData["user"]["id"])
+  
+  return {
+      "transactions":transactions,
+      "chartData": chartData
+  }
+
 
 
 @router.get("/transactions/{transactionId}", response_model=TransactionResponseModel)
-@limiter.limit("10/minute")
+@limiter.limit("15/minute")
 async def get_single_transaction(transactionId:str, request:Request, session:AsyncSession = Depends(session), user = Depends(accessTokenBearer)):
 
    transaction_data =  await accountService.get_single_transaction(session, user["user"]["id"], transactionId= transactionId)

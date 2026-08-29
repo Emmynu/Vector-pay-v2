@@ -5,32 +5,54 @@ import { quicksand, montserrat, bricolage } from "@/app/libs/utils/font";
 import { formatAmount } from "../utils/utils";
 import { useState } from "react";
 import { useTransfer } from "@/app/dashboard/api/transfer";
+import { useWithdraw } from "@/app/dashboard/api/withdraw";
 
-export function PinModal({ id, formData, setForm }) {
+export function PinModal({ id, formData, setForm, type }) {
   const [pin, setPin] = useState("");
   const { transfer, isTransferLoading } = useTransfer();
+  const { isProcessing, withdraw } = useWithdraw()
 
-  async function handleTransfer() {
-    if (!pin || isTransferLoading) return;
 
-    const data = {
-      recipient_account_number: formData?.account,
-      amount: formData.amount,
-      narration: formData.note || null,
-      pin: pin,
-    };
 
-    const response = await transfer(data);
+  async function handlePayment() {
+    if (!pin || isTransferLoading || isProcessing) return;
+
+    let response;
+
+     if(type === "transfer"){
+
+       const transferPayload = {
+          recipient_account_number: formData?.account,
+          amount: formData.amount,
+          narration: formData.note || null,
+          pin: pin,
+        };
+
+        response = await transfer(transferPayload)
+        }
+
+      if(type === "withdraw"){
+        console.log(formData);
+        
+        
+        const withdrawPayload = {
+          account_number: formData?.accountNumber,
+          bank_code: formData?.code,
+          amount: formData?.amount,
+          narration: formData.note || null,
+          pin: pin
+        }
+        response = await withdraw(withdrawPayload)
+      }
 
     
-    if(response.status === 200){
-       setForm({ account: "", amount: "", note: "", recipient: null })
-       setPin("")
-
-       window.location = "/dashboard"
+    if(response.status === 200){       
+      setForm({})
+      setPin("")
+      window.location = "/dashboard"
     }
     else{
-       setPin("")
+      setPin("")
     }
   }
 
@@ -40,7 +62,7 @@ export function PinModal({ id, formData, setForm }) {
         
         <form method="dialog">
           <button 
-            disabled={isTransferLoading}
+            disabled={isTransferLoading || isProcessing}
             className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-500 hover:text-slate-700 bg-transparent border-none shadow-none outline-none disabled:bg-transparent"
           >
             <X className="w-4 h-4" />
@@ -60,10 +82,10 @@ export function PinModal({ id, formData, setForm }) {
         </div>
 
   
-        <div className="mt-4 p-3 bg-[#E6F0FA] rounded-2xl border border-blue-200 flex items-center justify-between text-xs">
-          <span className="text-slate-500">To:</span>
-          <span className="font-medium text-slate-800">
-            {`${formData.recipient?.firstName} ${formData.recipient?.lastName}`} • {formData.account}
+        <div className="mt-4 p-3 bg-[#E6F0FA] rounded-2xl border border-blue-200 flex items-center justify-between text-xs gap-2">
+          <span className="text-slate-700" style={quicksand.style}>To:</span>
+          <span className="font-medium text-slate-800 text-[10px]" style={bricolage.style}>
+            {type === "transfer" ?`${formData.recipient?.firstName.toUpperCase()} ${formData.recipient?.lastName.toUpperCase()} • ${formData.account}` : `${formData?.accountName} • ${formData.accountNumber} `} 
           </span>
         </div>
 
@@ -83,7 +105,7 @@ export function PinModal({ id, formData, setForm }) {
               pattern="[0-9]{4}" 
               required 
               name="pin" 
-              disabled={isTransferLoading}
+              disabled={isTransferLoading || isProcessing}
               onChange={(e) => setPin(e.target.value)} 
               value={pin}
             />
@@ -92,23 +114,24 @@ export function PinModal({ id, formData, setForm }) {
 
         <button
           type="button"
-          disabled={isTransferLoading || pin.length < 4}
+          disabled={(isTransferLoading || isProcessing) || pin.length < 4}
+          style={bricolage.style}
           className="btn border-none outline-none bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 rounded-full w-full mt-4 shadow-md shadow-[#03457C]/20 flex items-center justify-center gap-2 transition-all"
-          onClick={handleTransfer}
+          onClick={handlePayment}
         >
-          {isTransferLoading ? (
+          {(isTransferLoading || isProcessing) ? (
             <>
-              <span className="loading loading-spinner loading-sm"></span>
+              <span className="loading loading-spinner loading-xs"></span>
               Processing...
             </>
           ) : (
-            "Confirm Transfer"
+            "Confirm Payment"
           )}
         </button>
       </div>
 
       <form method="dialog" className="modal-backdrop">
-        <button disabled={isTransferLoading}>close</button>
+        <button disabled={isTransferLoading || isProcessing}>close</button>
       </form>
     </dialog>
   );

@@ -11,7 +11,8 @@ export default function TransactionsTable({ data, id, handleSelect, handleDownlo
     columns: transactionsColumn(id, handleSelect, handleDownload),
     features,
   });
-// rounded-xl border border-gray-200 bg-white
+
+  
   return (
     <div className="w-full overflow-x-auto ">
       <table className="w-full text-left text-sm text-gray-600 border-collapse">

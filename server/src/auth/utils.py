@@ -8,7 +8,7 @@ import jwt
 import uuid
 import random
 from fastapi.responses import Response
-from src.utils.messages import resetPasswordMessage, verificationMessage, email_otp_messsage
+from src.messages import verification_message, otp_message, reset_password_message
 from .workers import send_mail
 
 ph =  PasswordHasher()
@@ -103,30 +103,30 @@ def saveCookies(response:Response, key:str, val:str, exp:int):
       max_age=exp,
    )
 
-def send_verification_link(email:str, name:str):
+async def send_verification_link(email:str, name:str, request):
       token = createIdToken(email, salt="verify-salt")
-      message = verificationMessage(f"{config.BASE_URL}/auth/verify/{token}", name=name)
+      message = await verification_message(link=f"{config.BASE_URL}/auth/verify/{token}", name=name, request=request)
 
       send_mail(email, "Welcome to VectorPay", msg=message)
       return token
             
 
-def send_otp_code(email:str, data:dict, code:str, name:str) -> str:
+async def send_otp_code(email:str, data:dict, code:str, name:str, request) -> str:
    token = createIdToken(data, salt=f"otp-verify-{code}")
    
-   msg = email_otp_messsage(code, name)
+   msg = await otp_message(code=code, name=name, request=request)
    send_mail(email, "Verify your identity", msg)
 
    return token
 
 
-def send_reset_password_link(userData:dict, user:dict):
-      token =  createIdToken(userData.email,  salt=f"reset-salt-{user.password_reset_count}")
+async def send_reset_password_link(user:dict, request):
+      token =  createIdToken(user.email,  salt=f"reset-salt-{user.password_reset_count}")
       link = f"{config.BASE_URL}/auth/reset-password?token={token}"
 
-      message = resetPasswordMessage(resetLink=link)
+      message = await reset_password_message(resetLink=link, request=request, name=f"{user.firstName} {user.lastName}")
 
-      send_mail(to_mail=userData.email, subject="Password Reset Link", msg=message)
+      send_mail(to_mail=user.email, subject="Password Reset Link", msg=message)
 
       return token
    

@@ -1,3 +1,6 @@
+import { format, parseISO } from "date-fns";
+
+
 export function generateUserName(first, last) {
     
     const length = 5
@@ -25,6 +28,15 @@ export function formatDate(date) {
             dateStyle: "medium",
             timeStyle: "short"
             })
+
+    return formattedDate
+}
+
+
+export function formatChartDate(date){
+    const formattedDate = date 
+    ? format(parseISO(date), "MMMM") 
+    : null;
 
     return formattedDate
 }

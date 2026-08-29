@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHMS: str
     BASE_URL:str
     PAYSTACK_SECRET_KEY:str
+    PAYSTACK_BASE_URL:str
+    TELEGRAM_KEY:str
+    TELEGRAM_CHAT_ID:str
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -17,3 +20,4 @@ class Settings(BaseSettings):
 
 
 config  = Settings()
+

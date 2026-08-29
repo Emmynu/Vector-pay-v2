@@ -18,14 +18,13 @@ def sendMail(to_mail:str, subject:str, msg):
     message["from"] = "VectorPay"
     message["subject"] = subject
 
-    text = MIMEText(msg, "plain")
+    # text = MIMEText(msg, "plain")
     html = MIMEText(msg, "html")
 
-    message.attach(text)
+    # message.attach(text)
     message.attach(html)
 
     raw_message =  base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
-
 
     try:
         result  =  service.users().messages().send(userId="me", body={"raw": raw_message}).execute()

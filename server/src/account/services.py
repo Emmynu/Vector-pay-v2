@@ -1,16 +1,21 @@
-from sqlmodel import select, update, or_, desc, func, and_
-from fastapi import Query
+from sqlmodel import select, update, or_, desc, func, and_,extract,case
+from fastapi import Query, status, HTTPException
 from src.db.models import Users, Transactions, Kyc
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.db.enums import Operators, KycStatus, TransactionType, TransactionStatus
 from decimal import Decimal
-from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, TransactionPinSchema, EditProfileSchema, KycUploadSchema, UserProfileResponse
+from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, TransactionPinSchema, EditProfileSchema, KycUploadSchema, UserProfileResponse, ResolveBankAccountSchema
 from datetime import datetime, timezone
-from src.auth.utils import hashPassword, createIdToken
+from src.auth.utils import hashPassword
 from src.config import config
 import requests
 from typing import Optional
 
+
+headers = {
+   "Authorization": f'Bearer {config.PAYSTACK_SECRET_KEY}',
+    "Content-Type": "application/json"
+}
 
 
 class AccountService():  
@@ -100,7 +105,7 @@ class AccountService():
   async def update_daily_spent(self, amount:int, userId:str, session:AsyncSession):
     result =  await session.execute(update(Users).where(Users.id == userId).values(dailySpent = Users.dailySpent + amount))
 
-    await session.commit()
+    # await session.commit()
 
     return True if result is not None else False
 
@@ -118,24 +123,32 @@ class AccountService():
 
   async def updateBalance(self, session:AsyncSession, operator:Operators, amount:Decimal,  userId:Optional[str] = None, email:Optional[str] = None):
 
+    result = await session.execute(select(Users).where(or_(
+          Users.id == userId,
+          Users.email == email
+        )).with_for_update()) # row locking....
+
+    user = result.scalars().first()
+
+    if(not user):
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+        "status": "error",
+        "msg": "User not Found"
+      })
+    
+
     if(operator == Operators.INCREMENT):
-      new_balance = Users.balance + amount
+      user.balance += amount
 
     elif(operator == Operators.DECREMENT):
-      new_balance = Users.balance - amount
+        user.balance -= amount
 
     else:
       raise ValueError("Invalid Operation type")
 
-    print("BALANCE", new_balance)
-
-    result = await session.execute(update(Users).where(or_(
-      Users.id == userId,
-      Users.email == email
-    )).values(balance = new_balance))
-
-    await session.commit()
-    return True if result is not None else False
+    
+    # await session.commit()
+    return True if result is not None else False 
 
 
   async def saveTransaction(self, session:AsyncSession, transactionData:TransactionCreateSchema):
@@ -150,7 +163,7 @@ class AccountService():
 
     return transaction_data if transaction_data is not None else False
 
-  async def record_transaction(self, session:AsyncSession, amount:int, status:TransactionStatus, senderId:str, narration:str, recipientId:str,reference:str, type:TransactionType = TransactionType.TRANSFER):
+  async def record_transaction(self, session:AsyncSession, amount:int, status:TransactionStatus, senderId:str, narration:str, recipientId:str,reference:str, type:TransactionType = TransactionType.TRANSFER, withdrawal_info:dict = None):
 
     transfer_data = TransactionCreateSchema(
       amount=amount,
@@ -159,7 +172,8 @@ class AccountService():
       reference=reference,
       narration=narration,
       recipientId= recipientId,
-      type=type
+      type=type,
+      withdrawal_info=withdrawal_info
     )
 
     return await self.saveTransaction(session, transfer_data)
@@ -199,6 +213,74 @@ class AccountService():
 
     return paginated_transactions if paginated_transactions is not None else []
 
+  async def getTransactionMonthlyChartData(self, session:AsyncSession, userId:str):
+    now =  datetime.now()
+
+    filter_conditions= or_(
+      Transactions.senderId == userId,
+      Transactions.recipientId == userId,
+    )
+
+    query =  and_(
+      filter_conditions,
+      extract("month", Transactions.date) == now.month,
+      extract("year", Transactions.date) == now.year,
+      Transactions.status == TransactionStatus.SUCCESSFUL
+    )
+
+    week_of_month = (func.floor((extract("day", Transactions.date) - 1) / 7 ) + 1).label("week_number")
+    
+    bar_chart = await session.execute(select(
+      week_of_month,
+      
+      func.sum(case((Transactions.type == TransactionType.DEPOSIT, Transactions.amount), else_=0)).label("deposit"), 
+        # MEANS: IF (Transactions.type == TransactionType.DEPOSIT) RETURN AMOUNT ELSE 0, ADD ALL AMOUNT TOGETHER
+        func.sum(case((Transactions.type == TransactionType.TRANSFER, Transactions.amount), else_=0)).label("transfer"),
+        func.sum(case((Transactions.type == TransactionType.WITHDRAW, Transactions.amount), else_=0)).label("withdraw"),
+
+    ).group_by(week_of_month)
+    .where(query)
+    )
+
+    bar_chart_transactions = bar_chart.mappings().all()
+
+    weekly_data = []
+    labels = ["Deposit", "Transfer", "Withdrawal"]
+
+    for transaction in bar_chart_transactions:
+      weekly_data.append({ 
+        "deposit": int(transaction.deposit or 0),
+        "transfer": int(transaction.transfer or 0),
+        "withdraw": int(transaction.withdraw or 0),
+        "week":f"Week {transaction.week_number}",
+      })
+
+    
+    
+    doughnut = await session.execute(select(
+      func.sum(case((Transactions.type == TransactionType.DEPOSIT, Transactions.amount),else_ = 0)).label("deposit"),
+      func.sum(case((Transactions.type == TransactionType.WITHDRAW, Transactions.amount),else_ = 0)).label("withdraw"),
+      func.sum(case((Transactions.type == TransactionType.TRANSFER, Transactions.amount),else_ = 0)).label("transfer")
+    ).where(query))
+
+
+    doughnut_transactions = doughnut.mappings().one_or_none()
+    total = int((doughnut_transactions.deposit or 0) + (doughnut_transactions.transfer or 0) + (doughnut_transactions.withdraw or 0))
+
+
+    return {
+      "weekly_data": weekly_data,
+      "current_month_data": {
+        "deposit": doughnut_transactions.deposit,
+        "transfer": doughnut_transactions.transfer,
+        "withdraw": doughnut_transactions.withdraw,
+        "total": total
+      },
+      "labels": labels,
+      "currentMonth": str(now),
+
+    }
+
 
   async def get_single_transaction(self, session:AsyncSession, userId:str, reference:Optional[str] =None, transactionId:Optional[str]= None):
 
@@ -221,17 +303,42 @@ class AccountService():
     return transaction_data
 
   async def initialize_deposit(self, body:list):
-    paystack_resp =  requests.post("https://api.paystack.co/transaction/initialize", headers={
-        "Authorization": f'Bearer {config.PAYSTACK_SECRET_KEY}',
-        "Content-Type": "application/json"
-    }, json=body)
+    paystack_resp =  requests.post(f"{config.PAYSTACK_BASE_URL}/transaction/initialize", headers=headers, json=body)
     
     return paystack_resp.json()
 
   async def verify_transaction(self, reference:str):
-    paystack_transaction_status = requests.get(f"https://api.paystack.co/transaction/verify/{reference}",headers={
-       "Authorization": f'Bearer {config.PAYSTACK_SECRET_KEY}',
-        "Content-Type": "application/json"
-    }).json()
+    paystack_transaction_status = requests.get(f"{config.PAYSTACK_BASE_URL}/transaction/verify/{reference}",headers=headers).json()
 
     return paystack_transaction_status if paystack_transaction_status["status"] is not False else False
+
+
+  async def resolve_bank_details(self, body:ResolveBankAccountSchema):
+    try:
+
+      user_bank_info = requests.get(f"{config.PAYSTACK_BASE_URL}/bank/resolve?account_number={body.account_number}&bank_code={body.bank_code}", headers=headers).json()
+     
+      return user_bank_info if user_bank_info["status"] == True else False
+    
+    except:
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+            "status" : "error",
+            "msg" : "Failed to resolve bank details",
+            "description": "An error occured while resolve bank details. Please try again."
+        })
+  
+
+  async def send_telegram_notification(self, msg:str): #using bot
+
+    try:
+      telegram_msg_resp =  requests.post(f"https://api.telegram.org/bot8654990948:{config.TELEGRAM_KEY}/sendMessage?chat_id={config.TELEGRAM_CHAT_ID}&text={msg}").json()
+
+      return telegram_msg_resp
+    
+    except:
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+        "status": "error",
+        "msg": "Failed to send notification to admin",
+        "description": "An error occured while sending notification to admin. Please try again."
+      })
+

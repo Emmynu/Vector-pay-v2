@@ -34,8 +34,12 @@ class Users(SQLModel, table=True):
         pg.BOOLEAN,
         default=False,
     ))
+    
     tier: int = Field(default=1, ge=1, le=3)
     transactionPin: Optional[str] = None
+
+    ip:str = Field(nullable=True, default=None)
+    location:str = Field(nullable=True, default=None)
 
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
@@ -129,3 +133,5 @@ class Transactions(SQLModel, table=True):
         back_populates="transactions_received",
         sa_relationship_kwargs={"foreign_keys": "[Transactions.recipientId]", "lazy": "selectin"}
     )
+
+    withdrawal_info: Optional[dict] = Field(sa_column=Column(pg.JSONB, default=None))

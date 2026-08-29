@@ -24,14 +24,26 @@ export const transactionsColumn = (id, handleSelect, handleDownload) => [
       const isCredit = row.original.recipientId === id;
       const sender = row.original.sender;
       const recipient = row.original.recipient;
+      let title = ""
 
-      let title =  row.original.type === "deposit" ? row.original.narration :  "transfer";
-
-      if (isCredit && sender) {
-        title = `Transfer from ${sender.firstName} ${sender.lastName ? sender.lastName.slice(0, 1).toUpperCase() + "." : ""}`;
-      } else if (!isCredit && recipient) {
-        title = `Transfer to ${recipient.firstName} ${recipient.lastName ? recipient.lastName.slice(0, 1).toUpperCase() + "." : ""}`;
+      if(row.original.type === "deposit"){
+        title = row.original.narration 
       }
+      else if(row.original.type === "withdraw"){
+        title = `Withdrawal to ${row.original?.withdrawal_info?.bank_name || "Bank"}`
+      }
+      else if(row.original.type === "transfer"){
+
+        if(isCredit && sender){
+          title = `Transfer from ${sender.firstName} ${sender.lastName ? sender.lastName.slice(0, 1).toUpperCase() + "." : ""}`
+        }
+
+        else if (!isCredit && recipient) {
+        title = `Transfer to ${recipient.firstName} ${recipient.lastName ? recipient.lastName.slice(0, 1).toUpperCase() + "." : ""}`;
+        }
+
+      }
+    
 
       return (
         <div className="flex flex-col">

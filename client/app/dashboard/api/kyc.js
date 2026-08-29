@@ -16,18 +16,18 @@ export function useKyc() {
             if(response?.status === 200){
                 document.getElementById('my-modal-3').close()
                 showToast({type: response?.data?.status, title:response?.data?.msg})
-
             }
             else{
                 document.getElementById('my-modal-3').close()
                 showToast({type:response?.status, title:response?.title,  msg: response?.msg })
             }
+            return response
            
     })
 
 
     return {
-        uploadKyc:uploadKycMutation.mutate,
+        uploadKyc: uploadKycMutation.mutateAsync,
         isSubmitting: uploadKycMutation.isPending
     }
 }

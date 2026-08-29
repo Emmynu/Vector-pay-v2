@@ -3,7 +3,7 @@ import { showToast } from "../toast/sonner";
 
 
 export const api =  axios.create({
-    baseURL: "/api/v1/",
+    baseURL: process.env.NEXT_PUBLIC_BASE_URL,
     headers: {
         "Content-Type": "application/json"
     },
@@ -12,7 +12,7 @@ export const api =  axios.create({
 })
 
 export const refreshApi =  axios.create({
-    baseURL: "/api/v1/",
+    baseURL: process.env.NEXT_PUBLIC_BASE_URL,
     headers: {
         "Content-Type": "application/json"
     },
@@ -27,18 +27,20 @@ api.interceptors.response.use(
         const { statusText, data } = error?.response
         
         if(error.status === 500 ){
+            console.log(data);
+            
             showToast({
-                type: data?.status,
+                type: data?.status || "error",
                 title: data.msg || "Internal Server Error",
-                msg: `ERR_${statusText}_${error?.status}: ${data?.description}`,
+                msg: `ERR_${statusText}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
             })
         }
 
         if(error.status === 429){
             showToast({
-                type: data?.status,
+                type: data?.status || "error",
                 title: data.msg || "Too Many Request",
-                msg: `ERR_${statusText}_${error?.status}: ${data?.description}`,
+                msg: `ERR_${statusText}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
              
             })
         }

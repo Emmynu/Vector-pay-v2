@@ -3,7 +3,7 @@
 import { usePin } from "@/app/dashboard/api/pin";
 import { Loader2, Eye, EyeOff, X } from "lucide-react";
 import { useState } from "react";
-import { bricolage } from "../utils/font";
+import { bricolage, quicksand } from "../utils/font";
 
 function TransactionPinModal({ id, hasPin }) {
     const [show, setShow] = useState(false)
@@ -66,16 +66,16 @@ function TransactionPinModal({ id, hasPin }) {
                             <h3 className="font-display font-bold text-xl" style={bricolage.style}>
                             {hasPin ? "Change transaction PIN" : "Set up transaction PIN"}
                             </h3>
-                            <p className="text-xs opacity-60 mt-1">4-digit PIN · Never share with anyone</p>
+                            <p className="text-xs opacity-60 mt-0.5" style={quicksand.style}>4-digit PIN · Never share with anyone</p>
                         </div>
-                        <button type="button"  className="cursor-pointer  " onClick={()=>document.getElementById('my_modal_1').close()}>
-                            <X />
+                        <button type="button"  className="cursor-pointer p-1 rounded-full opacity-80 hover:opacity-100 hover:bg-blue-50/10" onClick={()=>document.getElementById('my_modal_1').close()}>
+                            <X className="w-5 h-5"/>
                         </button>
                     </div>
-                    <div className="mt-5 space-y-4">
+                    <div className="mt-5 space-y-3.5">
                     {hasPin && (
                        <div>
-                            <span className="text-xs font-semibold opacity-70">Current PIN</span>
+                            <span style={quicksand.style} className="text-xs font-semibold opacity-70">Current PIN</span>
                             <label className="input bg-white validator mt-1 w-full px-4 rounded-xl border border-slate-400 tracking-[0.6em]  font-mono text-lg transition">
                                 <input
                                 type={show ? "text" : "password"}
@@ -95,7 +95,7 @@ function TransactionPinModal({ id, hasPin }) {
 
                     )}
                     <div>
-                        <span className="text-xs font-semibold opacity-70">New PIN</span>
+                        <span style={quicksand.style} className="text-xs font-semibold opacity-70">New PIN</span>
                         <label className="input bg-white validator mt-1 w-full px-4 rounded-xl border border-slate-400 tracking-[0.6em]  font-mono text-lg transition">
                             <input
                             type={show ? "text" : "password"}
@@ -137,21 +137,27 @@ function TransactionPinModal({ id, hasPin }) {
                     <button
                         type="button"
                         onClick={() => setShow((s) => !s)}
+                        style={bricolage.style}
                         className="text-xs font-semibold text-primary inline-flex items-center gap-1"
                     >
                         {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         {show ? "Hide PIN" : "Show PIN"}
                     </button>
-                    {error && <p className="text-xs text-error font-semibold">{error}</p>}
-                    <p className="text-xs opacity-60">
+
+
+                    {error && <p className="text-xs text-error font-semibold  -mt-1" style={quicksand.style}>{error}</p>}
+
+                    <p className="text-xs opacity-60 -mt-1" style={quicksand.style}>
                         Avoid using your date of birth or repeating digits like 1111 or 1234.
                     </p>
                     </div>
+
+
                     <div className="mt-6 flex gap-3 justify-end">
-                    <button type="button" className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my_modal_1').close()} disabled={isSubmitting}>
+                    <button type="button" className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium shadow-sm hover:opacity-80 disabled:opacity-70 rounded-full" onClick={()=>document.getElementById('my_modal_1').close()} disabled={isSubmitting} style={bricolage.style}>
                         Cancel
                     </button>
-                    <button type="submit" disabled={isSubmitting} className="btn bg-[#03457C] border-none rounded-full text-white disabled:opacity-70 hover:opacity-80">
+                    <button type="submit" disabled={isSubmitting} className="btn bg-[#03457C] border-none rounded-full text-white disabled:opacity-70 hover:opacity-80" style={bricolage.style}>
                         {isSubmitting ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" /> Saving...

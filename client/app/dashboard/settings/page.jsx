@@ -59,11 +59,11 @@ function Settings() {
 
         <motion.div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm h-fit" initial={{ x : 80, opacity: 0}}  animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 100 }}>
           <aside>
-            <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#4A90E2] " />
-                <h3 className="font-semibold " style={bricolage.style}>Security</h3>
+            <div className="flex items-center gap-1">
+                {/* <Lock className="w-4 h-4 text-[#4A90E2] " /> */}
+                <h3 className="font-semibold text-[14.5px] mt-0.5" style={bricolage.style}>Security</h3>
             </div>
-            <p className="text-xs opacity-60 mt-0.5 mb-2" style={quicksand.style}>Change your password regularly.</p>
+            <p className="text-xs opacity-60 mt-[2px] mb-1" style={quicksand.style}>Change your password regularly.</p>
 
             <button disabled={isLoading || isLogginOut} className="btn transition-colors outline-none border-none shadow-sm bg-[#03457C] rounded-full mt-3 mb-2 w-full text-white disabled:opacity-80 text-xs md:text-[13px]" style={bricolage.style} onClick={handleResetPassword}>
               {isLoading ? <h2 className="flex items-center">

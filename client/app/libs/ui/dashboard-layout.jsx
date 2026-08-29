@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }) {
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0 ">
             <DashboardHeader setOpen={()=>setOpen((prev)=> !prev)} user={data} isLoading={isLoading}/>
-            <main className="flex-1 p-4  md:mt-0 lg:p-8 bg-[#E6F0FA]/20">{children}</main>
+            <main className="flex-1 pt-7 pb-5 px-4  md:mt-0 lg:p-8 bg-[#E6F0FA]/20">{children}</main>
         </div>
     </div>
   );
