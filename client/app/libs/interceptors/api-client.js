@@ -27,12 +27,10 @@ api.interceptors.response.use(
         const { statusText, data } = error?.response
         
         if(error.status === 500 ){
-            console.log(data);
-            
             showToast({
                 type: data?.status || "error",
                 title: data.msg || "Internal Server Error",
-                msg: `ERR_${statusText}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
+                msg: `ERR_${statusText||"internal server error"}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
             })
         }
 

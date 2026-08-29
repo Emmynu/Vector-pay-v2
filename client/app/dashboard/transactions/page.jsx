@@ -12,7 +12,7 @@ function TransactionHistory() {
       <input
         type="radio"
         name="my_tabs_2"
-        className="tab text-sm font-semibold outline-none tracking-wide text-slate-500 hover:text-[#03457C] checked:text-[#03457C]  checked:border-b-[#03457C] checked:bg-[#E6F0FA] transition-all duration-200 rounded-t-lg px-4 py-2 mb-6"
+        className="tab text-sm font-semibold  tracking-wide text-slate-500 hover:text-[#03457C] checked:text-[#03457C]  checked:border-none checked:bg-[#E6F0FA] transition-all duration-200 rounded-t-lg px-4 py-2 mb-6"
         aria-label="History"
         style={quicksand?.style}
         defaultChecked
@@ -32,7 +32,7 @@ function TransactionHistory() {
       <input
         type="radio"
         name="my_tabs_2"
-        className="tab text-sm font-semibold tracking-wide outline-none text-slate-500 hover:text-[#03457C] checked:text-[#03457C]  checked:border-b-[#03457C] checked:bg-[#E6F0FA] transition-all duration-200 rounded-t-lg px-4 py-2 mb-6"
+        className="tab text-sm font-semibold tracking-wide outline-none text-slate-500 hover:text-[#03457C] checked:text-[#03457C] checked:border-b-none checked:bg-[#E6F0FA] transition-all duration-200 rounded-t-lg px-4 py-2 mb-6"
         aria-label="Analytics"
         style={quicksand?.style}
       />
