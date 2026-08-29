@@ -3,7 +3,7 @@ const nextConfig = {
     rewrites(){
         return[
             {
-                source: "api/v1/:path*",
+                source: "/api/v1/:path*",
                 destination:"https://next-tuts-jet.vercel.app/api/v1/:path*"
             }
         ]
