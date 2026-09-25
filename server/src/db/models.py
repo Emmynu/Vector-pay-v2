@@ -77,13 +77,7 @@ class Users(SQLModel, table=True):
         sa_relationship_kwargs={"primaryjoin": "Users.id == Transactions.recipientId", "lazy": "selectin"}
     )
 
-    loginAt: datetime = Field(
-        sa_column=Column(
-            pg.TIMESTAMP,
-            nullable=False,
-            default=datetime.now()
-        )
-    )
+    loginAt: Optional[datetime] = Field(default=False)
 
     createdAt: datetime = Field(
         sa_column=Column(
