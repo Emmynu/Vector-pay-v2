@@ -1,8 +1,8 @@
-"""models updated again 2
+"""models updated again
 
-Revision ID: a0345f48836d
+Revision ID: cb6d91b0321e
 Revises: 
-Create Date: 2026-09-25 09:16:48.557053
+Create Date: 2026-09-25 09:59:41.117419
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'a0345f48836d'
+revision: str = 'cb6d91b0321e'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,13 +25,10 @@ def upgrade() -> None:
     op.alter_column('kyc', 'userId',
                existing_type=sa.UUID(),
                nullable=True)
+    op.create_index(op.f('ix_kyc_userId'), 'kyc', ['userId'], unique=False)
     op.alter_column('users', 'isVerified',
                existing_type=sa.BOOLEAN(),
                nullable=False)
-    op.alter_column('users', 'role',
-               existing_type=sa.VARCHAR(),
-               type_=sa.Enum('USER', 'ADMIN', name='roles'),
-               existing_nullable=False)
     op.alter_column('users', 'lastSpentDate',
                existing_type=postgresql.TIMESTAMP(),
                nullable=False)
@@ -56,13 +53,10 @@ def downgrade() -> None:
     op.alter_column('users', 'lastSpentDate',
                existing_type=postgresql.TIMESTAMP(),
                nullable=True)
-    op.alter_column('users', 'role',
-               existing_type=sa.Enum('USER', 'ADMIN', name='roles'),
-               type_=sa.VARCHAR(),
-               existing_nullable=False)
     op.alter_column('users', 'isVerified',
                existing_type=sa.BOOLEAN(),
                nullable=True)
+    op.drop_index(op.f('ix_kyc_userId'), table_name='kyc')
     op.alter_column('kyc', 'userId',
                existing_type=sa.UUID(),
                nullable=False)

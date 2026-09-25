@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Column, Relationship
 from sqlalchemy import ForeignKey
 import sqlalchemy.dialects.postgresql as pg
 import uuid
-from datetime import datetime, date, timezone
+from datetime import datetime, date as Date, timezone
 from typing import Optional, List
 from decimal import Decimal
 from .enums import KycStatus, TransactionStatus, TransactionType, DailyLimit, Roles
@@ -43,11 +43,15 @@ class Users(SQLModel, table=True):
         nullable=False,
     ), default=Roles.USER)
 
-    
+
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
 
-    lastSpentDate: datetime = Field(default_factory=utc_now)
+    lastSpentDate: datetime = Field(sa_column=Column(
+        pg.TIMESTAMP,
+        default=datetime.now(),
+        nullable=False
+    ))
 
     isMarketingEnabled: bool = Field(default=False)
     isBiometricsEnabled: bool = Field(default=False)
@@ -80,7 +84,11 @@ class Users(SQLModel, table=True):
     )
 
     loginAt: Optional[datetime] = Field(default=None)
-    createdAt: datetime = Field(default_factory=utc_now)
+    createdAt: datetime = Field(sa_column=Column(
+        pg.TIMESTAMP,
+        default=datetime.now(),
+        nullable=False
+    ))
 
 
 class Kyc(SQLModel, table=True):
@@ -93,7 +101,7 @@ class Kyc(SQLModel, table=True):
 
     full_name: str = Field(min_length=3)
     nin_number: str = Field(min_length=11, max_length=11)
-    dob: date
+    dob: Date
     nin_slip: str
     status: KycStatus = Field(default=KycStatus.UNVERIFIED, nullable=False)
 
@@ -113,7 +121,11 @@ class Kyc(SQLModel, table=True):
         sa_relationship_kwargs={"lazy": "selectin"},
     )
 
-    date: datetime = Field(default_factory=utc_now)
+    date: datetime = Field(sa_column=Column(
+        pg.TIMESTAMP,
+        default=datetime.now(),
+        nullable=False
+    ))
 
 
 class Transactions(SQLModel, table=True):
@@ -130,7 +142,11 @@ class Transactions(SQLModel, table=True):
     narration: Optional[str] = Field(default=None, min_length=3)
     reference: str = Field(unique=True)
 
-    date: datetime = Field(default_factory=utc_now)
+    date: datetime = Field(sa_column=Column(
+        pg.TIMESTAMP,
+        default=datetime.now(),
+        nullable=False
+    ))
 
     senderId: Optional[uuid.UUID] = Field(
         default=None,
