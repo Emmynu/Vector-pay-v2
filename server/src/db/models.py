@@ -7,6 +7,10 @@ from sqlmodel import SQLModel, Field, Relationship, Column
 from .enums import KycStatus, TransactionStatus, TransactionType, DailyLimit, Roles
 
 
+def get_utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class Users(SQLModel, table=True):
     __tablename__ = "users"
 
@@ -22,7 +26,7 @@ class Users(SQLModel, table=True):
     userName: str
     photoURL: Optional[str] = None
     password: str = Field(exclude=True)
-    balance: Decimal = Field(default=0)
+    balance: Decimal = Field(default=Decimal(0))
     password_reset_count: int = Field(default=0)
 
     accountNumber: str 
@@ -39,7 +43,7 @@ class Users(SQLModel, table=True):
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
     lastSpentDate: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=get_utc_now,
         sa_column=Column(pg.TIMESTAMP(timezone=True), nullable=False)
     )
     isMarketingEnabled: bool = Field(default=False)
@@ -53,21 +57,20 @@ class Users(SQLModel, table=True):
             return self.kyc.status
         return KycStatus.UNVERIFIED
 
-    # Transactions where this user is a sender
     transactions_sent: List["Transactions"] = Relationship(
         back_populates="sender", 
         sa_relationship_kwargs={"primaryjoin": "Users.id == Transactions.senderId", "lazy": "selectin"}
     )
 
-    # Transactions where this user is a receiver
     transactions_received: List["Transactions"] = Relationship(
         back_populates="recipient", 
         sa_relationship_kwargs={"primaryjoin": "Users.id == Transactions.recipientId", "lazy": "selectin"}
     )
 
-
     loginAt: Optional[datetime] = Field(default=None)
-    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+    # FIXED: Using explicit helper callable get_utc_now instead of raw datetime.utcnow
+    createdAt: datetime = Field(default_factory=get_utc_now)
 
 
 class Kyc(SQLModel, table=True):
@@ -90,7 +93,8 @@ class Kyc(SQLModel, table=True):
     userId: Optional[uuid.UUID] = Field(default=None, foreign_key="users.id")
     user: Optional["Users"] = Relationship(back_populates="kyc", sa_relationship_kwargs={"lazy": "selectin"})
 
-    date: datetime = Field(default_factory=datetime.utcnow)
+    # FIXED: Using explicit helper callable get_utc_now
+    date: datetime = Field(default_factory=get_utc_now)
 
 
 class Transactions(SQLModel, table=True):
@@ -107,7 +111,9 @@ class Transactions(SQLModel, table=True):
     amount: int
     narration: Optional[str] = Field(default=None, min_length=3)
     reference: str = Field(unique=True)
-    date: datetime = Field(default_factory=datetime.utcnow)
+    
+    # FIXED: Using explicit helper callable get_utc_now
+    date: datetime = Field(default_factory=get_utc_now)
 
     senderId: Optional[uuid.UUID] = Field(default=None, foreign_key="users.id", index=True)
     recipientId: Optional[uuid.UUID] = Field(default=None, foreign_key="users.id", index=True)
