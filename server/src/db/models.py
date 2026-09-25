@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field, Column, Relationship
+from sqlalchemy import ForeignKey
 import sqlalchemy.dialects.postgresql as pg
 import uuid
 from datetime import datetime, date, timezone
@@ -16,11 +17,7 @@ class Users(SQLModel, table=True):
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
-        sa_column=Column(
-            pg.UUID,
-            nullable=False,
-            primary_key=True,
-        ),
+        sa_column=Column(pg.UUID, nullable=False, primary_key=True),
     )
 
     firstName: str
@@ -50,7 +47,6 @@ class Users(SQLModel, table=True):
     isMarketingEnabled: bool = Field(default=False)
     isBiometricsEnabled: bool = Field(default=False)
 
-    # Relationship to Kyc
     kyc: Optional["Kyc"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"lazy": "selectin"},
@@ -62,7 +58,6 @@ class Users(SQLModel, table=True):
             return self.kyc.status
         return KycStatus.UNVERIFIED
 
-    # Transactions where this user is a sender
     transactions_sent: List["Transactions"] = Relationship(
         back_populates="sender",
         sa_relationship_kwargs={
@@ -71,7 +66,6 @@ class Users(SQLModel, table=True):
         },
     )
 
-    # Transactions where this user is a receiver
     transactions_received: List["Transactions"] = Relationship(
         back_populates="recipient",
         sa_relationship_kwargs={
@@ -89,11 +83,7 @@ class Kyc(SQLModel, table=True):
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
-        sa_column=Column(
-            pg.UUID,
-            nullable=False,
-            primary_key=True,
-        ),
+        sa_column=Column(pg.UUID, nullable=False, primary_key=True),
     )
 
     full_name: str = Field(min_length=3)
@@ -105,7 +95,13 @@ class Kyc(SQLModel, table=True):
     reason: Optional[str] = Field(default=None, nullable=True)
 
     userId: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="users.id"
+        default=None,
+        sa_column=Column(
+            pg.UUID,
+            ForeignKey("users.id"),
+            nullable=True,
+            index=True,
+        ),
     )
     user: Optional["Users"] = Relationship(
         back_populates="kyc",
@@ -120,11 +116,7 @@ class Transactions(SQLModel, table=True):
 
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
-        sa_column=Column(
-            pg.UUID,
-            nullable=False,
-            primary_key=True,
-        ),
+        sa_column=Column(pg.UUID, nullable=False, primary_key=True),
     )
 
     status: TransactionStatus = Field(default=TransactionStatus.PENDING)
@@ -136,10 +128,22 @@ class Transactions(SQLModel, table=True):
     date: datetime = Field(default_factory=utc_now)
 
     senderId: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="users.id", index=True
+        default=None,
+        sa_column=Column(
+            pg.UUID,
+            ForeignKey("users.id"),
+            nullable=True,
+            index=True,
+        ),
     )
     recipientId: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="users.id", index=True
+        default=None,
+        sa_column=Column(
+            pg.UUID,
+            ForeignKey("users.id"),
+            nullable=True,
+            index=True,
+        ),
     )
 
     sender: Optional["Users"] = Relationship(
