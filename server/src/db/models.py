@@ -77,13 +77,13 @@ class Users(SQLModel, table=True):
         sa_relationship_kwargs={"primaryjoin": "Users.id == Transactions.recipientId", "lazy": "selectin"}
     )
 
-    loginAt: datetime = Field(
-        sa_column=Column(
-            pg.TIMESTAMP,
-            nullable=False,
-            default=datetime.now()
-        )
-    )
+    # loginAt: datetime = Field(
+    #     sa_column=Column(
+    #         pg.TIMESTAMP,
+    #         nullable=False,
+    #         default=datetime.now()
+    #     )
+    # )
 
     createdAt: datetime = Field(
         sa_column=Column(
@@ -125,6 +125,8 @@ class Kyc(SQLModel, table=True):
         nullable=False,
         default=datetime.now(),
     ))
+
+
 
 
 class Transactions(SQLModel, table=True):

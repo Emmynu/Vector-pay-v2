@@ -117,7 +117,8 @@ class AuthServices():
         user =  raw_user.scalars().one_or_none()
 
         if(user):
-            user.loginAt = datetime.now()
+            pass
+            # user.loginAt = datetime.now()
 
 
         await session.commit()
