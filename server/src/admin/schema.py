@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 import uuid
 from src.db.enums import KycStatus, AdminKycStatus, BroadCastTo
@@ -42,7 +42,8 @@ class KycModel(BaseModel):
 
     date:datetime 
 
-    model_config = ConfigDict(from_attributes =  True, arbitrary_types_allowed = True)
+    class Config:
+        from_attributes = True
 
 
 
