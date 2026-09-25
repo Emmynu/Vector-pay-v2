@@ -11,6 +11,8 @@ from src.account.routes import router as accountRouter
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 from .limiter import limiter
+from .redis import init_redis, redis_close
+from src.admin.routes import router as adminRouter
 
 logger = logging.Logger("uvicorn.error")
 
@@ -19,8 +21,10 @@ async def lifeSpan(app:FastAPI):
 
     print("Starting....")
     await initDB()
+    await init_redis()
     yield
     print("Stopping...")
+    await redis_close()
 
 version = "v1"
 
@@ -37,7 +41,8 @@ app.add_middleware(
         allow_origins= ["http://localhost:3000", "https://next-tuts-jet.vercel.app"],
         allow_headers=["*"],
         allow_methods=["*"],
-        allow_credentials=True
+        allow_credentials=True,
+        expose_headers=["Content-Disposition"]
 )
 
 app.state.limiter = limiter
@@ -93,4 +98,5 @@ async def custom_500_error_handler(request: Request, err:Exception):
 
 app.include_router(authRouter, prefix="/api/{version}/auth", tags=["Auth"])
 app.include_router(accountRouter, prefix="/api/{version}/account", tags=["Account"])
+app.include_router(adminRouter, prefix="/api/{version}/admin", tags=["Admin"])
 app.include_router(healthRouter, prefix="/api/{version}", tags=["Health"])

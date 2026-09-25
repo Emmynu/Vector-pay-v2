@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     PAYSTACK_BASE_URL:str
     TELEGRAM_KEY:str
     TELEGRAM_CHAT_ID:str
+    REDIS_URL:str
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -20,4 +21,3 @@ class Settings(BaseSettings):
 
 
 config  = Settings()
-

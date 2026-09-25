@@ -1,30 +1,44 @@
 from fastapi.security import HTTPBearer
+from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
-from fastapi import HTTPException, status
-from .utils import verifyIdToken, loadUnsafeIdToken, decodeJWTToken
+from fastapi import HTTPException, status, Depends
+from .utils import verifyIdToken, decodeJWTToken
+from sqlalchemy.ext.asyncio.session import AsyncSession
+from .services import AuthServices
+from src.db.main import session
+from src.redis import redis_get_value
+
+authServices = AuthServices()
+
 
 class OtpBearer(HTTPBearer):
     def __init__(self,  auto_error = True):
         super().__init__(auto_error=auto_error)
     
-    async def __call__(self, request: Request):
+    async def __call__(self, request: Request, session:AsyncSession = Depends(session)):
         token =  await super().__call__(request)
 
         if (token):
-            code = loadUnsafeIdToken(token.credentials)
+            code = await redis_get_value(f"otp-code-{token.credentials}")
             
-            user = verifyIdToken(token.credentials, salt=f"otp-verify-{code["code"]}", max=300)
+            token_data = verifyIdToken(token.credentials, salt=f"otp-verify-{code}", max=300)
 
-            if (not user):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
-                "status": "error",
-                "msg": "Invalid or expired two-factor auth token",
-                "description": "Please provide a valid two-factor auth token"
+            if (not token_data):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={
+                    "status": "error",
+                    "msg": "Invalid or expired two-factor auth token",
+                    "description": "Please provide a valid two-factor auth token"
             })
 
-            return user
+            user = await authServices.userExists(session, token_data["email"], role=token_data["role"])
+
+            return {
+                "user": jsonable_encoder(user),
+                "code": code,
+                "token": token.credentials
+            }
         else:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={
                 "status": "error",
                 "msg": "Invalid two-factor auth token",
                 "description": "Please provide a valid two-factor auth token"
@@ -79,15 +93,16 @@ class TokenBearer(HTTPBearer):
 
 
         if  (isValid):
-            try:
                 user = decodeJWTToken(token)
-                return user
-            except:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+
+                if(not user):
+                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
                         "status" : "error",
-                        "title": f"Invalid {self.cookie_name} token",
+                        "title": f"Expired {self.cookie_name} token",
                         "msg": f"Please provide a valid {self.cookie_name} token"
                 })
+
+                return user
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
                 "status" : "error",
@@ -108,6 +123,17 @@ class AccessTokenBearer(TokenBearer):
         token =  await super().__call__(request)
 
         user =  self.verify_token(token)
+   
+        jwtId = user["jti"] 
+
+        isTokenBlackListed = await redis_get_value(jwtId)
+
+        if(isTokenBlackListed):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                "status" : "error",
+                "title": f"Expired {self.cookie_name} token",
+                "msg": f"Please provide a valid {self.cookie_name} token"
+            })
 
         if(user["type"] == "refresh"):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
@@ -115,6 +141,7 @@ class AccessTokenBearer(TokenBearer):
                 "title": f"Invalid {self.cookie_name} token",
                 "msg": f"Please provide a valid {self.cookie_name} token"
             })
+        
         return user
     
        
@@ -127,10 +154,49 @@ class RefreshTokenBearer(TokenBearer):
         token =  await super().__call__(request)
 
         user =  self.verify_token(token)
-        if(user["type"] == "access"):
+
+        if(not user):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
                 "status" : "error",
                 "title": f"Invalid {self.cookie_name} token",
                 "msg": f"Please provide a valid {self.cookie_name} token"
+            })
+
+        isTokenBlacklisted = await redis_get_value(user["jti"])
+
+        if(isTokenBlacklisted):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                "status" : "error",
+                "title": f"Expired refresh token",
+                "msg": f"Please provide a valid refresh token"
+            })
+
+        if((user["type"] == "access" )):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                "status" : "error",
+                "title": f"Invalid {self.cookie_name} token",
+                "msg": f"Please provide a valid {self.cookie_name} token"
+            })
+        
+        return user
+
+
+
+class RoleChecker:
+    def __init__(self, role:str):
+        self.role = role
+
+    async def __call__(self, session:AsyncSession = Depends(session), token_info =  Depends(AccessTokenBearer())):
+        email = token_info["user"]["email"]
+        role = token_info["user"]["role"]
+
+
+        user = await authServices.userExists(session, email, role)
+
+        if(user.role != self.role):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                "status": "error",
+                "title": "Unauthorized",
+                "description": "You do not have permission to access this resource."
             })
         return user

@@ -1,4 +1,5 @@
-import DashboardLayout from "../libs/ui/dashboard-layout";
+import DashboardLayout from "../libs/ui/dashboard/dashboard-layout";
+import ProtectedRoute from "../libs/ui/protectedRoutes";
 
 
 export const metadata = {
@@ -11,7 +12,9 @@ export default function RootLayout({ children }) {
    
       <main className={`h-full antialiased`}>
         <div className="min-h-full">
-            <DashboardLayout children={children}/>
+           <ProtectedRoute role={"user"} children={children}>
+              <DashboardLayout isAdmin={false} children={children} />
+            </ProtectedRoute>            
         </div>
         
       </main>

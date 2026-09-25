@@ -13,13 +13,9 @@ export function useKyc() {
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
            
                    
-            if(response?.status === 200){
+            if(response?.status === 201){
                 document.getElementById('my-modal-3').close()
                 showToast({type: response?.data?.status, title:response?.data?.msg})
-            }
-            else{
-                document.getElementById('my-modal-3').close()
-                showToast({type:response?.status, title:response?.title,  msg: response?.msg })
             }
             return response
            

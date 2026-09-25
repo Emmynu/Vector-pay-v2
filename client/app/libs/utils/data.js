@@ -1,29 +1,57 @@
-import  { LayoutDashboard, History, ArrowLeftRight, Banknote, Settings, User, ShieldCheck, Smartphone, Bell } from "lucide-react"
+import  { LayoutDashboard, History, ArrowLeftRight, Banknote, Settings, User, ShieldCheck, Smartphone, Bell, Users,UserCheck, ReceiptText, Megaphone } from "lucide-react"
 
-export const user = {
-  name: "Ada Okonkwo",
-  email: "ada@vectorpay.io",
-  accountNumber: "8801472093",
-  bank: "VectorPay Wallet",
-  tier: "Tier 2" ,
-  balance: 1284530.75,
-};
 
-export const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/dashboard/transactions", label: "Transaction History", icon: History },
-  { to: "/dashboard/transfer", label: "Transfer", icon: ArrowLeftRight },
-  { to: "/dashboard/withdraw", label: "Withdraw", icon: Banknote },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings },
-  { to: "/dashboard/profile", label: "Profile", icon: User },
-] ;
+export const nav = {
+  admin: [
+    { 
+      to: "/admin/dashboard",
+      label: "Dashboard", 
+      icon: LayoutDashboard 
+    },
+    { 
+      to: "/admin/kyc", 
+      label: "KYC Verification", 
+      icon: UserCheck 
+    },
+    { 
+      to: "/admin/transactions", 
+      label: "Transactions", 
+      icon: ReceiptText 
+    },
+    { 
+      to: "/admin/users", 
+      label: "User Management", 
+      icon: Users 
+    },
+    { 
+      to: "/admin/broadcast", 
+      label: "Broadcast", 
+      icon: Megaphone 
+    },
+    { 
+      to: "/admin/profile", 
+      label: "Admin Profile", 
+      icon: User 
+    },
+
+  ],
+  user: [
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/dashboard/transactions", label: "Transaction History", icon: History },
+      { to: "/dashboard/transfer", label: "Transfer", icon: ArrowLeftRight },
+      { to: "/dashboard/withdraw", label: "Withdraw", icon: Banknote },
+      { to: "/dashboard/settings", label: "Settings", icon: Settings },
+      { to: "/dashboard/profile", label: "Profile", icon: User },
+  ]
+}
+
 
 
  export const rows = [
-    { key: "twoFA", icon: ShieldCheck, label: "Two-factor authentication", desc: "Add an extra layer of protection on sign-in." },
-    { key: "biometrics", icon: Smartphone, label: "Biometric for payment", desc: "Use Face ID or fingerprint on trusted devices." },
-    { key: "txnAlerts", icon: Bell, label: "Transaction alerts", desc: "Get notified for every debit and credit." },
-    { key: "marketing", icon: Bell, label: "Product updates", desc: "Occasional emails on new features." },
+    { key: "2fa", icon: ShieldCheck, label: "Two-factor authentication", desc: "Add an extra layer of protection on sign-in.", isEnforced: true },
+    { key: "isBiometricsEnabled", icon: Smartphone, label: "Biometric for payment", desc: "Use Face ID or fingerprint on trusted devices." },
+    { key: "txnAlerts", icon: Bell, label: "Transaction alerts", desc: "Get notified for every debit and credit.", isEnforced: true },
+    { key: "isMarketingEnabled", icon: Bell, label: "Product updates", desc: "Occasional emails on new features." },
   ];
 
 export const cols = [
@@ -39,7 +67,7 @@ export const services = [
       {title: "Compliance, handled", description: "DKYC, KYB, sanctions, and ongoing monitoring built into every flow. Audit-ready from day one.", icon: "sheild"},  
   ]
 
-export const names = ["Zorachat", "Kora Pay", "ZendApp", "Polaris", "Bearcart", "Vatebra Limited"];
+export const names = ["Zorachat", "Kora Pay", "ZendApp", "Paystack", "Bearcart", "Vatebra Limited"];
 
 
 export const transactions = [
@@ -66,3 +94,7 @@ export const addOnsData = [
     data: ["Withdrawals are settled under 5 minutes.", "Daily withdrawal cap based on your tier","No fee on interbank transfers", `Dispute a transaction? Contact support.`]
   }
 ]
+
+
+export const kycStatus = ["All", "Pending", "Verified", "Declined"]
+

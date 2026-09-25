@@ -2,13 +2,14 @@ from sqlmodel import select, update, or_, desc, func, and_,extract,case
 from fastapi import Query, status, HTTPException
 from src.db.models import Users, Transactions, Kyc
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from src.db.enums import Operators, KycStatus, TransactionType, TransactionStatus
+from src.db.enums import Operators, KycStatus, TransactionType, TransactionStatus, Roles, Prefrences
 from decimal import Decimal
 from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, TransactionPinSchema, EditProfileSchema, KycUploadSchema, UserProfileResponse, ResolveBankAccountSchema
 from datetime import datetime, timezone
 from src.auth.utils import hashPassword
 from src.config import config
 import requests
+import calendar
 from typing import Optional
 
 
@@ -20,11 +21,9 @@ headers = {
 
 class AccountService():  
 
-  async def update_transaction_pin(self, email:str, userData:TransactionPinSchema, session:AsyncSession):
-    hashedPin =  hashPassword(userData.pin)
-    user =  await session.execute(update(Users).where(Users.email == email).values(transactionPin = hashedPin))
-
-    await session.commit()
+  async def update_transaction_pin(self, id:str, transactionPinSchema:TransactionPinSchema, session:AsyncSession):
+    hashedPin =  hashPassword(transactionPinSchema.pin)
+    user =  await session.execute(update(Users).where(Users.id == id).values(transactionPin = hashedPin))
 
     return True if user is not None else False
 
@@ -37,11 +36,11 @@ class AccountService():
 
     return True if pin_reset_response is not None else False
 
-  async def edit_user_profile(self, session:AsyncSession, userData:EditProfileSchema,email:str):
+  async def edit_user_profile(self, session:AsyncSession, editProfileSchema:EditProfileSchema,id:str):
 
-    profile_data = userData.model_dump(exclude_unset=True)
+    profile_data = editProfileSchema.model_dump(exclude_unset=True)
 
-    updated_profile = await session.execute(update(Users).where(Users.email == email).values(**profile_data))
+    updated_profile = await session.execute(update(Users).where(Users.id == id).values(**profile_data))
 
     await session.commit()
 
@@ -58,8 +57,7 @@ class AccountService():
     )
 
     session.add(kyc_data)
-    await session.commit()
-    await session.refresh(kyc_data)
+    # await session.commit()
 
     return kyc_data
 
@@ -69,41 +67,74 @@ class AccountService():
 
     update_data = uploadSchema.model_dump(exclude_unset=True)
 
+    update_data["date"] = datetime.now()
+    update_data["reason"] = None
+
 
     updated_kyc_data = await session.execute(update(Kyc).where(Kyc.userId == userId).values(**update_data))
 
-    await session.commit()
+    # await session.commit()
     
     return True if updated_kyc_data is not None else False
 
 
     
-  async def update_kyc_status(self, session:AsyncSession, email:str, status:KycStatus):
-    status = await session.execute(update(Users).where(Users.email == email).values(kycStatus = status))
+  async def update_kyc_status(self, session:AsyncSession, id:str, kycstatus:KycStatus):
+    user_kyc_result = await session.execute(select(Kyc).where(Kyc.userId == id).with_for_update())
 
-    await session.commit()
+    user_kyc = user_kyc_result.scalars().first()
 
-    return True if status is not None else False
+    if(user_kyc is not None):
+      user_kyc.status = kycstatus
+    
 
-  async def check_kyc_link(self, nin_number:str,session:AsyncSession):   # checking if kyc info is already linked to an account
+    return True if (user_kyc is not None) else False
+
+  async def check_kyc_link(self, nin_number:str,session:AsyncSession, userId:str):   # checking if kyc info is already linked to an account
     isLinked = await session.execute(select(Kyc).where(Kyc.nin_number == nin_number))
 
     result = isLinked.scalars().first()
+
+    if(result is not None and str(result.userId) != str(userId)):
+      return True # is Linked
+
+    return False
           
-    return True if result is not None  else False
 
 
 
-  async def resolve_account_number(self, accountNumber:str,session:AsyncSession):
-    response =  await session.execute(select(Users).where(Users.accountNumber == accountNumber))
+  async def resolve_account_number(self, accountNumber:str,session:AsyncSession,currentUserId:str):
+    response =  await session.execute(select(Users).where(and_(
+      Users.accountNumber == accountNumber,
+      Users.role == Roles.USER
+    )))
 
     user_info = response.scalars().first()
 
-    return user_info if user_info is not None else False
+    if(not user_info):
+      raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={
+            "status": "error",
+            "msg": "Account Not Found",
+            "description": "No account matching this account number."
+        }
+    )
 
+    if(user_info.id == currentUserId):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+          "status": "error",
+          "msg": "Invalid Request",
+          "description": "You cannot resolve your own account number"
+        })   
+
+    return user_info 
 
   async def update_daily_spent(self, amount:int, userId:str, session:AsyncSession):
-    result =  await session.execute(update(Users).where(Users.id == userId).values(dailySpent = Users.dailySpent + amount))
+    result =  await session.execute(update(Users).where(and_(
+      Users.id == userId,
+      Users.role == Roles.USER
+    )).values(dailySpent = Users.dailySpent + amount))
 
     # await session.commit()
 
@@ -114,7 +145,10 @@ class AccountService():
     now = datetime.now(timezone.utc)
 
     if(now.date() > user.lastSpentDate.date()):
-      await session.execute(update(Users).where(Users.id == user.id).values(
+      await session.execute(update(Users).where(and_(
+        Users.id == user.id,
+        Users.role == Roles.USER
+      )).values(
         lastSpentDate=now,
         dailySpent=0
       ))
@@ -123,10 +157,14 @@ class AccountService():
 
   async def updateBalance(self, session:AsyncSession, operator:Operators, amount:Decimal,  userId:Optional[str] = None, email:Optional[str] = None):
 
-    result = await session.execute(select(Users).where(or_(
+    result = await session.execute(select(Users).where(and_(
+      or_(
           Users.id == userId,
-          Users.email == email
-        )).with_for_update()) # row locking....
+          Users.email == email,
+        ),
+      Users.role == Roles.USER
+    )
+    ).with_for_update()) # row locking....
 
     user = result.scalars().first()
 
@@ -179,25 +217,49 @@ class AccountService():
     return await self.saveTransaction(session, transfer_data)
 
   async def updateTransactionStatus(self, session:AsyncSession, status:TransactionStatus, reference:str):
-    new_status = await session.execute(update(Transactions).where(Transactions.reference == reference).values(status=status))
+    new_status = None
 
-    await session.commit()
+    result = await session.execute(select(Transactions).where(Transactions.reference == reference).with_for_update())
+
+    transaction = result.scalars().first()
+
+    if(transaction is not None):
+      new_status = transaction.status = status
 
     return True if new_status is not None else False
 
 
-  async def getTransactions(self ,session:AsyncSession, id:str, skip:int = Query(0, ge=0), limit: int = Query(10, ge=5, le=100)):
-
-    filter_condition = or_(
+  async def getTransactions(self,
+    session:AsyncSession, 
+    id:str, 
+    skip:int = Query(0, ge=0, description="Transactions to skip"), 
+    limit: int = Query(10, ge=4, le=100, description="Number of transactions to retrieve per page"), type:Optional[TransactionType] = Query(None, description="Filter transactions by type" ), status:Optional[TransactionStatus] = Query(None, description="Filter transactions by status")
+):
+   
+    filter_condition = [
+      or_(
         Transactions.senderId == id,
-        Transactions.recipientId == id
-    )
+        Transactions.recipientId == id,
+      )
+    ]
 
-    count_result  = await session.execute(select(func.count()).select_from(Transactions).where(filter_condition)) # total
+    if(type and type != "all"):
+        filter_condition.append(Transactions.type == type)
+    
+    if(status and status != "all"):
+        filter_condition.append(Transactions.status == status)
+
+
+    count_result  = await session.execute(select(func.count()).select_from(Transactions).where(and_(
+      *filter_condition,
+    ))) # total
 
     total = count_result.scalar() or 0
 
-    data = await session.execute(select(Transactions).where(filter_condition).order_by(desc(Transactions.date)).offset(skip).limit(limit))
+    data = await session.execute(select(Transactions).where(and_(
+      *filter_condition
+    )
+    ).order_by(desc(Transactions.date)).offset(skip).limit(limit))
 
     transaction_data = data.scalars().all() 
 
@@ -246,6 +308,7 @@ class AccountService():
 
     weekly_data = []
     labels = ["Deposit", "Transfer", "Withdrawal"]
+    month_names = [calendar.month_name[month] for month in range(1, 13)]
 
     for transaction in bar_chart_transactions:
       weekly_data.append({ 
@@ -259,9 +322,37 @@ class AccountService():
     
     doughnut = await session.execute(select(
       func.sum(case((Transactions.type == TransactionType.DEPOSIT, Transactions.amount),else_ = 0)).label("deposit"),
+
       func.sum(case((Transactions.type == TransactionType.WITHDRAW, Transactions.amount),else_ = 0)).label("withdraw"),
-      func.sum(case((Transactions.type == TransactionType.TRANSFER, Transactions.amount),else_ = 0)).label("transfer")
+
+      func.sum(case((Transactions.type == TransactionType.TRANSFER, Transactions.amount),else_ = 0)).label("transfer"),
+
+      func.sum(
+        case(
+        (
+          and_(
+            Transactions.type == TransactionType.TRANSFER, 
+            Transactions.senderId == userId
+            ), Transactions.amount
+          ),  
+          else_=0
+        )
+      ).label("totalTransferOut"),
+
+      func.sum(
+        case(
+        (
+          and_(
+            Transactions.type == TransactionType.TRANSFER, 
+            Transactions.recipientId == userId
+            ), Transactions.amount
+          ),  
+          else_=0
+        )
+      ).label("totalTransferIn"),
+
     ).where(query))
+
 
 
     doughnut_transactions = doughnut.mappings().one_or_none()
@@ -277,8 +368,9 @@ class AccountService():
         "total": total
       },
       "labels": labels,
-      "currentMonth": str(now),
-
+      "currentMonth": month_names[int(now.month)],
+      "totalIn": int((doughnut_transactions.deposit or 0) + (doughnut_transactions.totalTransferIn or 0)),
+      "totalOut": int((doughnut_transactions.withdraw or 0)+ (doughnut_transactions.totalTransferOut or 0))
     }
 
 
@@ -320,11 +412,11 @@ class AccountService():
      
       return user_bank_info if user_bank_info["status"] == True else False
     
-    except:
+    except Exception as e:
       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
             "status" : "error",
             "msg" : "Failed to resolve bank details",
-            "description": "An error occured while resolve bank details. Please try again."
+            "description": f"An error occured while resolve bank details. Please try again."
         })
   
 
@@ -342,3 +434,29 @@ class AccountService():
         "description": "An error occured while sending notification to admin. Please try again."
       })
 
+
+  async def getExportTransaction(self, session:AsyncSession, userId:str):
+    result = await session.execute(select(Transactions).where(
+      or_(
+        Transactions.senderId == userId,
+        Transactions.recipientId== userId,
+      )
+    ))
+
+    transactions =  result.scalars().all()
+
+    return [TransactionResponseModel.model_validate(transaction) for transaction in transactions] if transactions is not None else []
+
+
+  async def update_setting_preferences(self, userId:str, key:Prefrences, value:bool, session:AsyncSession):
+    try:
+      result = await session.execute(select(Users).where(Users.id == userId).with_for_update())
+    
+      user =  result.scalars().one_or_none()
+
+      if(user is not None):
+        setattr(user, key.value, value)
+        return user
+      
+    except:
+       return False

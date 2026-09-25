@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VectorPay Broadcast</title>
+  <style>
+    /* Reset & Rich Text Content Styling Fallbacks for Email Clients */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f9;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .email-content p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .email-content h1, 
+    .email-content h2, 
+    .email-content h3 {
+      color: #0f172a;
+      font-weight: 700;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+    .email-content h1 { font-size: 22px; }
+    .email-content h2 { font-size: 18px; }
+    .email-content h3 { font-size: 16px; }
+    .email-content ul, 
+    .email-content ol {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-left: 20px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .email-content li {
+      margin-bottom: 6px;
+    }
+    .email-content a {
+      color: #03457C;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    .email-content blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      background-color: #f8fafc;
+      border-left: 4px solid #03457C;
+      color: #334155;
+      font-style: italic;
+    }
+    .email-content img {
+      max-width: 100% !important;
+      height: auto !important;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  
+  <!-- Outer Wrapper Table -->
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f6f9; padding: 30px 0;">
+    <tr>
+      <td align="center">
+        
+        <!-- Main Container Card -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td align="center" style="background-color: #03457C; padding: 32px 24px;">
+              <h1 style="color: #ffffff; font-size: 26px; font-weight: 800; margin: 0; font-family: Arial, sans-serif;">
+                VectorPay
+              </h1>
+              <p style="color: #cbd5e1; font-size: 13px; margin-top: 6px; margin-bottom: 0;">
+                Fast, Secure & Seamless Financial Transactions
+              </p>
+            </td>
+          </tr>
+
+          <!-- Main Content Body -->
+          <tr>
+            <td style="padding: 32px 28px; color: #1e293b;">
+              
+              <!-- Dynamic Title / Header from Editor -->
+              <!-- <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 20px;">
+                {{title}}
+              </h2> -->
+
+              <!-- Dynamic HTML Body Content Injection from Rich Text Editor -->
+              <div class="email-content" style="font-size: 14px; line-height: 1.6; color: #475569;">
+                {{content | safe}}
+              </div>
+
+              <p style="font-size: 13px; line-height: 1.5; color: #64748b; margin-top: 24px; margin-bottom: 0;">
+                If you have any questions or need help with your account, reach out to our support team directly in the app.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer Section -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 24px; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">
+                &copy; 2026 VectorPay Inc. All rights reserved.
+              </p>
+              <p style="font-size: 11px; color: #cbd5e1; margin: 0;">
+                You received this email because you are a registered user of VectorPay.
+                <br>
+                <!-- <a href="{{unsubscribeUrl}}" style="color: #64748b; text-decoration: underline;">Unsubscribe</a> -->
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

@@ -21,16 +21,21 @@ export const refreshApi =  axios.create({
 })
 
 
+
+
 api.interceptors.response.use(
-    (resp) =>resp,
+    (resp) =>{
+        return resp
+    },
     async (error) =>{
         const { statusText, data } = error?.response
         
         if(error.status === 500 ){
+            
             showToast({
                 type: data?.status || "error",
-                title: data.msg || "Internal Server Error",
-                msg: `ERR_${statusText||"internal server error"}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
+                title: data?.msg || data?.detail.msg || "Internal Server Error",
+                msg: `ERR_${statusText||"internal server error"}_${error?.status}: ${data?.description || data?.detail?.description || "An error occurred Please try again later."}`,
             })
         }
 
@@ -55,11 +60,17 @@ api.interceptors.response.use(
     
        if(error?.status === 401){
      
-            if(error?.config?.url?.includes("/auth/otp-verify")){
+            if(error?.config?.url?.includes("/auth/otp-verify") ){
                 window.location = "/auth/login"
             };
 
-            if(error?.config?.url?.includes("/auth/login")){
+            if((error?.config?.url?.includes("/admin/otp-verify"))){
+                window.location = "/admin/login" 
+            }
+
+        
+
+            if(error?.config?.url?.includes("/auth/login") || error?.config?.url?.includes("/admin/login")){
                 return {
                     status: data?.detail?.status,
                     title: data?.detail?.msg,
@@ -74,11 +85,15 @@ api.interceptors.response.use(
 
                     try {
                         const resp = await refreshApi.post("/auth/refresh")
-                            
+                        // console.log(resp.data);
+                        
                         return api(error?.config)
 
                     } catch (error) {
-                        window.location = "/auth/login"  
+
+                        const redirectURL = window.location.pathname.includes("/admin") ? "/admin/login" : "/auth/login"
+
+                        window.location = redirectURL
                         return Promise.reject(error)
                     }
                 }
@@ -88,8 +103,8 @@ api.interceptors.response.use(
 
         return {
             status:  data?.detail?.status,
-            title: data?.detail?.msg,
-            msg: `ERR_${statusText}_${error?.status}: ${data?.detail?.description}`
+            title: data?.detail?.msg || "Internal Server Error",
+            msg: `ERR_${statusText}_${error?.status}: ${data?.detail?.description || data?.description ||"An error occurred Please try again later."}`
         }
     }
 )

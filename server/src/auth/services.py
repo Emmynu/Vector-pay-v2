@@ -2,19 +2,29 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.db.models import Users
 from .schema import CreateUserSchema
 from .utils import hashPassword
-from sqlmodel import select, update
-from .utils import generateAccountNumber
-from src.db.enums import DailyLimit
-from fastapi import Request, HTTPException, status
+from sqlmodel import select, update, and_
+from .utils import generateAccountNumber, generateUsername
+from src.db.enums import DailyLimit, Roles
+from fastapi import Request
 import requests
+from datetime import datetime
 
 class AuthServices():
 
+    async def adminExists(self, session:AsyncSession):
+        admin_exists = await session.execute(select(Users).where(Users.role == Roles.ADMIN))
 
-    async def userExists(self, session: AsyncSession, email:str):
-       user =  await session.execute(select(Users).where(Users.email == email))
-    
-       return True if user.first() is not None else False
+        return admin_exists.scalars().first()
+
+    async def userExists(self, session: AsyncSession, email:str, role:Roles):
+       result =  await session.execute(select(Users).where(and_(
+        Users.email == email,
+        Users.role == role
+       )))
+
+       user = result.scalars().first()
+
+       return user if user is not None else False
 
     def get_ip(self, request:Request):
         ip = request.headers.get("X-Forwarded-For")
@@ -37,7 +47,7 @@ class AuthServices():
             try:
                 resolved_ip =  requests.get(f"http://ip-api.com/json/{ip}").json()
     
-                location = f"{resolved_ip["city"], resolved_ip["country"]}"
+                location = f"{resolved_ip["city"]}, {resolved_ip["country"]}"
 
             except Exception as e:
                 return False
@@ -61,21 +71,25 @@ class AuthServices():
             lastName=userData.lastName,
             email=userData.email,
             password= hashedPassword,
-            userName=userData.userName,
+            userName=generateUsername(userData.firstName, userData.lastName),
+            role=userData.role,
             accountNumber=generateAccountNumber(),
             ip=ip,
-            location = location
+            location = location,
         )
         session.add(newUser)
         return newUser
     
 
     async def get_user(self, session:AsyncSession, email:str):
-        user =  await session.execute(select(Users).where(Users.email == email))
+        user =  await session.execute(select(Users).where(and_(
+            Users.email == email,
+            Users.role == Roles.USER
+        )))
 
         result = user.scalars().first()
         
-        return result if result is not None else False
+        return result if result  is not None else False
     
     
     async def verify_user_account(self, email:str, session:AsyncSession):
@@ -83,7 +97,7 @@ class AuthServices():
         )
         await session.commit()
        
-        return True if user is not None else False
+        return user is not None
 
 
     async def update_password(self, email:str, password:str, session:AsyncSession):
@@ -94,7 +108,17 @@ class AuthServices():
 
         await session.commit()
        
-        return True if user is not None else False
+        return user is not None 
 
 
+    async def update_login_timestamp(self, id:str, session:AsyncSession):
+        raw_user = await session.execute(select(Users).where(Users.id == id).with_for_update())
 
+        user =  raw_user.scalars().one_or_none()
+
+        if(user):
+            user.loginAt = datetime.now()
+
+
+        await session.commit()
+        return user

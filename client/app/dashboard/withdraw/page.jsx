@@ -5,21 +5,23 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/app/auth/api/profile";
 import { bricolage, quicksand } from "@/app/libs/utils/font";
 import { motion, AnimatePresence } from "motion/react";
-import AddOns from "@/app/libs/ui/add-ons";
-import { useWithdraw } from "../api/withdraw";
+import AddOns from "@/app/libs/ui/dashboard/add-ons";
 import { showToast } from "@/app/libs/toast/sonner";
-import { PinModal } from "@/app/libs/ui/pin-payment-modal";
+import { PinModal } from "@/app/libs/ui/dashboard/pin-payment-modal";
 import Select from "react-select"
+import { useBanks } from "../api/banks";
 
 export default function Withdraw() {
   const { data: user, isLoading } = useUser();
   const [form, setForm] = useState({ accountNumber: "", amount: "", note: "", accountName:null, lookUpError: null});  
-  const { banks, isFetchingBanks, fetchBankDetails, isFetchingDetails, isProcessing } = useWithdraw();
+  const { banks, isFetchingBanks, fetchBankDetails, isFetchingDetails, isProcessing, isError } = useBanks();
 
   const options = banks?.map(bank=>({
     value: bank?.code,
     label:bank?.bank_name
   }))
+
+
 
   const [selectedOption, setSelectedOption] = useState("");
 
@@ -29,10 +31,14 @@ export default function Withdraw() {
   } 
 
 
+    if(isError){
+      showToast({type: "error", title: "Failed to fetch banks"})
+    }
+
   useEffect(() => {
     async function getBankDetails() {
     
-      if (selectedOption && form.accountNumber.length === 10) {
+      if (selectedOption && form?.accountNumber?.length === 10) {
         try {
           const data = {
             account_number:form.accountNumber,
@@ -61,7 +67,7 @@ export default function Withdraw() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedOption || form.accountNumber.length !== 10 || !form.amount || !form.accountName) return;
+    if (!selectedOption || form.accountNumber.length !== 10 || form.amount < 100 || !form.accountName) return;
     
     if(!user?.transactionPin){
       showToast({ type: "error", title: "Transaction PIN Required", msg:'You need to set up a transaction PIN before making transfers.' })
@@ -202,9 +208,9 @@ export default function Withdraw() {
                 className="input input-bordered placeholder:opacity-65 w-full rounded-xl border-black bg-white text-sm"
                 placeholder="0.00"
               />
-              {form.amount && Number(form.amount) < 10 && (
+              {form.amount && Number(form.amount) < 100 && (
                 <p style={quicksand.style}  className="text-[11px] text-red-600 mt-1.5 font-medium">
-                  Minimum transfer amount is ₦10.00
+                  Minimum transfer amount is ₦100.00
                 </p>
               )}
             </div>
@@ -226,13 +232,13 @@ export default function Withdraw() {
            
             <button
               type="submit"
-              disabled={isProcessing || isFetchingDetails || !form.accountName}
+              disabled={isProcessing || isFetchingDetails || !form.accountName || form.amount < 100}
               className="btn border-none shadow-sm py-3 bg-[#03457C] hover:bg-[#02335c] text-white rounded-full w-full mt-2 disabled:opacity-70  transition-all flex items-center justify-center gap-2"
               style={bricolage.style}
             >
               <>
                 <Send className="w-4 h-4 -mr-0.5" />
-                <span className="text-[13px] mt-0.5">Withdraw now</span>
+                <span className="text-[13px] mt-0.5">Withdraw now </span>
               </>
             
             </button>

@@ -8,7 +8,10 @@ import { showToast } from "@/app/libs/toast/sonner";
 export function useVerifyOtp() {
     const verifyOtpMutation = useCustomMutation(
         async(data)=>{
-            const response = await api.post("/auth/otp-verify",data, {
+            const { code, path} = data
+         
+            
+            const response = await api.post("/auth/otp-verify", {code} , {
                 headers: {
                     "Authorization": `Bearer ${Cookies.get("2fa")}`
                 }
@@ -18,7 +21,7 @@ export function useVerifyOtp() {
             if(response?.status === 200){
                 showToast({type: response?.data?.status, msg: null, title: response?.data?.msg})
               
-                window.location = "/dashboard"    
+                window.location.href = path 
             }else{
                 showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }
@@ -41,13 +44,13 @@ export function useVerifyOtp() {
             else{
                 showToast({ type: response?.status, title: response?.title, msg: response?.msg})
             }
-            
+            return response
         }
     )
 
     return {
         verifyOtp: verifyOtpMutation.mutate,
-        resendOtp: resendMutation.mutate,
+        resendOtp: resendMutation.mutateAsync,
         isPending: resendMutation.isPending,
         isLoading: verifyOtpMutation.isPending
     }

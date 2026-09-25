@@ -2,8 +2,8 @@ from datetime import datetime,timezone, date
 import uuid
 from pydantic import BaseModel, Field
 from typing import Optional
-from src.db.enums import TransactionStatus, TransactionType, KycStatus, DailyLimit
-from typing import Optional, List
+from src.db.enums import TransactionStatus, TransactionType, KycStatus, DailyLimit, Roles
+from typing import Optional, List, Dict
 
 
 class TransactionPinSchema(BaseModel):
@@ -26,12 +26,15 @@ class KycSchema(BaseModel):
     nin_number:str = Field(min_length=11, max_length=11)
     dob: date
     nin_slip: str
+    reason:Optional[str]
 
 class KycUploadSchema(BaseModel):
     full_name: str = Field(min_length=3)
     nin_number:str = Field(min_length=11, max_length=11)
     dob: date
     nin_slip: str = Field(min_length=2, examples=["https://example.com/photo.jpg"])
+    
+    
 
 
 
@@ -50,16 +53,19 @@ class UserProfileResponse(BaseModel):
     transactionPin: Optional[str]
     tier: int = Field(default=1, ge=1, le=3)
     photoURL: Optional[str] 
-    kycStatus: KycStatus
+    kycStatus: Optional[KycStatus] = Field(default=KycStatus.UNVERIFIED)
     kyc: Optional[KycSchema]
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
     lastSpentDate:datetime
     location:str
+    role:Roles
+    isBiometricsEnabled:Optional[bool] = Field(default=False)
+    isMarketingEnabled:Optional[bool] = Field(default=False)
     # transactions: List[TransactionResponseModel]
 
     createdAt: datetime 
-    updatedAt: datetime 
+    loginAt: Optional[datetime] 
 
 
 class ResolveAccountResponseModel(BaseModel):
@@ -154,20 +160,25 @@ class TransactionResponsePaginated(BaseModel):
         from_atrributes = True
 
 class TransactionChartResponse(BaseModel):
+
+    weekly_data:List[Dict]
+    current_month_data: Dict
     labels:List[str]
-    deposit: int
-    transfer: int
-    withdraw: int
-    total: int
     currentMonth: str
+    totalIn:int
+    totalOut:int
+
+    # labels:List[str]
+    # deposit: int
+    # transfer: int
+    # withdraw: int
+    # total: int
+    # currentMonth: str
 
     class Config:
         from_atrributes = True
     
 
-class TransactionResponse(BaseModel):
-    transactions: TransactionResponsePaginated
-    chartData: TransactionChartResponse
 
     
 class Reset_daily_spent_schema(BaseModel):
@@ -190,6 +201,10 @@ class ResolveBankAccountSchema(BaseModel):
 class WithdrawalSchema(BaseModel):
     account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
     bank_code: str = Field(description="Get bank code from /banks route")
-    amount:int = Field(ge=10, le=50000, description="Amount must be greater than 10")
+    amount:int = Field(ge=100, le=50000, description="Amount must be greater than ₦100")
     narration:Optional[str] = Field(min_length=3)
     pin:str = Field(min_length=4, max_length=4, examples=["1234"], pattern=r"^\d{4}$")
+
+
+class PreferencesUpdateValue(BaseModel):
+    value:bool

@@ -6,6 +6,7 @@ import Cookies from "js-cookie"
 export function useLogin() {
    const loginMutation = useCustomMutation(
         async (data)=>{
+            const path =  data.role === "admin" ? "/admin/verify-otp" : "/auth/verify-otp"
             const response = await api.post("/auth/login", data)
             
             
@@ -15,8 +16,8 @@ export function useLogin() {
                     sameSite: "strict",
                     secure: false // True
                 })
-                showToast({type: response?.data?.status, msg:"An OTP code has been sent to your email.", title: response?.data?.msg})
-                window.location = "/auth/verify-otp"
+                showToast({type: response?.data?.status, title: response?.data?.msg, msg: response?.data?.description})
+                window.location = path
 
             }else{
                 showToast({ type: response?.status, title: response?.title, msg: response?.msg})

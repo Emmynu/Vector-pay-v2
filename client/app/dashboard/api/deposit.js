@@ -16,7 +16,7 @@ export function useDeposit(){
        }
        else{
             document.getElementById("amount-modal").close()
-            showToast({ type: response.status, title:response?.title,msg: response?.msg }) 
+            showToast({ type: response?.status || "error", title:response?.title,msg: response?.msg }) 
        }
        
     })

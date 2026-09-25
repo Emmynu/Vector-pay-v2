@@ -1,15 +1,20 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import Argon2Error
-import math
-import random
 from itsdangerous import URLSafeTimedSerializer
 from src.config import config
 import jwt
 import uuid
-import random
+import secrets
+import string
 from fastapi.responses import Response
-from src.messages import verification_message, otp_message, reset_password_message
+from fastapi.requests import Request
+from fastapi import BackgroundTasks
+from src.messages import verification_message, otp_message, reset_password_message,resend_verification_message, pin_reset_message
 from .workers import send_mail
+from datetime import datetime,timezone, timedelta
+from src.redis import redis_set_value
+from src.db.enums import Roles
+
 
 ph =  PasswordHasher()
 serializer= URLSafeTimedSerializer(secret_key=config.JWT_SECRET_TOKEN)
@@ -33,9 +38,21 @@ def generateAccountNumber():
     accountNumber = "" 
     
     for i in range(10):
-       accountNumber += str(math.floor(random.randint(0, 9)))
+       accountNumber += str(secrets.choice(string.digits))
     
     return accountNumber
+
+
+
+def generateUsername(firstName:str, lastName:str):
+   username = ""
+
+   generateUsernameFrom = firstName + lastName + (string.digits)
+
+   for i in range(5):
+      username += str(secrets.choice(generateUsernameFrom))
+
+   return f"{username}@vectorpay.io"
 
 def createIdToken(data, salt:str):
    return serializer.dumps(data, salt=salt)
@@ -52,13 +69,15 @@ def loadUnsafeIdToken(token:str): # to see who's requesting
    return serializer.loads_unsafe(token)[1]
 
 
-def generateJWTToken(type:str, data:dict):
+def generateJWTToken(type:str, data:dict, exp:int = 1200):
    payload = {}
+
+   expiry = datetime.now(timezone.utc) + timedelta(seconds=exp)
 
    payload["type"] = type
    payload["user"] = data
-   payload["id"] = str(uuid.uuid4())
-
+   payload["jti"] = str(uuid.uuid4())
+   payload["exp"] = expiry
 
    token = jwt.encode(
       key=config.JWT_SECRET_TOKEN,
@@ -79,14 +98,14 @@ def decodeJWTToken(token:str):
       return data
   
   except Exception as e:
-     return str(e)
+     return False
   
 
 def generateOTP():
    otp = ""
 
    for i in range(6):
-      otp += str(random.randint(0, 9))
+      otp += str(secrets.choice(string.digits))
 
    return otp
 
@@ -103,30 +122,67 @@ def saveCookies(response:Response, key:str, val:str, exp:int):
       max_age=exp,
    )
 
-async def send_verification_link(email:str, name:str, request):
-      token = createIdToken(email, salt="verify-salt")
-      message = await verification_message(link=f"{config.BASE_URL}/auth/verify/{token}", name=name, request=request)
 
-      send_mail(email, "Welcome to VectorPay", msg=message)
-      return token
-            
+async def send_verification_link(data:dict, request:Request, background_tasks:BackgroundTasks):
+      token = createIdToken(data["email"], salt="verify-salt")
 
-async def send_otp_code(email:str, data:dict, code:str, name:str, request) -> str:
-   token = createIdToken(data, salt=f"otp-verify-{code}")
+      link = f"{config.BASE_URL}/auth/verify/{token}"
+      name = data["name"]
+      email = data["email"]
+
+      if(data["type"] != "resend"):
+         message = verification_message(link=link, name=name, request=request)
+
+         background_tasks.add_task(send_mail, email, "Welcome to VectorPay", msg=message)
+
    
-   msg = await otp_message(code=code, name=name, request=request)
-   send_mail(email, "Verify your identity", msg)
+      if(data["type"] == "resend"):
+         msg = resend_verification_message(request, name, link)
+         background_tasks.add_task(send_mail, email, "Verify Your Account - VectorPay", msg=msg)
+
+
+      return token
+
+
+async def send_otp_code(user_info:dict, request:Request, background_tasks:BackgroundTasks) -> str:
+   
+   token = createIdToken({
+      "email": user_info["email"],
+      "role": user_info["role"]
+   }, salt=f"otp-verify-{user_info["code"]}")
+
+
+   await redis_set_value(f"otp-code-{token}", user_info["code"], ex=300)
+
+   msg = otp_message(code=user_info["code"], name=user_info["name"], request=request)
+   background_tasks.add_task(send_mail, user_info["email"], "Verify your identity - VectorPay", msg)
+
 
    return token
 
+async def  send_reset_pin_otp_code(user:dict, background_tasks:BackgroundTasks, request:Request = Request):
+   try:
+      code = generateOTP()
 
-async def send_reset_password_link(user:dict, request):
+      await redis_set_value(f"pin-reset-{user.email}", code, 300)
+
+      messge = pin_reset_message(request, f"{user.firstName} {user.lastName}", code)
+
+
+      background_tasks.add_task(send_mail, user.email, "Transaction Pin Reset Request - VectorPay" , messge)
+      
+      return True
+   except: return False
+
+
+async def send_reset_password_link(user:dict, request, background_tasks:BackgroundTasks):
       token =  createIdToken(user.email,  salt=f"reset-salt-{user.password_reset_count}")
-      link = f"{config.BASE_URL}/auth/reset-password?token={token}"
+      url = "/auth/reset-password" if user.role == Roles.USER else "/admin/reset-password"
+      link = f"{config.BASE_URL}/{url}/?token={token}"
 
-      message = await reset_password_message(resetLink=link, request=request, name=f"{user.firstName} {user.lastName}")
+      message = reset_password_message(resetLink=link, request=request, name=f"{user.firstName} {user.lastName}")
 
-      send_mail(to_mail=user.email, subject="Password Reset Link", msg=message)
-
+      background_tasks.add_task(send_mail, to_mail=user.email, subject="Password Reset Link - VectorPay", msg=message)
+   
       return token
    

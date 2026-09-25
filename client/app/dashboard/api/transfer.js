@@ -20,15 +20,13 @@ export function useTransfer() {
 
     const transferMutation = useCustomMutation(async(data)=>{
         const response = await api.post("/account/transfer", data)
+
       
         if(response.status === 200){
+            document.getElementById("my-modal-4").close()
             showToast({type: response?.data?.status, title:response?.data?.msg, msg: response?.data?.description })
-
         }
-        else{
-            showToast({type:response?.status, title:response?.title,  msg: response?.msg })
-        }
-        document.getElementById("my-modal-4").close()
+        
         await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
         return response
          

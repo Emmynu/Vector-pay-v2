@@ -6,9 +6,9 @@ import { useUser } from "@/app/auth/api/profile";
 import { bricolage, quicksand } from "@/app/libs/utils/font";
 import { motion, AnimatePresence } from "motion/react";
 import { useTransfer } from "../api/transfer";
-import { PinModal } from "@/app/libs/ui/pin-payment-modal";
+import { PinModal } from "@/app/libs/ui/dashboard/pin-payment-modal";
 import { showToast } from "@/app/libs/toast/sonner";
-import AddOns from "@/app/libs/ui/add-ons";
+import AddOns from "@/app/libs/ui/dashboard/add-ons";
 
 export default function TransferPage() {
   const { data: user } = useUser();

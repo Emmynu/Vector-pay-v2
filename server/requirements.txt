@@ -5,6 +5,7 @@ annotated-types==0.7.0
 anyio==4.14.1
 argon2-cffi==25.1.0
 argon2-cffi-bindings==25.1.0
+async-timeout==5.0.1
 asyncpg==0.31.0
 billiard==4.2.4
 celery==5.6.3
@@ -33,11 +34,13 @@ google-auth-oauthlib==1.4.0
 googleapis-common-protos==1.75.0
 greenlet==3.5.3
 h11==0.16.0
+hiredis==3.4.1
 httpcore==1.0.9
 httplib2==0.32.0
 httptools==0.8.0
 httpx==0.28.1
 idna==3.18
+iniconfig==2.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 kombu==5.6.2
@@ -48,9 +51,12 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 oauthlib==3.3.1
 packaging==26.2
+pika==0.13.0
+pluggy==1.6.0
 prompt_toolkit==3.0.52
 proto-plus==1.28.0
 protobuf==7.35.1
+PyAMQP==0.1.0.7
 pyasn1==0.6.3
 pyasn1_modules==0.4.2
 pycparser==3.0
@@ -61,10 +67,12 @@ pydantic_core==2.46.4
 Pygments==2.20.0
 PyJWT==2.13.0
 pyparsing==3.3.2
+pytest==9.1.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-multipart==0.0.32
 PyYAML==6.0.3
+redis==8.1.0
 requests==2.34.2
 requests-oauthlib==2.0.0
 rich==15.0.0

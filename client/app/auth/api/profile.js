@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 export function useUser() {
     const queryClient = useQueryClient()
 
-    const  { data, isLoading } = useQuery({
+    const  { data, isLoading, isError, refetch } = useQuery({
         queryKey:["get-current-user"],
         queryFn: async()=>{
             const response = await api.get("/account/profile")
@@ -25,29 +25,28 @@ export function useUser() {
 
         
             if(resp?.status === 200){
-                document.getElementById('my-modal-2').close()
                 showToast({type: resp?.data?.status, title:resp?.data?.msg})
 
             }
-            else{
-                document.getElementById('my-modal-2').close()
-                showToast({type:resp?.status, title:resp?.title,  msg: resp?.msg })
-            }
+           
+            return resp
         }
     )
 
     
     const logoutMutation = useCustomMutation(
-        async()=>{
+        async(path)=>{
            await api.post("/auth/signout")
-            window.location="/auth/login"
+            window.location= path
         }
     )
 
     return {
         data: data?.data, 
         isLoading, 
-        editProfile:editProfileMutation.mutate,
+        isError,
+        refetch,
+        editProfile:editProfileMutation.mutateAsync,
         isEditing: editProfileMutation.isPending,
         logout:logoutMutation.mutate, 
         isLogginOut:logoutMutation.isPending,
