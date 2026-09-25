@@ -64,10 +64,11 @@ class UserProfileResponse(BaseModel):
     isMarketingEnabled:Optional[bool] = Field(default=False)
     # transactions: List[TransactionResponseModel]
 
-    createdAt: datetime 
-    loginAt: datetime  
+    createdAt: datetime = Field(default=datetime.now())
+    loginAt: datetime  = Field(default=None)
 
-    model_config = ConfigDict(from_attributes =  True, arbitrary_types_allowed = True)
+    class Config:
+        from_attributes = True
 
 
 class ResolveAccountResponseModel(BaseModel):
@@ -170,12 +171,6 @@ class TransactionChartResponse(BaseModel):
     totalIn:int
     totalOut:int
 
-    # labels:List[str]
-    # deposit: int
-    # transfer: int
-    # withdraw: int
-    # total: int
-    # currentMonth: str
 
     class Config:
         from_atrributes = True

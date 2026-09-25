@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, Field, Column, Relationship
 import sqlalchemy.dialects.postgresql as pg
 import uuid
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 from typing import Optional, List
 from decimal import Decimal
 from .enums import KycStatus, TransactionStatus, TransactionType, DailyLimit, Roles
@@ -48,10 +48,8 @@ class Users(SQLModel, table=True):
 
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
-    lastSpentDate: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(
-        pg.TIMESTAMP(timezone=True),
-        nullable=False,
-    ))
+    lastSpentDate: datetime = Field(sa_column=Column(pg.TIMESTAMP , default=datetime.now()))
+
     isMarketingEnabled:bool = Field(default=False, sa_column=Column(pg.BOOLEAN, default=False))
     isBiometricsEnabled:bool = Field(default=False, sa_column=Column(pg.BOOLEAN, default=False))
 
@@ -77,13 +75,11 @@ class Users(SQLModel, table=True):
         sa_relationship_kwargs={"primaryjoin": "Users.id == Transactions.recipientId", "lazy": "selectin"}
     )
 
-    # loginAt: datetime = Field(
-    #     sa_column=Column(
-    #         pg.TIMESTAMP,
-    #         nullable=False,
-    #         default=datetime.now()
-    #     )
-    # )
+    loginAt: datetime = Field(default=None, sa_column=Column(
+        pg.TIMESTAMP,
+        nullable=True,
+        default=None
+    ))
 
     createdAt: datetime = Field(
         sa_column=Column(
