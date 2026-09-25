@@ -38,7 +38,12 @@ class Users(SQLModel, table=True):
     ip: Optional[str] = Field(default=None)
     location: Optional[str] = Field(default=None)
 
-    role: Roles = Field(default=Roles.USER)
+    role: Roles = Field(sa_column=Column(
+        pg.VARCHAR,
+        nullable=False,
+    ), default=Roles.USER)
+
+    
     dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
     dailySpent: int = Field(default=0)
 
