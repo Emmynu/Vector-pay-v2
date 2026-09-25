@@ -64,8 +64,8 @@ class UserProfileResponse(BaseModel):
     isMarketingEnabled:Optional[bool] = Field(default=False)
     # transactions: List[TransactionResponseModel]
 
-    createdAt: datetime = Field(default=datetime.now())
-    loginAt: datetime  = Field(default=None)
+    createdAt: datetime 
+    loginAt: Optional[datetime]  
 
     class Config:
         from_attributes = True
