@@ -44,7 +44,7 @@ api.interceptors.response.use(
             showToast({
                 type: data?.status || "error",
                 title: data.msg || "Too Many Request",
-                msg: `ERR_${statusText}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
+                msg: `ERR_${statusText || error?.statusText}_${error?.status}: ${data?.description || "An error occurred Please try again later."}`,
              
             })
         }
@@ -55,7 +55,7 @@ api.interceptors.response.use(
             return {
                 status:  data?.status,
                 title: data.msg || "Validation Error",
-                msg: `ERR_${statusText}_${error?.status}: ${errorMessage}`
+                msg: `ERR_${statusText || error?.statusText}_${error?.status}: ${errorMessage}`
             }
         }
     
@@ -75,7 +75,7 @@ api.interceptors.response.use(
                 return {
                     status: data?.detail?.status,
                     title: data?.detail?.msg,
-                    msg: `ERR_${statusText}_${error.status}: ${data?.detail?.description}`
+                    msg: `ERR_${statusText || error?.statusText}_${error.status}: ${data?.detail?.description}`
                 }
             }
             
@@ -105,7 +105,7 @@ api.interceptors.response.use(
         return {
             status:  data?.detail?.status,
             title: data?.detail?.msg || "Internal Server Error",
-            msg: `ERR_${statusText || "internal server error"}_${error?.status}: ${data?.detail?.description || data?.description ||"An error occurred Please try again later."}`
+            msg: `ERR_${statusText || error?.statusText}_${error?.status}: ${data?.detail?.description || data?.description ||"An error occurred Please try again later."}`
         }
     }
 )

@@ -57,7 +57,7 @@ function RecentTransactions() {
               title = transaction.narration;
               transactionTypeIcon = <Wallet className="w-4" />;
             } else if (transaction.type === "withdraw") {
-              title = `Withdrawal to ${transaction?.withdrawal_info?.bank_name || "Bank"}`;
+              title = `Withdrawal to ${`${transaction?.withdrawal_info?.bank_name.slice(0, 20)}...` || "Bank"}`;
               transactionTypeIcon = <Building2 className="w-4" />;
             } else if (transaction.type === "transfer") {
               if (isCredit && sender) {
