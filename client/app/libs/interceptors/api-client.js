@@ -29,13 +29,14 @@ api.interceptors.response.use(
     },
     async (error) =>{
         const { statusText, data } = error?.response
+
         
         if(error.status === 500 ){
             
             showToast({
                 type: data?.status || "error",
                 title: data?.msg || data?.detail.msg || "Internal Server Error",
-                msg: `ERR_${statusText||"internal server error"}_${error?.status}: ${data?.description || data?.detail?.description || "An error occurred Please try again later."}`,
+                msg: `ERR_${statusText || "Internal Server Error"}_${error?.status}: ${data?.description || data?.detail?.description || "An error occurred Please try again later."}`,
             })
         }
 
@@ -85,7 +86,7 @@ api.interceptors.response.use(
 
                     try {
                         const resp = await refreshApi.post("/auth/refresh")
-                        // console.log(resp.data);
+        
                         
                         return api(error?.config)
 
@@ -104,7 +105,7 @@ api.interceptors.response.use(
         return {
             status:  data?.detail?.status,
             title: data?.detail?.msg || "Internal Server Error",
-            msg: `ERR_${statusText}_${error?.status}: ${data?.detail?.description || data?.description ||"An error occurred Please try again later."}`
+            msg: `ERR_${statusText || "internal server error"}_${error?.status}: ${data?.detail?.description || data?.description ||"An error occurred Please try again later."}`
         }
     }
 )
