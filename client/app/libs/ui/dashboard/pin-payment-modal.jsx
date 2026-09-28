@@ -14,10 +14,6 @@ export function PinModal({ id, formData, setForm, type }) {
   const { transfer, isTransferLoading } = useTransfer();
   const { isProcessing, withdraw } = useWithdraw();
 
-  const handlePinChange = (e) => {
-    if (error) setError("");
-    setPin(e.target.value);
-  };
 
   async function handlePayment() {
     if (!pin || isTransferLoading || isProcessing) return;
@@ -136,7 +132,7 @@ export function PinModal({ id, formData, setForm, type }) {
           <CustomOTPInput 
           numInputs={4}
           value={pin}
-          handleChange={handlePinChange}
+          handleChange={setPin}
           className={"bg-blue-50/50 border border-slate-300 !w-12 !h-12 focus:bg-[#FFF]"}
           />
         </div>

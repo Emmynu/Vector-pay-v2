@@ -45,5 +45,6 @@ VectorPay is built with a high-performance backend and a modern frontend interfa
 
 #### 1. Clone the repository
 ```bash
-git clone (https://github.com/Emmynu/Vector-pay-v2.git)
+git clone (https://github.com/Emmynu/Vector-pay-v2.git) 
+
 cd Vector-pay-v2
