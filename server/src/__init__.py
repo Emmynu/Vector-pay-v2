@@ -30,7 +30,7 @@ version = "v1"
 
 app = FastAPI(
     title= "VectorPay",
-    description="A fintech application that allows users to deposit, transfer withdraw funds seamlessly without hidden fees",
+    description="VectorPay is a wallet-based application designed for fast, seamless digital transactions, instant funding, and smart financial management.",
     version=version,
     lifespan=lifeSpan
 )
