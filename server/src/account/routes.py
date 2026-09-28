@@ -372,7 +372,7 @@ async def initialize_transaction(request: Request, depositSchema:DepositSchema, 
 
 
 @router.post("/transaction/webhook")
-async def transaction_webhook(request:Request, session:AsyncSession = Depends(session)):
+async def transaction_webhook(request:Request, session:AsyncSession = Depends(session), user = Depends(RoleChecker(Roles.USER))):
 
     signature = request.headers.get("x-paystack-signature")
 
@@ -406,21 +406,21 @@ async def transaction_webhook(request:Request, session:AsyncSession = Depends(se
         try:
             reference = body["data"]["reference"]
             userId =  body["data"]["metadata"]["user_id"]
-
+            amount  = int((body["data"]["requested_amount"]/100))
             transaction = await accountService.get_single_transaction(session, reference=reference, userId=userId)
 
             if(transaction.status != TransactionStatus.SUCCESSFUL):
-                await accountService.updateBalance(session, userId=userId, operator=Operators.INCREMENT, amount=int(body["data"]["amount"]/100))
+                await accountService.updateBalance(session, userId=userId, operator=Operators.INCREMENT, amount=amount)
 
                 # update transaction status to successful
                 await accountService.updateTransactionStatus(session, TransactionStatus.SUCCESSFUL, reference)
         
                 await session.commit()
             
-                return {"status": "success", "msg": f"Successfully deposited ₦{body['data']['amount'] / 100} into your account."}
+                return {"status": "success", "msg": f"Successfully deposited ₦{amount} into your account."}
 
             if(transaction.status == TransactionStatus.SUCCESSFUL):
-                return {"status": "success", "msg": f"Successfully deposited ₦{body['data']['amount'] / 100} into your account."}
+                return {"status": "success", "msg": f"Successfully deposited ₦{amount} into your account."}
         
         except Exception as e: 
             await session.rollback()
@@ -429,7 +429,7 @@ async def transaction_webhook(request:Request, session:AsyncSession = Depends(se
                 detail={"status": "error", "msg": "Webhook processing failed", "description": str(e)}
             )
         
-    # return {"status": "ignored", "msg": "Event not handled"}
+ 
 
 @router.get("/transaction/verify/{reference}")
 async def verify_transaction(reference:str, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
@@ -453,7 +453,7 @@ async def verify_transaction(reference:str, user = Depends(RoleChecker(Roles.USE
         return {"status": "success","msg": "Payment Successful", "description": "Payment confimed and account balance has been updated successfully"}
         
     if(paystack_status == "success" and db_status != TransactionStatus.SUCCESSFUL):
-        await accountService.updateBalance(session, email=paystack_resp["data"]["customer"]["email"], operator=Operators.INCREMENT, amount=int(paystack_resp["data"]["amount"]/100))
+        await accountService.updateBalance(session, email=paystack_resp["data"]["customer"]["email"], operator=Operators.INCREMENT, amount=int(paystack_resp["data"]["requested_amount"]/100))
 
         await accountService.updateTransactionStatus(session, TransactionStatus.SUCCESSFUL, reference)
 
@@ -980,8 +980,3 @@ async def update_settings_preferences(key:Prefrences, payload:PreferencesUpdateV
         "user": new_preferences
     }
 
-
-@router.post("/biometrics/setup")
-@limiter.limit("1/minute")
-async def setup_biometrics(request:Request):
-    pass

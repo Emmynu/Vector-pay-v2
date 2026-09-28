@@ -25,12 +25,14 @@ import "@/app/globals.css";
 import { showToast } from "@/app/libs/toast/sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
+
 export default function TransactionDetailsModal({ id, transactionId }) {
   const { transaction, isLoading, isError, fetchTransactionDetail } = useTransactionDetails(transactionId);
   const [copiedField, setCopiedField] = useState(null);
   const { processWithdrawal, isProcessing } = useProcessWithdrawals(transactionId);
   const [activeAction, setActiveAction] = useState(null); // 'success' | 'failed' | null
   const [error, setError] = useState(null);
+
   const query = useQueryClient()
 
   useEffect(() => {
@@ -38,6 +40,8 @@ export default function TransactionDetailsModal({ id, transactionId }) {
       fetchTransactionDetail();
     }
   }, [transactionId]);
+
+
 
   function handleClose() {
     const modal = document.getElementById(id);
@@ -265,9 +269,10 @@ export default function TransactionDetailsModal({ id, transactionId }) {
             </button>
           </footer>
         )}
+        
       </section>
 
-      <form method="dialog" className="modal-backdrop">
+      <form method="dialog" className="modal-backdrop" onClick={handleClose}>
         <button type="button">close</button>
       </form>
     </dialog>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight,  Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowUpRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUser } from "@/app/auth/api/profile";
 import { bricolage, quicksand } from "@/app/libs/utils/font";
@@ -9,13 +9,13 @@ import { useTransfer } from "../api/transfer";
 import { PinModal } from "@/app/libs/ui/dashboard/pin-payment-modal";
 import { showToast } from "@/app/libs/toast/sonner";
 import AddOns from "@/app/libs/ui/dashboard/add-ons";
+import { testAmount } from "@/app/libs/utils/utils";
 
 export default function TransferPage() {
   const { data: user } = useUser();
   const [form, setForm] = useState({ account: "", amount: "", note: "", recipient: null });
   const [lookupError, setLookupError] = useState("");
-  
-
+  const [amountError, setAmountError] = useState("");
 
   const { accountLookup, isLookupLoading } = useTransfer();
 
@@ -27,21 +27,19 @@ export default function TransferPage() {
           const lookupData = { accountNumber: form.account };
           const res = await accountLookup(lookupData);
           
-         
           const recipientData = res?.data?.data || res?.data;
 
           if (recipientData) {
-            setForm((v)=>({...v, recipient:recipientData}));
+            setForm((v) => ({ ...v, recipient: recipientData }));
           } else {
             setLookupError("Account details could not be found.");
           }
         } catch (err) {
-          setForm((v)=>({...v, recipient:null}));
+          setForm((v) => ({ ...v, recipient: null }));
           setLookupError(err?.response?.data?.message || "Invalid account number or lookup failed.");
         }
       } else {
-
-        setForm((v)=>({...v, recipient:null}));
+        setForm((v) => ({ ...v, recipient: null }));
         setLookupError("");
       }
     }
@@ -49,17 +47,51 @@ export default function TransferPage() {
     fetchAccountDetails();
   }, [form.account]);
 
+  const handleAmountChange = (e) => {
+    const rawValue = e.target.value;
 
+    const sanitizedValue = rawValue.replace(/\D/g, "");
+    setForm((prev) => ({ ...prev, amount: sanitizedValue }));
+
+
+    if (!sanitizedValue) {
+      setAmountError("");
+      return;
+    }
+
+
+    const numValue = Number(sanitizedValue);
+    if (numValue < 10) {
+      setAmountError("Minimum transfer amount is ₦10.00");
+      return;
+    }
+    
+    
+    const isValidFormat =  testAmount(sanitizedValue)
+    if (!isValidFormat) {
+      setAmountError("Amount must be a valid integer");
+      return;
+    }
+
+    
+    setAmountError("");
+  };
 
   function handleTransfer() {
     if (!form.recipient) return;
 
-    if(!user?.transactionPin){
-      showToast({ type: "error", title: "Transaction PIN Required", msg:'You need to set up a transaction PIN before making transfers.' })
+    if (!form.amount || amountError) {
+      showToast({ type: "error", title: "Invalid Amount", msg: amountError || "Please enter a valid amount." });
       return;
     }
 
-    document.getElementById("my-modal-4").showModal()
+    if (!user?.transactionPin) {
+      showToast({ type: "error", title: "Transaction PIN Required", msg: 'You need to set up a transaction PIN before making transfers.' });
+      return;
+    }
+
+    const modal = document.getElementById("my-modal-4");
+    modal?.showModal();
   }
 
   return (
@@ -74,7 +106,7 @@ export default function TransferPage() {
           <h2 className="font-display font-bold md:text-lg" style={bricolage.style}>
             Send money
           </h2>
-          <p className="opacity-60 text-[13px] " style={quicksand.style}>
+          <p className="opacity-60 text-[13px]" style={quicksand.style}>
             Instant peer-to-peer transfers with zero fees.
           </p>
 
@@ -85,6 +117,7 @@ export default function TransferPage() {
             }}
             className="mt-6 space-y-4"
           >
+            {/* Account Number Input */}
             <div>
               <label className="text-xs mb-0.5 font-medium" style={quicksand.style}>
                 Account number
@@ -110,9 +143,8 @@ export default function TransferPage() {
                 )}
               </div>
 
-  
               <AnimatePresence>
-                {(form.recipient && !lookupError) && (
+                {form.recipient && !lookupError && (
                   <motion.div
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -122,7 +154,7 @@ export default function TransferPage() {
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wider" style={bricolage.style}>
-                        {`${form.recipient?.firstName} ${form.recipient?.lastName}`|| "Recipient Verified"}
+                        {`${form.recipient?.firstName || ""} ${form.recipient?.lastName || ""}`.trim() || "Recipient Verified"}
                       </p>
                     </div>
                   </motion.div>
@@ -142,31 +174,41 @@ export default function TransferPage() {
               </AnimatePresence>
             </div>
 
+            {/* Amount Input */}
             <div>
               <label className="text-xs tracking-wide mb-1 font-medium" style={quicksand.style}>
                 Amount (NGN)
               </label>
               <input
                 required
-                inputMode="decimal"
+                inputMode="numeric"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={handleAmountChange}
                 style={quicksand.style}
-              className={`input input-bordered text-[13px] w-full placeholder:opacity-65 mt-1 rounded-xl border bg-[#fff] ${form.amount && Number(form.amount) < 10
-                  ? "border-rose-500 focus:outline-rose-500"
-                  : "border-black"
-              }`}
+                className={`input input-bordered text-[13px] w-full placeholder:opacity-65 mt-1 rounded-xl border bg-[#fff] transition-colors ${
+                  amountError ? "border-rose-500 focus:outline-rose-500" : "border-black"
+                }`}
                 placeholder="0.00"
               />
-              {form.amount && Number(form.amount) < 10 && (
-                <p style={quicksand.style}  className="text-[11px] text-red-600 mt-1.5 font-medium">
-                  Minimum transfer amount is ₦10.00
-                </p>
-              )}
+              <AnimatePresence>
+                {amountError && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    style={quicksand.style}
+                    className="validation-hint text-[11px] text-rose-600 mt-1.5 font-medium flex items-center gap-1"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{amountError}</span>
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
+            {/* Narration Input */}
             <div>
-              <label className="text-xs tracking-wide mb-0.5  font-medium" style={quicksand.style}>
+              <label className="text-xs tracking-wide mb-0.5 font-medium" style={quicksand.style}>
                 Narration (optional)
               </label>
               <input
@@ -174,14 +216,14 @@ export default function TransferPage() {
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
                 className="input input-bordered w-full placeholder:opacity-65 mt-1 text-[13px] rounded-xl border border-black bg-[#fff]"
                 placeholder="What's this for?"
-                minLength={3}
                 style={quicksand.style}
               />
             </div>
 
+            {/* Submit Button */}
             <button
-              disabled={!form.recipient || isLookupLoading}
-              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 text-sm rounded-full w-full mt-2 transition-all"
+              disabled={!form.recipient || isLookupLoading || !!amountError || !form.amount}
+              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 text-sm rounded-full w-full mt-2 transition-all flex items-center justify-center gap-1"
               type="submit"
               style={bricolage.style}
             >
@@ -197,9 +239,9 @@ export default function TransferPage() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
-        <AddOns balance={user?.balance}/>
+        <AddOns balance={user?.balance} />
       </motion.div>
-      <PinModal id={"my-modal-4"} formData={form} setForm={setForm} type="transfer"/>
+      <PinModal id={"my-modal-4"} formData={form} setForm={setForm} type="transfer" />
     </div>
   );
 }

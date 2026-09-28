@@ -6,6 +6,7 @@ import { formatAmount } from "../../utils/utils";
 import { useEffect, useState } from "react";
 import { useTransfer } from "@/app/dashboard/api/transfer";
 import { useWithdraw } from "@/app/dashboard/api/withdraw";
+import CustomOTPInput from "../custom/custom-otp-input";
 
 export function PinModal({ id, formData, setForm, type }) {
   const [pin, setPin] = useState("");
@@ -28,7 +29,7 @@ export function PinModal({ id, formData, setForm, type }) {
       if (type === "transfer") {
         const transferPayload = {
           recipient_account_number: formData?.account,
-          amount: formData.amount,
+          amount: parseInt(form.amount),
           narration: formData.note || null,
           pin: pin,
         };
@@ -132,24 +133,12 @@ export function PinModal({ id, formData, setForm, type }) {
             Enter transaction pin:
           </h2>
 
-          <label className="otp otp-md validator" style={bricolage.style}>
-            <span className="bg-slate-100 border px-4.5 border-slate-700"></span>
-            <span className="bg-slate-100 border px-4.5 border-slate-700"></span>
-            <span className="bg-slate-100 border px-4.5 border-slate-700"></span>
-            <span className="bg-slate-100 border px-4.5 border-slate-700"></span>
-            <input
-              type="text"
-              autoComplete="one-time-code"
-              inputMode="numeric"
-              maxLength={4}
-              pattern="[0-9]{4}"
-              required
-              name="pin"
-              disabled={isTransferLoading || isProcessing}
-              onChange={handlePinChange}
-              value={pin}
-            />
-          </label>
+          <CustomOTPInput 
+          numInputs={4}
+          value={pin}
+          handleChange={handlePinChange}
+          className={"bg-blue-50/50 border border-slate-300 !w-12 !h-12 focus:bg-[#FFF]"}
+          />
         </div>
 
         <button

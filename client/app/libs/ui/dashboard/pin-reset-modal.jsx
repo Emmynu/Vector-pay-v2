@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { KeyRound, X, RotateCw, ArrowRight, AlertCircle } from "lucide-react";
 import { bricolage, quicksand } from "../../utils/font"; 
 import { showToast } from "../../toast/sonner";
-import OtpInput from "react-otp-input";
 import { usePINReset } from "@/app/dashboard/api/pin/pin-reset";
 import { usePINResetRequest } from "@/app/dashboard/api/pin/pin-reset-request";
 import { useQueryClient } from "@tanstack/react-query";
+import CustomOTPInput from "../custom/custom-otp-input";
 
 
 export default function PinResetModal({ id = "pin_reset_modal", email }) {
@@ -146,30 +146,15 @@ export default function PinResetModal({ id = "pin_reset_modal", email }) {
           )}
 
           {/* 6-Digit OTP Inputs */}
-          <div className="flex items-center justify-center py-1" onPaste={handlePaste}>
-            <OtpInput
-              value={otp}
-              onChange={handleOtpChange}
-              numInputs={6}
-              shouldAutoFocus
-              inputType="number"
-              containerStyle="flex items-center justify-center gap-1.5 sm:gap-2.5 w-full"
-              renderSeparator={<span className="w-1"></span>}
-              renderInput={(props) => (
-                <input
-                  {...props}
-                  style={{
-                    width: "100%",
-                    ...bricolage.style
-                  }}
-                  className={`!w-10 !h-12 sm:!w-12 sm:!h-14 text-center text-lg sm:text-xl font-bold rounded-xl outline-none transition-all shadow-xs text-slate-900  md:pl-2 ${
-                    errorMessage
-                      ? "bg-red-50/50 border border-red-300 focus:border-red-500 focus:bg-white"
-                      : "bg-[#E6F0FA]/30 border border-slate-200 focus:border-[#03457C] focus:bg-white"
-                  }`}
-                />
-              )}
+          <div className="flex items-center justify-center py-0" onPaste={handlePaste}>
+            <CustomOTPInput 
+            value={otp}
+            handleChange={setOtp}
+            errorMessage={errorMessage}
+            onPaste={handlePaste}
+            className={"bg-blue-50/50 border border-slate-300 !w-full !h-14 focus:bg-[#FFF]"}
             />
+            
           </div>
 
           {/* Resend Timer & Action */}
@@ -197,11 +182,11 @@ export default function PinResetModal({ id = "pin_reset_modal", email }) {
           </div>
 
           {/* Action Button */}
-          <div className="pt-2">
+          <div className="pt-0">
             <button
               type="submit"
               disabled={isResetting || isRequestting || otp.length < 6}
-              className="w-full py-3 bg-[#03457C] hover:bg-[#02335c] text-white font-semibold rounded-xl transition-all text-sm shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#03457C] hover:bg-[#02335c] text-white font-semibold rounded-xl transition-all text-sm shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
               style={quicksand.style}
             >
               {isResetting ? (
@@ -210,10 +195,10 @@ export default function PinResetModal({ id = "pin_reset_modal", email }) {
                   <span>Verifying...</span>
                 </>
               ) : (
-                <>
+                <div className="flex items-center gap-0.5 ">
                   <span>Verify Code</span>
-                  <ArrowRight className="w-5 mt-1 ml-0.5"/>
-                </>
+                  <ArrowRight className="w-5 mt-0.5 ml-0.5 group-hover:translate-x-0.5 transition-transform"/>
+                </div>
               )}
             </button>
           </div>

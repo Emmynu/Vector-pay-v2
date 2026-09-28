@@ -142,7 +142,7 @@ class AccountService():
 
 
   async def reset_daily_spent(self, user:UserProfileResponse, session:AsyncSession):
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
 
     if(now.date() > user.lastSpentDate.date()):
       await session.execute(update(Users).where(and_(

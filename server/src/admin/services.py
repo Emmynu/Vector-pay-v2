@@ -308,8 +308,8 @@ class AdminService():
         month = extract("month", Users.createdAt) == now.month
         year = extract("year", Users.createdAt) == now.year
         inActive = or_(
-            Users.createdAt < thirty_days_ago,
-            Users.createdAt == None
+            Users.loginAt < thirty_days_ago,
+            Users.loginAt == None
         )
         # inActiveYear = extract("year", Users.createdAt) <= now.year
 
@@ -384,8 +384,8 @@ class AdminService():
 
     async def get_inactive_users_emails(self, session:AsyncSession):
         inActive = or_(
-            Users.createdAt < thirty_days_ago,
-            Users.createdAt == None
+            Users.loginAt < thirty_days_ago,
+            Users.loginAt == None
         )
 
         in_active_mails = await session.execute(select(Users.email).where(and_(inActive, Users.role != Roles.ADMIN)))

@@ -90,3 +90,20 @@ export function downloadBlob(blob, filename){
     anchorElement.click()
     document.body.removeChild(anchorElement)
 }
+
+export function testAmount(amount) {
+    const regex = /^-?\d+$/
+
+    if(amount){
+        const testedAmount = regex.test(amount)
+
+        if(testedAmount){
+            return true
+        }
+        else{
+            return false
+        }
+    }
+    return false
+
+}

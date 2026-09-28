@@ -4,13 +4,13 @@ import Logo from "@/app/libs/ui/logo";
 import Image from "next/image";
 import image from "@/app/libs/images/credits.jpg"
 import "@/app/globals.css"
-import { ArrowRight, RefreshCcw } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { useVerifyOtp } from "@/app/auth/api/verify-otp";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { bricolage, quicksand } from "@/app/libs/utils/font";
-import OtpInput  from "react-otp-input"
 import { usePathname } from "next/navigation";
+import CustomOTPInput from "../custom/custom-otp-input";
 
 function OTPVerification() {
     const { verifyOtp, isLoading, resendOtp, isPending } = useVerifyOtp()
@@ -82,25 +82,12 @@ function OTPVerification() {
                    
                     <article className="mt-2.5  ">
                        <form onSubmit={handleOtpVerification}  className="flex flex-col items-center my-3" >
-                            <OtpInput
-                            value={code}
-                            onChange={setCode}
-                            numInputs={6}
-                            onPaste={handleOtpPaste}
-                            shouldAutoFocus
-                            inputType="number"
-                            containerStyle="flex items-center justify-center text-center gap-1 w-full"
-                            renderSeparator={<span className=""></span>}
-                            renderInput={(props) => (
-                            <input
-                                {...props}
-                                style={{
-                                ...bricolage.style,
-                                width: "100%",
-                                }}
-                                className={`!w-10 !h-12 sm:!w-12 sm:!h-14 text-center text-xl sm:text-2xl font-bold rounded-xl outline-none transition-all shadow-xs text-slate-900 bg-transparent border border-black focus:border-[#03457C] focus:bg-white md:pl-2`}
-                            />
-                            )}
+                            <CustomOTPInput 
+                                value={code}
+                                handleChange={setCode}
+                                errorMessage={null}
+                                onPaste={handleOtpPaste}
+                                className={"bg-transparent border border-slate-200 ring-1 ring-black !w-11 !h-12 sm:!w-12 sm:!h-13 "}
                             />
                             <button type="submit" disabled={isPending || isLoading}  className="btn outline-none border-none bg-[#03457C] text-sm py-6 rounded-full mt-3.5 w-full text-white disabled:bg-[#03457C]/60 " style={bricolage.style}>
                                 {isLoading  ? <h2 className="flex items-center"><span  className="loading loading-xs loading-spinner mr-1"></span>Verifying...</h2> : <h2 className="flex items-center" >Verify Code <span> <ArrowRight className="w-5 mt-1 ml-0.5"/></span></h2> }

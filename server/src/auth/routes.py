@@ -137,11 +137,11 @@ async def sign_in_user(userData:LoginSchema,  request:Request, background_tasks:
             "user": jsonable_encoder(user), 
             "token": token
         }
-    except:
+    except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
             "status": "error",
             "msg": "Login Failed",
-            "description": "Unable to login to your account. Please try again."
+            "description": "Unable to login to your account. Please try again."+ str(e)
         })
     
             
