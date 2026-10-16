@@ -8,7 +8,11 @@ export function useKyc() {
 
     const uploadKycMutation = useCustomMutation(
         async(data)=>{
-           const response =  await api.post("/account/kyc/upload", data)
+           const response =  await api.post("/account/kyc/upload", data, {
+               headers:{
+                "Content-Type": "multipart/form-data"
+               }
+           })
 
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
            

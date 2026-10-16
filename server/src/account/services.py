@@ -40,11 +40,11 @@ class AccountService():
 
     profile_data = editProfileSchema.model_dump(exclude_unset=True)
 
-    updated_profile = await session.execute(update(Users).where(Users.id == id).values(**profile_data))
+    updated_profile = await session.execute(update(Users).where(Users.id == id).values(**profile_data).returning(Users))
 
     await session.commit()
 
-    return True if updated_profile is not None else False
+    return updated_profile.scalars().first() if updated_profile is not None else False
 
 
 
@@ -103,7 +103,7 @@ class AccountService():
 
 
 
-  async def resolve_account_number(self, accountNumber:str,session:AsyncSession,currentUserId:str):
+  async def resolve_account_number(self, accountNumber:str, session:AsyncSession,currentUserId:str):
     response =  await session.execute(select(Users).where(and_(
       Users.accountNumber == accountNumber,
       Users.role == Roles.USER

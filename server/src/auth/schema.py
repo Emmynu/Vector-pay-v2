@@ -3,8 +3,8 @@ from src.db.enums import Roles
 
 
 class CreateUserSchema(BaseModel):
-    firstName: str =  Field(min_length=3)
-    lastName: str =  Field(min_length=3)
+    firstName: str =  Field(min_length=3, max_length=10, examples=["John"])
+    lastName: str =  Field(min_length=3, max_length=10, examples=["Doe"])
     email:str
     role: Roles 
     password: str = Field(min_length=8, max_length=12, exclude=True)

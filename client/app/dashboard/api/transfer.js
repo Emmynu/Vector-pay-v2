@@ -7,8 +7,8 @@ import { useQueryClient } from "@tanstack/react-query";
 export function useTransfer() {
     const queryClient =  useQueryClient()
 
-    const accountLookupMutation = useCustomMutation(async(data)=>{
-        const response = await api.post("/account/resolve", data)
+    const accountLookupMutation = useCustomMutation(async(accountNumber)=>{
+        const response = await api.get("/account/resolve", { params: accountNumber })
 
         if(response.status === 200){
             return response

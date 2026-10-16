@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     TELEGRAM_KEY:str
     TELEGRAM_CHAT_ID:str
     REDIS_URL:str
+    SUPABASE_STORAGE_ACCESS_KEY:str
+    SUPABASE_STORAGE_SECRET_KEY:str
+    SUPABASE_STORAGE_REGION_NAME:str
+    SUPABASE_STORAGE_ENDPOINT_URL:str
 
     model_config = SettingsConfigDict(
         env_file=".env",

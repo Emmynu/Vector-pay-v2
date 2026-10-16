@@ -1,37 +1,35 @@
-import base64
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from src.config import config
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from .config import config
-
+import base64
 
 def sendMail(to_mail:str, subject:str, msg):
-    tokenInfo =  config.MAIL_TOKEN
 
-    cred = Credentials.from_authorized_user_info(tokenInfo)
+    mail_token = config.MAIL_TOKEN
 
-    service = build("gmail", "v1", credentials=cred)
-    
+    credentials = Credentials.from_authorized_user_info(mail_token)
+
+    service = build("gmail", "v1", credentials=credentials)
+
     message = MIMEMultipart("alternative")
 
-    message["to"] = "loluwasimi54@gmail.com"
-    message["bcc"] = to_mail
-
     message["from"] = "VectorPay"
+    message["to"] = "loluwasimi54@gmail.com"
+
+    message["bcc"] = to_mail
     message["subject"] = subject
 
-    html = MIMEText(msg, "html")
+    message.attach(MIMEText(msg, "html"))
 
-
-    message.attach(html)
-
-    raw_message =  base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
+    raw_msg = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
 
     try:
-        result  =  service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
-        print("successful")
+        response = service.users().messages().send(userId="me", body={ "raw": raw_msg }).execute()
+        return response
+    except HttpError as http:
+        print(str(http))
+        return False
 
-        return result
-    except Exception as e:
-        print(e)

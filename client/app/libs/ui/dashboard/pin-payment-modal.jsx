@@ -25,8 +25,8 @@ export function PinModal({ id, formData, setForm, type }) {
       if (type === "transfer") {
         const transferPayload = {
           recipient_account_number: formData?.account,
-          amount: parseInt(form.amount),
-          narration: formData.note || null,
+          amount: parseInt(formData?.amount),
+          narration: formData?.note || null,
           pin: pin,
         };
         response = await transfer(transferPayload);

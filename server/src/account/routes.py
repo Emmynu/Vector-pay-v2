@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Request, Query, BackgroundTasks
+from fastapi import APIRouter, HTTPException, status, Depends, Request, Query, BackgroundTasks, UploadFile, Form, File
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.auth.dependencies import RoleChecker, AccessTokenBearer
 from src.db.main import session
 from .services import AccountService, headers
-from src.db.enums import Operators, KycStatus, Roles, Prefrences
+from src.db.enums import Operators, KycStatus, Roles, Prefrences, Tiers
 from .schema import AccountNumberSchema, ResolveAccountResponse, ResolveAccountResponseData, TransferSchema, BankResponse, TransactionType, TransactionStatus, TransactionResponseModel, UserProfileResponse, EditProfileSchema,TransactionPinSchema, UpdateTransactionPinSchema, KycUploadSchema, DepositSchema, ResolveBankAccountSchema, WithdrawalSchema, TransactionResponsePaginated, TransactionChartResponse, PreferencesUpdateValue
 from src.auth.services import AuthServices
 from src.auth.utils import verifyHash, createIdToken, send_reset_pin_otp_code
@@ -13,21 +13,25 @@ from src.config import config
 from src.redis import redis_get_value, redis_delete_value
 import requests
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
+from src.storage import handle_upload
 import hmac 
 import hashlib
 import json
 import csv
 import io
-
+import uuid
 
 router = APIRouter()
 accountService = AccountService()
 authService = AuthServices()
 accessTokenBearer = AccessTokenBearer()
 
-# 
-@router.get("/profile",  status_code=status.HTTP_200_OK, response_model=UserProfileResponse)
+MIME_TYPES = {"image/jpeg", "image/png",  "image/jpg"}
+KYC_MIME_TYPES = {"image/jpeg", "image/png",  "image/jpg", "application/pdf"}
+
+
+@router.get("/profile",  status_code=status.HTTP_200_OK, response_model=UserProfileResponse, summary="Get User Profile")
 @limiter.limit("15/minute")
 async def profile(request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
 
@@ -38,16 +42,30 @@ async def profile(request:Request, user = Depends(accessTokenBearer), session:As
     return user
 
 
-@router.post("/edit-profile")
+@router.patch("/profile", summary="Edit User Profile", status_code=status.HTTP_200_OK, response_model=UserProfileResponse)
 @limiter.limit("3/minute")
-async def edit_user_profile(editProfileSchema:EditProfileSchema, request:Request, user = Depends(accessTokenBearer), session:AsyncSession = Depends(session)):
-    try:
-        await accountService.edit_user_profile(session=session, editProfileSchema=editProfileSchema, id=user["user"]["id"])
+async def edit_user_profile(
+    request:Request, 
+    firstName:str = Form(..., min_length=3, max_length=10, examples=["John"]), 
+    lastName:str = Form(..., min_length=3, max_length=10, examples=["Doe"]), 
+    avatar: Optional[UploadFile] = File(None), 
+    user = Depends(accessTokenBearer), 
+    session:AsyncSession = Depends(session)
+):
+    photoURL = None
 
-        return {"status": "success", "msg": "User Profile update successful."}
+    if(avatar):
+        photoURL = await handle_upload(MIME_TYPES, bucket="avatars", key=f"{user['user']['id']}", document=avatar)
+
+    try:
+        payload = EditProfileSchema(firstName = firstName.strip() or user["user"]["firstName"], lastName = lastName.strip() or user["user"]["lastName"], photoURL = photoURL or user["user"]["photoURL"])
+        
+        updated_profile = await accountService.edit_user_profile(session=session, editProfileSchema=payload, id=user["user"]["id"])
+
+        return updated_profile
     
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
             "status": "error",
             "msg": "Oops!...something went wrong",
             "description": f"An error occured updating your profile."
@@ -192,137 +210,188 @@ async def reset_transaction_pin(request:Request,  code:str,  user = Depends(Role
    
 
 @router.post("/kyc/upload", status_code=status.HTTP_201_CREATED)
-@limiter.limit("3/minute")
-async def kyc_upload(uploadSchema:KycUploadSchema, request:Request, user=Depends(RoleChecker(Roles.USER)), session:AsyncSession=Depends(session)):
+# @limiter.limit("3/minute")
+async def kyc_upload(
+    request: Request,
+    full_name: str = Form(..., min_length=3, examples=["John Doe"]),
+    nin_number: str = Form(
+        ..., max_length=11, min_length=11, examples=["12345678901"]
+    ),
+    dob: date = Form(...),
+    nin_slip: UploadFile = File(...),
+    user=Depends(RoleChecker(Roles.USER)),
+    session: AsyncSession = Depends(session),
+):
+  
+  # 1. Tier & Verification checks
+  if (not user.isVerified or user.tier < Tiers.TIER_2):
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
+            "status": "error",
+            "msg": "Verification Denied",
+            "description": "Please fully verify your account before submitting KYC.",
+        },
+    )
 
-    isLinked = await accountService.check_kyc_link(uploadSchema.nin_number, session, str(user.id)) # check if kyc info is already linked to an account
+  # 2. Check KYC status block early 
+  if (user.kycStatus == KycStatus.VERIFIED  or user.tier == Tiers.TIER_3):
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
+            "status": "error",
+            "msg": "Verification Complete",
+            "description": (
+                "Your account is already verified. KYC documents cannot be"
+                " re-submitted."
+            ),
+        },
+    )
 
-    if(not user.isVerified):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+  if user.kycStatus == KycStatus.PENDING:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
+            "status": "error",
+            "msg": "Submission Under Review",
+            "description": (
+                "Your KYC process is currently under review. Please await"
+                " verification."
+            ),
+        },
+    )
+
+  if user.kycStatus == KycStatus.UNVERIFIED and user.kyc:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
             "status": "error",
             "msg": "Upload Failed",
-            "description": f"Please verify your account"
-        })
+            "description": "KYC documents have already been uploaded.",
+        },
+    )
 
-    # return isLinked
-    if(isLinked):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+  # 3. Validate Date of Birth
+  if dob >= datetime.now().date():
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
+            "status": "error",
+            "msg": "Invalid Date of Birth",
+            "description": "Date of birth must be a past date.",
+        },
+    )
+
+  # 4. Check if NIN is already linked to another account
+  isLinked = await accountService.check_kyc_link(nin_number, session, str(user.id))
+  if isLinked:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail={
             "status": "error",
             "msg": "Verification Failed",
-            "description": f"This information has already been added to an account."
-    })
+            "description": (
+                "This National Identification Number (NIN) is already linked"
+                " to another account."
+            ),
+        },
+    )
+
+  # 5. Upload NIN slip to Supabase Storage
+  
+  nin_slip_key = f"{user.id}/{uuid.uuid4()}"
+
+  await handle_upload(KYC_MIME_TYPES, bucket="kyc-slip", key=nin_slip_key, document=nin_slip)
 
 
-    if uploadSchema.dob >= datetime.now().date():
+  payload = KycUploadSchema(full_name = full_name.strip(), nin_number = nin_number.strip(), dob = dob, nin_slip=nin_slip_key)
+
+  # 6. Process DB Persistence based on status (Unverified vs Declined)
+  try:
+    if user.kycStatus == KycStatus.UNVERIFIED and not user.kyc:
+      uploadStatus = await accountService.upload_kyc(
+          session, uploadSchema=payload, userId=user.id
+      )
+      if not uploadStatus:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "status": "error",
-                "msg": "Invalid Date of Birth",
-                "description": "Date of birth must be a past date."
-            }
-        )
-    
-    if((user.kycStatus == KycStatus.UNVERIFIED and not user.kyc)):
-        try:
-            uploadStatus = await accountService.upload_kyc(session, uploadSchema, user.id)
-                
-            if (not uploadStatus):
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                    "status": "error",
-                    "msg": "Upload Failed",
-                    "description": f"We could not store your information. Please try again later"
-            })
-            
-            kyc_status = await accountService.update_kyc_status(session, user.id, kycstatus=KycStatus.PENDING)
-        
-            if (not kyc_status):
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                    "status": "error",
-                    "msg": "Updating Status Failed",
-                    "description": f"We could not update kyc status"
-                })
-
-
-            await session.commit()
-            await session.refresh(uploadStatus)
-
-            return {"status": "success", "msg": "Upload Successful", "description": "Your KYC process is currently under review. Please await verification."}
-        
-        except Exception as e:
-            await session.rollback()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                        "status": "error",
-                        "msg": "Oops!...Something went wrong!",
-                        "description": f"{str(e)}"
-                    })
-
-
-    elif((user.kycStatus == KycStatus.UNVERIFIED and user.kyc)):
-
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                "status": "error",
                 "msg": "Upload Failed",
-                "description": f"KYC documents has already been uploaded"
-        })
-       
-    elif(user.kycStatus == KycStatus.VERIFIED):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                "description": (
+                    "We could not store your information. Please try again"
+                    " later."
+                ),
+            },
+        )
+
+      kyc_status = await accountService.update_kyc_status(
+          session, user.id, kycstatus=KycStatus.PENDING
+      )
+      if not kyc_status:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
                 "status": "error",
-                "msg": "Verification Complete",
-                "description": f"Your account is already verified. KYC documents cannot be re-submitted"
-        })
-    
-    elif(user.kycStatus == KycStatus.PENDING):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                "msg": "Status Update Failed",
+                "description": "We could not update your KYC verification status.",
+            },
+        )
+
+    elif user.kycStatus == KycStatus.DECLINED:
+      updated_kyc = await accountService.update_kyc(session, payload, user.id)
+      if not updated_kyc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Update Failed",
+                "description": (
+                    "We could not update your KYC records. Please try again"
+                    " later."
+                ),
+            },
+        )
+
+      updated_status = await accountService.update_kyc_status(
+          session, user.id, KycStatus.PENDING
+      )
+      if not updated_status:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "msg": "Status Update Failed",
+                "description": "We could not update your KYC verification status.",
+            },
+        )
+
+    await session.commit()
+    return {
+        "status": "success",
+        "msg": "Upload Successful",
+        "description": (
+            "Your KYC process is currently under review. Please await"
+            " verification."
+        ),
+    }
+
+  except HTTPException:
+    await session.rollback()
+    raise
+  except Exception:
+    await session.rollback()
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail={
             "status": "error",
-            "msg": "Submission Under Review",
-            "description": f"Your KYC process is currently under review. Please await verification."
-    })
-
-    elif(user.kycStatus == KycStatus.DECLINED):
-        # update kyc
-
-        updated_kyc = await accountService.update_kyc(session, uploadSchema, user.id)
-
-        if (not updated_kyc):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                "status": "error",
-                "msg": "Upload Failed",
-                "description": f"We could not store your information. Please try again later"
-            })
-
-        updated_status =  await accountService.update_kyc_status(session, user.id, KycStatus.PENDING)
-
-        if (not updated_status):
-            await session.rollback()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                "status": "error",
-                "msg": "Updating Status Failed",
-                "description": f"We could not update kyc status"
-            })
-
-        await session.commit()
-        return {"status": "success", "msg": "Upload Successful", "description": "Your KYC process is currently under review. Please await verification."}
-
-
-@router.post("/resolve", response_model=ResolveAccountResponse)
-@limiter.limit("10/minute")
-async def resolve_account_number(account_data:AccountNumberSchema, request:Request, userData=Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
-    user = await accountService.resolve_account_number(account_data.accountNumber, session, userData.id)
-
-    return ResolveAccountResponse(
-        status="success",
-        data=ResolveAccountResponseData(
-            userId=str(user.id),
-            firstName= user.firstName,
-            lastName = user.lastName,
-            email= user.email,
-            accountNumber = user.accountNumber,
-            photoURL= user.photoURL
-        )
+            "msg": "Internal Server Error",
+            "description": (
+                "An unexpected error occurred while processing your KYC."
+                " Please try again later."
+            ),
+        },
     )
-    
 
 
 @router.post("/deposit/initialize")
@@ -372,7 +441,7 @@ async def initialize_transaction(request: Request, depositSchema:DepositSchema, 
 
 
 @router.post("/transaction/webhook")
-async def transaction_webhook(request:Request, session:AsyncSession = Depends(session), user = Depends(RoleChecker(Roles.USER))):
+async def transaction_webhook(request:Request, session:AsyncSession = Depends(session)):
 
     signature = request.headers.get("x-paystack-signature")
 
@@ -475,9 +544,26 @@ async def verify_transaction(reference:str, user = Depends(RoleChecker(Roles.USE
                     "msg": "Payment Failed",
                     "description": "Transaction was declined by the payment provider"
                 })
-    # except:
-    #     await session.rollback()
 
+
+
+@router.get("/resolve", response_model=ResolveAccountResponse)
+@limiter.limit("10/minute")
+async def resolve_account_number(accountNumber:str, request:Request, userData=Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+    user = await accountService.resolve_account_number(accountNumber, session, userData.id)
+
+    return ResolveAccountResponse(
+        status="success",
+        data=ResolveAccountResponseData(
+            userId=str(user.id),
+            firstName= user.firstName,
+            lastName = user.lastName,
+            email= user.email,
+            accountNumber = user.accountNumber,
+            photoURL= user.photoURL
+        )
+    )
+    
 
 
 @router.post("/transfer")

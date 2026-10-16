@@ -10,6 +10,7 @@ from .schema import UserResponseModel, KycResponseModel, KycDetailModel, KycUpda
 from src.account.schema import TransactionResponsePaginated, TransactionResponseModel, UserProfileResponse
 import uuid
 from src.account.services import AccountService
+from src.storage import get_file_url
 
 
 
@@ -83,6 +84,7 @@ async def get_user_kyc(
  session:AsyncSession = Depends(session),
 ):
     user_kyc = await adminService.get_user_kyc(session, userId)
+    slip = get_file_url("kyc-slip", user_kyc.nin_slip)
 
     if(not user_kyc):
         raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail={
@@ -91,7 +93,11 @@ async def get_user_kyc(
             "description": f"No kyc found for the provided user ID: {userId}"
         })  
 
-    return user_kyc
+    kyc = KycDetailModel.model_validate(user_kyc)
+
+    kyc.nin_slip = slip
+
+    return kyc
 
 
 @router.patch("/kyc/{userId}/status")

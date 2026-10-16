@@ -2,7 +2,6 @@
 import { X, Upload, RefreshCcw, AlertCircle } from "lucide-react"
 import { bricolage, montserrat, quicksand } from "../../utils/font";
 import { useEffect, useRef, useState } from "react";
-import { uploadFile } from "../../supabase/supabase";
 import { useUser } from "@/app/auth/api/profile";
 
 function EditProfileModal({ id = 'my-modal-2', user }) {
@@ -11,7 +10,6 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
     const [file, setHandleFile] = useState(null)
     const [error, setError] = useState(null)
     const { isEditing, editProfile } = useUser()
-    const [isUploading, setIsUploading] = useState(false)
 
     // Sync draft values when user prop updates
     useEffect(() => {
@@ -60,29 +58,14 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
         }
 
         setError("");
-        let url = null
 
-        if (file) {
-            setIsUploading(true)
-            const { url: uploadUrl, error: uploadError } = await uploadFile("avatars", file, `/avatar/${file.name}`)
-
-            if (uploadError) {
-                setError(uploadError)
-                setIsUploading(false)
-                return;
-            }
-
-            url = uploadUrl
-            setIsUploading(false)
+        const formData = new FormData(e.currentTarget)
+    
+        if(file){
+            formData.append("avatar", file)
         }
-
-        const data = {
-            photoURL: url || user?.photoURL || null,
-            firstName: draft.firstName.trim(),
-            lastName: draft.lastName.trim()
-        }
-
-        const response = await editProfile(data)
+    
+        const response = await editProfile(Object.fromEntries(formData))
 
         if (response.status === 200) {
             closeModal()
@@ -146,7 +129,7 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
                                     type="button"  
                                     className="px-4 py-1.5 transition-all border border-[#03457C] font-semibold text-xs text-[#03457C] hover:bg-[#03457C] hover:text-white rounded-full flex items-center gap-1.5 cursor-pointer disabled:opacity-50" 
                                     onClick={() => fileRef.current?.click()} 
-                                    disabled={isEditing || isUploading} 
+                                    disabled={isEditing} 
                                     style={bricolage.style}
                                 >
                                     <Upload className="w-3.5 h-3.5" /> Upload
@@ -159,7 +142,7 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
                                             setDraft((d) => ({ ...d, avatar: "" }));
                                             setHandleFile(null);
                                         }}
-                                        disabled={isEditing || isUploading}
+                                        disabled={isEditing}
                                         className="text-red-600 transition-all bg-red-50 hover:bg-red-100 font-semibold text-xs cursor-pointer px-4 py-1.5 rounded-full"
                                         style={bricolage.style}
                                     >
@@ -221,7 +204,7 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
                     <div className="mt-4 flex items-center justify-end gap-3 pt-3 ">
                         <button 
                             type="button" 
-                            disabled={isEditing || isUploading}  
+                            disabled={isEditing}  
                             className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium hover:bg-slate-50 disabled:opacity-50 rounded-full shadow-sm" 
                             onClick={closeModal} 
                             style={bricolage.style}
@@ -231,13 +214,13 @@ function EditProfileModal({ id = 'my-modal-2', user }) {
                         <button 
                             type="submit" 
                             className="btn border-none shadow-md bg-[#03457C] hover:bg-[#02335c] text-white font-semibold rounded-full px-6 disabled:opacity-60 flex items-center gap-2" 
-                            disabled={isEditing || isUploading} 
+                            disabled={isEditing} 
                             style={bricolage.style}
                         >
-                            {isEditing || isUploading ? (
+                            {isEditing ? (
                                 <>
                                     <RefreshCcw className="animate-spin w-4 h-4" />
-                                    <span>{isEditing ? "Saving..." : "Uploading..."}</span>
+                                    <span>Saving...</span>
                                 </>
                             ) : (
                                 "Save changes"

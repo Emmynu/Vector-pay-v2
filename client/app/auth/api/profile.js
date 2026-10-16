@@ -19,7 +19,11 @@ export function useUser() {
 
     const editProfileMutation = useCustomMutation(
         async (data) => {
-            const resp = await api.post("/account/edit-profile", data)
+            const resp = await api.patch("/account/profile", data, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            })
 
             await queryClient.invalidateQueries({ queryKey: ["get-current-user"]})
 

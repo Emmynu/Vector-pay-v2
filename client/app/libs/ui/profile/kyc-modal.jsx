@@ -3,38 +3,36 @@
 import { useEffect, useState } from "react";
 import { X, Upload, Loader2, AlertCircle } from "lucide-react";
 import "@/app/globals.css";
-import { uploadFile } from "../../supabase/supabase";
 import { useKyc } from "@/app/dashboard/api/kyc";
 import { bricolage, quicksand } from "../../utils/font";
 
 export default function KYCModal({ id }) {
-    const [nin, setNin] = useState({ ninNumber: "", fullName: "", dob: "", ninSlip: null });
+    const [nin, setNin] = useState({ nin_number: "", full_name: "", dob: "", nin_slip: null });
     const [error, setError] = useState("");
-    const [isUploading, setIsUploading] = useState(false);
 
     const { uploadKyc, isSubmitting } = useKyc();
 
     const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
 
     const valid =
-        nin.ninNumber.length === 11 &&
-        nin.fullName.trim().length >= 3 &&
+        nin.nin_number.length === 11 &&
+        nin.full_name.trim().length >= 3 &&
         nin.dob.length > 0 &&
-        nin.ninSlip &&
-        allowedTypes.includes(nin.ninSlip?.type);
+        nin.nin_slip &&
+        allowedTypes.includes(nin.nin_slip?.type);
 
     useEffect(() => {
-        if (nin.ninSlip && !allowedTypes.includes(nin.ninSlip?.type)) {
+        if (nin.nin_slip && !allowedTypes.includes(nin.nin_slip?.type)) {
             setError("Please upload a PDF, JPEG, JPG, or PNG image.");
-            setNin((prev) => ({ ...prev, ninSlip: null }));
+            setNin((prev) => ({ ...prev, nin_slip: null }));
         } else if (error) {
             setError("");
         }
-    }, [nin.ninSlip]);
+    }, [nin.nin_slip]);
 
     const closeModal = () => {
         setError("");
-        setNin({ ninNumber: "", fullName: "", dob: "", ninSlip: null });
+        setNin({ nin_number: "", full_name: "", dob: "", nin_slip: null });
         document.getElementById(id)?.close();
     };
 
@@ -52,30 +50,12 @@ export default function KYCModal({ id }) {
         }
 
         setError("");
-        setIsUploading(true);
+        
+        const formData = new FormData(e.currentTarget)
 
-        const { url: uploadUrl, error: uploadError } = await uploadFile(
-            "kyc-slip",
-            nin.ninSlip,
-            `slip/${Date.now()}_${nin.ninSlip.name}`
-        );
-
-        setIsUploading(false);
-
-        if (uploadError) {
-            setError(uploadError || "Failed to upload file. Please try again.");
-            return;
-        }
-
-        const data = {
-            full_name: nin.fullName.trim(),
-            nin_number: nin.ninNumber,
-            dob: nin.dob,
-            nin_slip: uploadUrl,
-        };
-
+        
         // Submit KYC data
-        const kycResponse = await uploadKyc(data);
+        const kycResponse = await uploadKyc(Object.fromEntries(formData));
 
        
         if (kycResponse?.status === 201 ) {
@@ -124,9 +104,9 @@ export default function KYCModal({ id }) {
                     <div className="mt-5 space-y-4">
                         <Input
                             label="Full name (as on NIN slip)"
-                            name="fullName"
-                            value={nin.fullName}
-                            onChange={(e) => handleInputChange("fullName", e.target.value)}
+                            name="full_name"
+                            value={nin.full_name}
+                            onChange={(e) => handleInputChange("full_name", e.target.value)}
                             placeholder="John Doe"
                             minLength={3}
                             maxLength={50}
@@ -134,12 +114,12 @@ export default function KYCModal({ id }) {
 
                         <Input
                             label="NIN (11 digits)"
-                            value={nin.ninNumber}
+                            value={nin.nin_number}
                             onChange={(e) =>
-                                handleInputChange("ninNumber", e.target.value.slice(0, 11).replace(/\D/g, ""))
+                                handleInputChange("nin_number", e.target.value.slice(0, 11).replace(/\D/g, ""))
                             }
                             placeholder="12345678901"
-                            name="ninNumber"
+                            name="nin_number"
                             maxLength={11}
                             minLength={11}
                             pattern="[0-9]*"
@@ -166,12 +146,13 @@ export default function KYCModal({ id }) {
                             <div className="bg-slate-50 w-full mt-1 border-2 border-dashed border-slate-300 rounded-xl p-3 flex items-center gap-3 hover:border-[#03457C] text-xs transition cursor-pointer relative">
                                 <Upload className="w-4 h-4 text-slate-400 shrink-0" />
                                 <span className="text-slate-600 font-medium truncate flex-1" style={quicksand.style}>
-                                    {nin.ninSlip ? nin.ninSlip.name : "Choose PDF, JPEG, or PNG file"}
+                                    {nin.nin_slip ? nin.nin_slip.name : "Choose PDF, JPEG, or PNG file"}
                                 </span>
                                 <input
                                     type="file"
                                     accept="image/jpeg, image/png, image/jpg, application/pdf"
-                                    onChange={(e) => handleInputChange("ninSlip", e.target.files?.[0] || null)}
+                                    onChange={(e) => handleInputChange("nin_slip", e.target.files?.[0] || null)}
+                                    name="nin_slip"
                                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                 />
                             </div>
@@ -186,7 +167,7 @@ export default function KYCModal({ id }) {
                     <div className="mt-6 flex gap-3 justify-end pt-3 border-t border-slate-100">
                         <button
                             type="button"
-                            disabled={isSubmitting || isUploading}
+                            disabled={isSubmitting}
                             onClick={closeModal}
                             className="btn bg-transparent border-2 border-[#03457C] text-[#03457C] font-medium hover:bg-slate-50 disabled:opacity-50 rounded-full"
                             style={bricolage.style}
@@ -195,14 +176,14 @@ export default function KYCModal({ id }) {
                         </button>
                         <button
                             type="submit"
-                            disabled={isSubmitting || isUploading || !valid}
+                            disabled={isSubmitting || !valid}
                             className="btn bg-[#03457C] hover:bg-[#02335c] disabled:opacity-50 text-white rounded-full border-none px-6 flex items-center gap-2"
                             style={bricolage.style}
                         >
-                            {isSubmitting || isUploading ? (
+                            {isSubmitting ? (
                                 <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>{isUploading ? "Uploading..." : "Submitting..."}</span>
+                                    <span>Submitting...</span>
                                 </>
                             ) : (
                                 "Submit"

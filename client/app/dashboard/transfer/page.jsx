@@ -90,6 +90,9 @@ export default function TransferPage() {
       return;
     }
 
+    console.log(form);
+    
+
     const modal = document.getElementById("my-modal-4");
     modal?.showModal();
   }
