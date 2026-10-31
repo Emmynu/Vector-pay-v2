@@ -1,16 +1,17 @@
-from sqlmodel import select, update, or_, desc, func, and_,extract,case
+from sqlmodel import select, update, or_, desc, func, and_,extract,case, delete
 from fastapi import Query, status, HTTPException
-from src.db.models import Users, Transactions, Kyc
+from src.db.models import Users, Transactions, Kyc, Beneficiaries, Requests
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from src.db.enums import Operators, KycStatus, TransactionType, TransactionStatus, Roles, Prefrences
+from src.db.enums import Operators, KycStatus, TransactionType, TransactionStatus, Roles, Prefrences, MoneyRequestType, MoneyRequestStatus
 from decimal import Decimal
-from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, TransactionPinSchema, EditProfileSchema, KycUploadSchema, UserProfileResponse, ResolveBankAccountSchema
-from datetime import datetime, timezone
+from .schema import TransactionCreateSchema, TransactionResponsePaginated, TransactionResponseModel, TransactionPinSchema, EditProfileSchema, KycUploadSchema, UserProfileResponse, ResolveBankAccountSchema, RequestPayload
+from datetime import datetime
 from src.auth.utils import hashPassword
 from src.config import config
 import requests
 import calendar
 from typing import Optional
+import uuid
 
 
 headers = {
@@ -103,7 +104,7 @@ class AccountService():
 
 
 
-  async def resolve_account_number(self, accountNumber:str, session:AsyncSession,currentUserId:str):
+  async def resolve_account_number(self, accountNumber:str, session:AsyncSession, currentUserId:str):
     response =  await session.execute(select(Users).where(and_(
       Users.accountNumber == accountNumber,
       Users.role == Roles.USER
@@ -241,7 +242,7 @@ class AccountService():
         Transactions.senderId == id,
         Transactions.recipientId == id,
       )
-    ]
+    ] 
 
     if(type and type != "all"):
         filter_condition.append(Transactions.type == type)
@@ -460,3 +461,228 @@ class AccountService():
       
     except:
        return False
+
+  async def check_beneficiary(self, userId:str, beneficiaryId:str, session:AsyncSession):
+    try:
+      exists = await session.execute(select(Beneficiaries).where(and_(
+            Beneficiaries.userId == userId,
+            Beneficiaries.beneficiaryId == beneficiaryId
+          )))
+      
+      beneficiary = exists.scalars().one_or_none()
+  
+      return beneficiary if beneficiary is not None else False
+
+    except:
+      return False
+
+  async def add_beneficiary(self, nickname:str, session:AsyncSession, userId:str, beneficiaryId:str):
+
+    new_beneficiary = Beneficiaries(
+      nickname=nickname,
+      userId=userId,
+      beneficiaryId=beneficiaryId
+    )
+
+    session.add(new_beneficiary)
+    await session.commit()
+    await session.refresh(new_beneficiary)
+
+    return new_beneficiary
+
+  async def get_beneficiaries(self, userId:str, session:AsyncSession, skip:int = Query(0, ge=0), limit:int = Query(3, ge=3)):
+
+    result = await session.execute(select(Beneficiaries).where(Beneficiaries.userId == userId).offset(skip).limit(limit).order_by(desc(Beneficiaries.createdAt)))
+
+    total_beneficaries = await session.execute(select(func.count()).select_from(Beneficiaries).where(Beneficiaries.userId == userId))
+
+    total_beneficaries = total_beneficaries.scalar() 
+
+    beneficiaries = result.scalars().all() or []
+
+
+
+    return {
+      "beneficiaries": beneficiaries,
+      "metadata": {
+        "skip":skip,
+        "limit": limit,
+        "total": total_beneficaries,
+        "hasMore": skip + len(beneficiaries) < total_beneficaries
+      }
+    }
+
+
+
+  async def delete_beneficiary(self, userId: str, id: str, session: AsyncSession):
+    stmt = (
+        delete(Beneficiaries)
+        .where(and_(Beneficiaries.id == id, Beneficiaries.userId == userId))
+        .returning(Beneficiaries) 
+    )
+    result = await session.execute(stmt)
+    deleted = result.mappings().one_or_none()  
+
+    if deleted is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "status": "error",
+                "msg": "Beneficiary not found",
+                "description": "The requested beneficiary does not exist or you do not have permission to delete it.",
+            },
+        )
+
+    await session.commit()
+    return dict(deleted)
+
+  async def request_money(self, payload:RequestPayload, session:AsyncSession, requesterId:str, payerId:str):
+
+    try:
+      new_request = Requests(
+        amount=payload.amount,
+        payerId=payerId,
+        requesterId=requesterId,
+        narration=payload.narration
+      )
+    
+      session.add(new_request)
+      await session.commit()
+      await session.refresh(new_request)
+      
+  
+      return new_request
+    except:
+      return False
+  
+  
+  async def get_requests(
+    self, 
+    userId:str,
+    session:AsyncSession,
+    type:MoneyRequestType = Query(None, description="Request type"), 
+    request_status:Optional[MoneyRequestStatus] =  Query(None, description="Request status"), 
+    skip:int = Query(0, ge=0), 
+    limit:int = Query(10, ge=3, le=100),
+    ):
+
+    filter_condition =  []
+    query_statement = None
+
+    if(not type):
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+        "status": "error",
+        "msg": "Invalid request",
+        "description": "Please specify a request type: sent or received"
+      })
+
+    if(request_status and request_status != "all"):
+      filter_condition.append(Requests.status == request_status)
+
+    if(type == MoneyRequestType.SENT):
+      query_statement = select(Requests).where(and_(
+        Requests.requesterId == userId,
+        *filter_condition
+      ))
+
+
+    if(type == MoneyRequestType.RECEIVED):
+      query_statement = select(Requests).where(and_(
+        Requests.payerId == userId,
+        *filter_condition
+      )).filter(Requests.status != MoneyRequestStatus.CANCELLED)
+      
+
+    result = await session.execute(query_statement.offset(skip).limit(limit).order_by(desc(Requests.requestedAt)))
+
+    total = await session.execute(select(func.count()).select_from(query_statement.subquery()))
+
+    requests = result.scalars().all() or []
+
+    total_requests = total.scalar() or 0
+
+    return {
+      "requests": requests,
+      "metadata": {
+        "skip": skip,
+        "limit": limit,
+        "total": total_requests,
+        "hasMore": skip + len(requests) < total_requests
+      }
+    }
+
+
+  async def update_request_status(self, session:AsyncSession, requestId:str, userId:str, money_request_status:MoneyRequestStatus):
+
+    result = await session.execute(select(Requests).where(and_(
+      Requests.payerId == userId,
+      Requests.id == requestId
+    )).with_for_update())
+
+    requests = result.scalars().one_or_none()
+
+    if(requests is None):
+      raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail={
+                "status": "error",
+                "msg": "Money request not found",
+                "description": "The specified money request does not exist."
+            }
+        )
+
+    if(requests.status != MoneyRequestStatus.PENDING):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
+          "status": "error",
+          "msg": f"Failed to {money_request_status.value} request",
+          "description": "The specified money request has already been processed."          
+        })
+
+    if(requests.status == MoneyRequestStatus.PENDING):
+      requests.status = money_request_status
+
+    await session.commit()
+
+    return requests
+
+  async def get_single_request(self, requestId:str, session:AsyncSession):
+    result = await session.execute(select(Requests).where(Requests.id == requestId))
+
+    money_request = result.scalars().first()
+
+    return money_request if money_request is not None else False
+  
+
+  async def cancel_request(self, session:AsyncSession, requestId:str, userId:str):
+  
+      result = await session.execute(select(Requests).where(and_(
+        Requests.requesterId == userId,
+        Requests.id == requestId
+      )).with_for_update())
+  
+      requests = result.scalars().one_or_none()
+  
+      if(requests is None):
+        raise HTTPException(
+              status_code=status.HTTP_404_NOT_FOUND, 
+              detail={
+                  "status": "error",
+                  "msg": "Money request not found",
+                  "description": "The specified money request does not exist."
+              }
+          )
+  
+      if(requests.status != MoneyRequestStatus.PENDING):
+          raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
+            "status": "error",
+            "msg": "Failed to cancel request",
+            "description": "The specified money request has already been processed."          
+          })
+  
+
+      requests.status = MoneyRequestStatus.CANCELLED
+  
+      await session.commit()
+  
+      return requests
+  

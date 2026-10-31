@@ -6,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import base64
 
+
 def sendMail(to_mail:str, subject:str, msg):
 
     mail_token = config.MAIL_TOKEN

@@ -23,7 +23,7 @@ SUPABASE_STORAGE_URL = "https://lgbwtjxyjaljjpzxytfx.supabase.co/storage/v1/obje
 
 async def handle_file_type(mime_types:dict, file: UploadFile = File(...)):
     if(file.content_type not in mime_types):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail={
             "status": "error",
             "msg": "Invalid File Format Uploaded",
             "description": "Please upload a valid image file in JPEG, JPG, or PNG format."
@@ -43,7 +43,7 @@ async def handle_file_type(mime_types:dict, file: UploadFile = File(...)):
         })
 
     if(file_type.mime not in mime_types):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail={
             "status": "error",
             "msg": "Invalid File Format Uploaded",
             "description": "Please upload a valid image file in JPEG, JPG, or PNG format."

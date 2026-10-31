@@ -1,8 +1,8 @@
-"""models updated again
+"""cancelled added to request Enum
 
-Revision ID: 80d9cf288ced
-Revises: cb6d91b0321e
-Create Date: 2026-09-25 10:02:57.877970
+Revision ID: e886523a7aea
+Revises: e0cf32992b6e
+Create Date: 2026-10-22 13:13:25.858265
 
 """
 from typing import Sequence, Union
@@ -13,8 +13,8 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '80d9cf288ced'
-down_revision: Union[str, Sequence[str], None] = 'cb6d91b0321e'
+revision: str = 'e886523a7aea'
+down_revision: Union[str, Sequence[str], None] = 'e0cf32992b6e'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

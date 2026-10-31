@@ -1,4 +1,4 @@
-import  { LayoutDashboard, History, ArrowLeftRight, Banknote, Settings, User, ShieldCheck, Smartphone, Bell, Users,UserCheck, ReceiptText, Megaphone } from "lucide-react"
+import  { LayoutDashboard, History, ArrowLeftRight, Banknote, Settings, User, ShieldCheck, Smartphone, Bell, Users,UserCheck, ReceiptText, Megaphone, HandCoins } from "lucide-react"
 
 
 export const nav = {
@@ -36,12 +36,13 @@ export const nav = {
 
   ],
   user: [
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/dashboard/transactions", label: "Transaction History", icon: History },
-      { to: "/dashboard/transfer", label: "Transfer", icon: ArrowLeftRight },
-      { to: "/dashboard/withdraw", label: "Withdraw", icon: Banknote },
-      { to: "/dashboard/settings", label: "Settings", icon: Settings },
-      { to: "/dashboard/profile", label: "Profile", icon: User },
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/dashboard/transfer", label: "Transfer", icon: ArrowLeftRight },
+    { to: "/dashboard/requests", label: "Request Money", icon: HandCoins },
+    { to: "/dashboard/withdraw", label: "Withdraw", icon: Banknote },
+    { to: "/dashboard/transactions", label: "Transaction History", icon: History },
+    { to: "/dashboard/settings", label: "Settings", icon: Settings },
+    { to: "/dashboard/profile", label: "Profile", icon: User }
   ]
 }
 

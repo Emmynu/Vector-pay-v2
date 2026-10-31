@@ -41,6 +41,17 @@ class TransactionStatus(str, Enum):
     SUCCESSFUL = "successful"
     FAILED = "failed"
 
+class MoneyRequestStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+
+class MoneyRequestType(str, Enum):
+    SENT = "sent"
+    RECEIVED = "received"
+
+
 class WithdrawTransactionStatus(str, Enum):
     SUCCESSFUL = "successful"
     FAILED = "failed"

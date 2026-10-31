@@ -2,7 +2,7 @@ from datetime import datetime,timezone, date
 import uuid
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
-from src.db.enums import TransactionStatus, TransactionType, KycStatus, DailyLimit, Roles
+from src.db.enums import TransactionStatus, TransactionType, KycStatus, DailyLimit, Roles, MoneyRequestStatus
 from typing import Optional, List, Dict
 
 
@@ -35,34 +35,6 @@ class KycUploadSchema(BaseModel):
     nin_slip: str = Field(min_length=2, examples=["https://example.com/photo.jpg"])
     
     
-
-
-
-class UserProfileResponse(BaseModel):
-    id:uuid.UUID
-
-    firstName: str =  Field(min_length=3)
-    lastName: str =  Field(min_length=3)
-    email:str
-    userName: str 
-    # password: str = Field(min_length=8, max_length=12, exclude=True)
-    balance: Optional[int] = Field(default=0)
-    accountNumber: str = Field(default=None)
-    isVerified: bool = Field(default=False)
-    password_reset_count:int 
-    transactionPin: Optional[str]
-    tier: int = Field(default=1, ge=1, le=3)
-    photoURL: Optional[str] 
-    kycStatus: Optional[KycStatus] = Field(default=KycStatus.UNVERIFIED)
-    kyc: Optional[KycSchema]
-    dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
-    dailySpent: int = Field(default=0)
-    lastSpentDate:datetime
-    location:str
-    role:Roles
-    isBiometricsEnabled:Optional[bool] = Field(default=False)
-    isMarketingEnabled:Optional[bool] = Field(default=False)
-    # transactions: List[TransactionResponseModel]
 
     createdAt: datetime 
     loginAt: Optional[datetime]  
@@ -100,7 +72,7 @@ class ResolveAccountResponse(BaseModel):
 
 
 class TransferSchema(BaseModel):
-    recipient_account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
+    account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
     amount:int = Field(ge=10, le=50000, description="Amount must be greater than 10")
     narration:Optional[str] = Field(min_length=3)
     pin:str = Field(min_length=4, max_length=4, examples=["1234"], pattern=r"^\d{4}$")
@@ -205,3 +177,93 @@ class WithdrawalSchema(BaseModel):
 
 class PreferencesUpdateValue(BaseModel):
     value:bool
+
+
+class BeneficiaryPayload(BaseModel):
+    nickname:Optional[str]
+    account_number: str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
+
+
+class BeneficiaryResponse(BaseModel):
+    id:uuid.UUID
+    nickname:Optional[str]
+    userId:uuid.UUID
+    beneficiaryId:uuid.UUID
+    beneficiary:Optional[UserSchema]
+
+    createdAt: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class Metadata(BaseModel):
+    total:int
+    skip: int
+    limit: int
+    has_more: bool = Field(..., alias="hasMore")
+
+class BeneficiaryGETResponse(BaseModel):
+    beneficiaries:List[BeneficiaryResponse]
+    metadata:Metadata
+
+
+
+class UserProfileResponse(BaseModel):
+    id:uuid.UUID
+
+    firstName: str =  Field(min_length=3)
+    lastName: str =  Field(min_length=3)
+    email:str
+    userName: str 
+    # password: str = Field(min_length=8, max_length=12, exclude=True)
+    balance: Optional[int] = Field(default=0)
+    accountNumber: str = Field(default=None)
+    isVerified: bool = Field(default=False)
+    password_reset_count:int 
+    transactionPin: Optional[str]
+    tier: int = Field(default=1, ge=1, le=3)
+    photoURL: Optional[str] 
+    kycStatus: Optional[KycStatus] = Field(default=KycStatus.UNVERIFIED)
+    kyc: Optional[KycSchema]
+    dailyLimit: DailyLimit = Field(default=DailyLimit.TIER_ONE)
+    dailySpent: int = Field(default=0)
+    lastSpentDate:datetime
+    location:str
+    role:Roles
+    isBiometricsEnabled:Optional[bool] = Field(default=False)
+    isMarketingEnabled:Optional[bool] = Field(default=False)
+    # beneficiaries: Optional[List[BeneficiaryResponse]] 
+
+
+class RequestPayload(BaseModel):
+    account_number:str = Field(min_length=10, max_length=10, description="Account Number must be 10 digits")
+    amount:int = Field(ge=10, le=50000, description="Request Amount")
+    narration:Optional[str] = Field(min_length=3)
+
+
+class RequestResponseModel(BaseModel):
+    id: uuid.UUID
+    amount: int
+    narration: Optional[str]
+    status: MoneyRequestStatus
+    requestedAt: datetime
+
+    requesterId: uuid.UUID
+    requester: UserSchema
+
+    payerId: uuid.UUID
+    payer: UserSchema
+    
+    class Config:
+        from_attributes = True
+
+
+
+class RequestResponsePaginated(BaseModel):
+    requests: List[RequestResponseModel]
+    metadata: Metadata
+
+
+class AcceptRequestPayload(BaseModel):
+    pin:str = Field(examples=["1234"], min_length=4, max_length=4, pattern=r"^\d{4}$")
