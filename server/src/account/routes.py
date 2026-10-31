@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from src.auth.dependencies import RoleChecker, AccessTokenBearer
 from src.db.main import session
 from .services import AccountService, headers
-from src.db.enums import Operators, KycStatus, Roles, Prefrences, Tiers
-from .schema import AccountNumberSchema, ResolveAccountResponse, ResolveAccountResponseData, TransferSchema, BankResponse, TransactionType, TransactionStatus, TransactionResponseModel, UserProfileResponse, EditProfileSchema,TransactionPinSchema, UpdateTransactionPinSchema, KycUploadSchema, DepositSchema, ResolveBankAccountSchema, WithdrawalSchema, TransactionResponsePaginated, TransactionChartResponse, PreferencesUpdateValue
+from src.db.enums import Operators, KycStatus, Roles, Prefrences, Tiers, MoneyRequestStatus, MoneyRequestType
+from .schema import BeneficiaryPayload, ResolveAccountResponse, ResolveAccountResponseData, TransferSchema, BankResponse, TransactionType, TransactionStatus, TransactionResponseModel, UserProfileResponse, EditProfileSchema,TransactionPinSchema, UpdateTransactionPinSchema, KycUploadSchema, DepositSchema, ResolveBankAccountSchema, WithdrawalSchema, TransactionResponsePaginated, TransactionChartResponse, PreferencesUpdateValue, BeneficiaryResponse, BeneficiaryGETResponse, RequestPayload, RequestResponseModel, RequestResponsePaginated, AcceptRequestPayload
 from src.auth.services import AuthServices
 from src.auth.utils import verifyHash, createIdToken, send_reset_pin_otp_code
 from src.limiter import limiter
@@ -210,7 +210,7 @@ async def reset_transaction_pin(request:Request,  code:str,  user = Depends(Role
    
 
 @router.post("/kyc/upload", status_code=status.HTTP_201_CREATED)
-# @limiter.limit("3/minute")
+@limiter.limit("3/minute")
 async def kyc_upload(
     request: Request,
     full_name: str = Form(..., min_length=3, examples=["John Doe"]),
@@ -570,7 +570,6 @@ async def resolve_account_number(accountNumber:str, request:Request, userData=De
 @limiter.limit("10/minute")
 async def transfer(transferInfo: TransferSchema, request: Request, user=Depends(RoleChecker(Roles.USER)),
 session: AsyncSession = Depends(session)):
-    # current_user = await authService.get_user(session, userData["user"]["email"])
     reference = createIdToken(user.email, "transaction")
 
    
@@ -585,7 +584,7 @@ session: AsyncSession = Depends(session)):
         )
 
     
-    recipient_info = await accountService.resolve_account_number(transferInfo.recipient_account_number, session, user.id)
+    recipient_info = await accountService.resolve_account_number(transferInfo.account_number, session, user.id)
 
     
     if transferInfo.amount < 10:
@@ -780,8 +779,6 @@ async def resolve_bank_details(request:Request, body:ResolveBankAccountSchema, u
 @limiter.limit("10/minute")
 async def withdraw(request:Request, withdrawalBody:WithdrawalSchema, backgroundTasks:BackgroundTasks, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
 
-    # current_user =  await authService.get_user(session, user.email)
-    
 
     await accountService.reset_daily_spent(user, session)
 
@@ -1045,7 +1042,7 @@ async def get_single_transaction(transactionId:str, request:Request, session:Asy
 
 
 @router.patch("/preferences/{key}/update", status_code=status.HTTP_200_OK)
-@limiter.limit("/5/minute")
+@limiter.limit("5/minute")
 async def update_settings_preferences(key:Prefrences, payload:PreferencesUpdateValue, request:Request, session:AsyncSession = Depends(session), user = Depends(RoleChecker(Roles.USER))):
 
     new_preferences =  await accountService.update_setting_preferences(user.id, key, payload.value, session)
@@ -1066,3 +1063,153 @@ async def update_settings_preferences(key:Prefrences, payload:PreferencesUpdateV
         "user": new_preferences
     }
 
+
+@router.post("/beneficiaries", summary="Add a new beneficiary", status_code=status.HTTP_201_CREATED, response_model=BeneficiaryResponse) 
+@limiter.limit("5/minute")
+async def add_beneficiary(request:Request, payload:BeneficiaryPayload, current_user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+    user = await accountService.resolve_account_number(payload.account_number, session, current_user.id)
+
+    if(user):
+        # CHECK IF THE USER IS ALREADY A BENEFICIARY
+        beneficiary_exists = await accountService.check_beneficiary(current_user.id, user.id, session)
+
+        if(beneficiary_exists):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                "status": "error",
+                "msg": "Beneficiary Already Exists",
+                "description": "This user is already added as a beneficiary."
+            })
+        
+        # Add the beneficiary to the database
+        new_beneficiary = await accountService.add_beneficiary(payload.nickname, session, current_user.id, user.id)
+
+        return new_beneficiary
+
+
+
+@router.get("/beneficiaries", summary="Get all beneficiaries", status_code=status.HTTP_200_OK, response_model=BeneficiaryGETResponse) 
+@limiter.limit("10/minute")
+async def get_beneficiaries(request:Request, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session), skip:int = Query(0, ge=0), limit:int = Query(3, ge=3)):
+    return await accountService.get_beneficiaries(user.id, session, skip, limit)
+
+
+@router.delete("/beneficiaries", summary="Delete beneficiary", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def delete_beneficiary(request:Request, id:uuid.UUID, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+
+    deleted_beneficiary = await accountService.delete_beneficiary(user.id, str(id), session)
+    
+    return {
+        "status": "success",
+        "msg": "Beneficiary deleted successfully",
+        "data": deleted_beneficiary
+    }
+
+
+@router.post("/requests", summary="Request Money from users", status_code=status.HTTP_201_CREATED, response_model=RequestResponseModel)
+@limiter.limit("5/minute")
+async def request_money(request:Request, payload:RequestPayload, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+    resolved_account = await accountService.resolve_account_number(payload.account_number, session, user.id)
+
+    if(resolved_account):
+        new_request = await accountService.request_money(payload, session, user.id, resolved_account.id)
+
+        if(not new_request):
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
+                "status": "error",
+                "msg": "Request failed",
+                "description": "We couldn't send your money request to this user. Please try again."
+            })
+
+        return new_request
+
+@router.get("/requests", status_code=status.HTTP_200_OK, summary="Get Requests", response_model=RequestResponsePaginated)
+@limiter.limit("10/minute")
+async def get_requests(
+    request:Request, 
+    user = Depends(RoleChecker(Roles.USER)), 
+    session:AsyncSession = Depends(session), 
+    type:MoneyRequestType = Query(None, description="Request type"), 
+    status:Optional[MoneyRequestStatus] =  Query(None, description="Request status"), 
+    skip:int = Query(0, ge=0), 
+    limit:int = Query(10, ge=3, le=100)
+):
+    return await accountService.get_requests(user.id, session, type, status, skip, limit)
+
+
+@router.patch("/requests/{requestId}/accept", summary="Accept Money Requests", status_code=status.HTTP_200_OK, response_model=RequestResponseModel)
+@limiter.limit("5/minute")
+async def accept_requests(request:Request, payload:AcceptRequestPayload, requestId:uuid.UUID, user = Depends(RoleChecker(Roles.USER)),session:AsyncSession = Depends(session)):
+    money_request = await accountService.get_single_request(requestId, session)
+
+    if(not money_request):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                "status": "error",
+                "msg": "Money request not found",
+                "description": "The specified money request does not exist."
+        })
+
+    if(money_request.payerId != user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail={
+                "status": "error",
+                "msg": "Access denied",
+                "description": "You do not have permission to accept this money request."
+            }
+        ) 
+
+    if(money_request.status != MoneyRequestStatus.PENDING):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={
+            "status": "error",
+            "msg": f"Failed to accept request",
+            "description": "The specified money request has already been processed."          
+        })
+
+
+    money_request_payload = TransferSchema(
+        account_number=money_request.requester.accountNumber,
+        amount=money_request.amount,
+        narration=money_request.narration,
+        pin=payload.pin
+    )
+
+    response = await transfer(money_request_payload, request, user, session)
+
+    if(response.get("status") == "success"):
+        return await accountService.update_request_status(session, requestId, user.id, MoneyRequestStatus.ACCEPTED)
+
+
+
+
+@router.patch("/requests/{requestId}/reject", summary="Reject Money Requests", status_code=status.HTTP_200_OK, response_model=RequestResponseModel)
+@limiter.limit("5/minute")
+async def reject_requests(request:Request, requestId:uuid.UUID, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+
+    if(not requestId):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+           "status": "error",
+            "msg": "Invalid request ID",
+            "description": "The request ID provided cannot be empty."
+        })
+
+    rejected_request = await accountService.update_request_status(session, requestId, user.id, MoneyRequestStatus.REJECTED)
+
+    return rejected_request
+
+
+
+@router.patch("/requests/{requestId}/cancel", summary="Cancel Money Requests", status_code=status.HTTP_200_OK, response_model=RequestResponseModel)
+@limiter.limit("5/minute")
+async def cancel_requests(request:Request, requestId:uuid.UUID, user = Depends(RoleChecker(Roles.USER)), session:AsyncSession = Depends(session)):
+
+    if(not requestId):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+           "status": "error",
+            "msg": "Invalid request ID",
+            "description": "The request ID provided cannot be empty."
+        })
+
+    cancelled_request = await accountService.cancel_request(session, requestId, user.id)
+
+    return cancelled_request

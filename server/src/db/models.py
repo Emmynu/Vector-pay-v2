@@ -5,11 +5,10 @@ import uuid
 from datetime import datetime, date as Date, timezone
 from typing import Optional, List
 from decimal import Decimal
-from .enums import KycStatus, TransactionStatus, TransactionType, DailyLimit, Roles
+from .enums import KycStatus, TransactionStatus, TransactionType, DailyLimit, Roles, MoneyRequestStatus
 
 
-def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+
 
 
 class Users(SQLModel, table=True):
@@ -81,6 +80,30 @@ class Users(SQLModel, table=True):
             "primaryjoin": "Users.id == Transactions.recipientId",
             "lazy": "selectin",
         },
+    )
+
+    beneficiaries: List["Beneficiaries"] = Relationship(
+        back_populates="owner",
+        sa_relationship_kwargs={
+            "primaryjoin": "Users.id == Beneficiaries.userId",
+            "lazy": "selectin",
+        },
+    )
+
+    requests_received: List["Requests"] = Relationship(
+        back_populates="payer",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "primaryjoin": "Users.id == Requests.payerId"
+        }
+    )
+
+    requests_sent: List["Requests"] = Relationship(
+        back_populates="requester",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "primaryjoin": "Users.id == Requests.requesterId"
+        }
     )
 
     loginAt: Optional[datetime] = Field(default=None)
@@ -186,3 +209,93 @@ class Transactions(SQLModel, table=True):
     withdrawal_info: Optional[dict] = Field(
         default=None, sa_column=Column(pg.JSONB, nullable=True, default=None)
     )
+
+
+
+
+
+class Beneficiaries(SQLModel, table=True):
+    __tablename__ = "beneficiaries"
+
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid4,
+        sa_column=Column(pg.UUID, nullable=False, primary_key=True),
+    )
+
+    # the person who saved the beneficiary (the owner)
+    userId: uuid.UUID = Field(
+        sa_column=Column(pg.UUID, ForeignKey("users.id"), nullable=False, index=True)
+    )
+    
+    # the VectorPay user being saved
+    beneficiaryId: uuid.UUID = Field(
+        sa_column=Column(pg.UUID, ForeignKey("users.id"), nullable=False, index=True)
+    )
+
+    nickname: Optional[str] = Field(default=None, max_length=20)
+
+    createdAt: datetime = Field(
+        sa_column=Column(pg.TIMESTAMP, nullable=False, default=datetime.now()),
+    )
+
+    owner: Optional["Users"] = Relationship(
+        back_populates="beneficiaries",
+        sa_relationship_kwargs={
+            "foreign_keys": "[Beneficiaries.userId]",
+            "lazy": "selectin",
+        },
+    )
+    beneficiary: Optional["Users"] = Relationship(
+        sa_relationship_kwargs={
+            "foreign_keys": "[Beneficiaries.beneficiaryId]",
+            "lazy": "selectin",
+        },
+    )
+
+
+class Requests(SQLModel, table=True):
+    __tablename__ = "requests"
+
+    id:uuid.UUID = Field(default_factory=uuid.uuid4,sa_column=Column(
+        pg.UUID,
+        primary_key=True,
+        nullable=False,
+        
+    ))
+
+    payerId: uuid.UUID = Field(sa_column=Column(
+        pg.UUID,
+        ForeignKey("users.id"),
+        index=True,
+        nullable=False        
+    ))
+
+    requesterId: uuid.UUID = Field(sa_column=Column(
+            pg.UUID,
+            ForeignKey("users.id"),
+            index=True,
+            nullable=False        
+        ))
+
+    amount:int
+    status: MoneyRequestStatus = Field(default=MoneyRequestStatus.PENDING)
+    narration: Optional[str] = Field(default=None, min_length=3)
+ 
+
+    requestedAt:datetime =Field(sa_column=Column(
+        pg.TIMESTAMP,
+        default=datetime.now(),
+        nullable=False
+    ))
+
+
+    payer:Optional["Users"] = Relationship(back_populates="requests_received", sa_relationship_kwargs={
+        "lazy": "selectin",
+        "foreign_keys": "[Requests.payerId]"
+     })
+
+    requester:Optional["Users"] = Relationship(back_populates="requests_sent", sa_relationship_kwargs={
+        "lazy": "selectin",
+        "foreign_keys": "[Requests.requesterId]"
+    })

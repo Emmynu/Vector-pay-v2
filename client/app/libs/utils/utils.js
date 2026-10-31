@@ -19,6 +19,16 @@ export function formatAmountShort(value) {
     return formattedAmount
 }
 
+export const formatDateStandard = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  };
+
 export const formatNumber = (val = 0) =>{
      const number = new Intl.NumberFormat("en-US", {
         compactDisplay: "short",
@@ -53,13 +63,13 @@ export function formatChartDate(date){
 export const getStatusBadge = (status) => {
     let statusBadge;
     
-    if(status === "successful" || status === "verified"){
+    if(status === "successful" || status === "verified" || status === "accepted"){
        statusBadge =  "bg-green-50 text-green-700 ring-green-600/20"
     }
     else if(status === "pending"){
         statusBadge = "bg-amber-50 text-amber-700 ring-amber-600/20"
     }
-    else if(status === "declined" || status === "failed"){
+    else if(status === "declined" || status === "failed" || status === "rejected"){
         statusBadge = "bg-red-50 text-red-600 ring-red-600/20"
     }
     else{

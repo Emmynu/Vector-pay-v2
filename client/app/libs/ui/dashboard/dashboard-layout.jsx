@@ -23,7 +23,7 @@ export default function DashboardLayout({ isAdmin, children }) {
   }, []);
 
 
-  const paths = ["/transfer", "/withdraw","/profile"]
+  const paths = ["/transfer", "/withdraw","/profile", "/requests"]
   const hasPin = Boolean(user?.transactionPin);
   const showBanner =  (role ==="user" && paths.some(path=>pathname.includes(path)) && !hasPin &&  !isLoading)
 

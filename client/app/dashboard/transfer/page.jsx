@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowUpRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { ArrowUpRight, Loader2, CheckCircle2, AlertCircle, Users2, Plus } from "lucide-react";
 import { useUser } from "@/app/auth/api/profile";
 import { bricolage, quicksand } from "@/app/libs/utils/font";
 import { motion, AnimatePresence } from "motion/react";
@@ -10,15 +11,33 @@ import { PinModal } from "@/app/libs/ui/dashboard/pin-payment-modal";
 import { showToast } from "@/app/libs/toast/sonner";
 import AddOns from "@/app/libs/ui/dashboard/add-ons";
 import { testAmount } from "@/app/libs/utils/utils";
+import { useBeneficiary } from "../api/beneficiaries/get-beneficaries";
+import Link from "next/link";
+import AddBeneficiaryModal from "@/app/libs/ui/dashboard/beneficiaries-modal";
 
-export default function TransferPage() {
+function TransferFormContent() {
   const { data: user } = useUser();
   const [form, setForm] = useState({ account: "", amount: "", note: "", recipient: null });
   const [lookupError, setLookupError] = useState("");
   const [amountError, setAmountError] = useState("");
+  const [activeID, setActiveID] = useState(null);
+  
+  const { beneficiaries, isLoading } = useBeneficiary();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname()
 
   const { accountLookup, isLookupLoading } = useTransfer();
 
+  
+  useEffect(() => {
+    const account = searchParams.get("to");
+    if (account) {
+      setForm((v) => ({ ...v, account }));
+    }
+  }, [searchParams]);
+
+ 
   useEffect(() => {
     async function fetchAccountDetails() {
       if (form.account.length === 10) {
@@ -26,8 +45,7 @@ export default function TransferPage() {
         try {
           const lookupData = { accountNumber: form.account };
           const res = await accountLookup(lookupData);
-          
-          const recipientData = res?.data?.data || res?.data;
+          const recipientData = res?.data?.data 
 
           if (recipientData) {
             setForm((v) => ({ ...v, recipient: recipientData }));
@@ -49,31 +67,26 @@ export default function TransferPage() {
 
   const handleAmountChange = (e) => {
     const rawValue = e.target.value;
-
     const sanitizedValue = rawValue.replace(/\D/g, "");
     setForm((prev) => ({ ...prev, amount: sanitizedValue }));
-
 
     if (!sanitizedValue) {
       setAmountError("");
       return;
     }
 
-
     const numValue = Number(sanitizedValue);
     if (numValue < 10) {
       setAmountError("Minimum transfer amount is ₦10.00");
       return;
     }
-    
-    
-    const isValidFormat =  testAmount(sanitizedValue)
+
+    const isValidFormat = testAmount(sanitizedValue);
     if (!isValidFormat) {
       setAmountError("Amount must be a valid integer");
       return;
     }
 
-    
     setAmountError("");
   };
 
@@ -86,15 +99,11 @@ export default function TransferPage() {
     }
 
     if (!user?.transactionPin) {
-      showToast({ type: "error", title: "Transaction PIN Required", msg: 'You need to set up a transaction PIN before making transfers.' });
+      showToast({ type: "error", title: "Transaction PIN Required", msg: "You need to set up a transaction PIN before making transfers." });
       return;
     }
 
-    console.log(form);
-    
-
-    const modal = document.getElementById("my-modal-4");
-    modal?.showModal();
+    document.getElementById("my-modal-4").showModal();
   }
 
   return (
@@ -113,12 +122,86 @@ export default function TransferPage() {
             Instant peer-to-peer transfers with zero fees.
           </p>
 
+          <article>
+            <header className="flex justify-between items-center mt-4" style={quicksand.style}>
+              <h2 className="flex items-center gap-1 text-xs opacity-90 font-medium">
+                <Users2 className="w-3.5 h-3.5" />
+                <span>Quick select from beneficiaries</span>
+              </h2>
+              <Link href={"/dashboard/beneficiaries"} style={bricolage.style} className="text-xs font-bold text-[#03457c] hover:underline">
+                View all →
+              </Link>
+            </header>
+
+            <div className="flex items-center gap-2.5 mt-2.5 overflow-x-auto pb-2 scrollbar-none">
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-xs text-slate-400 py-1.5">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#03457c]" />
+                  <span style={quicksand.style}>Loading beneficiaries...</span>
+                </div>
+              ) : (
+                <>
+                  {beneficiaries?.beneficiaries?.map((item) => {
+                    const name = item?.nickname || item?.beneficiary?.firstName || "User";
+                    const initials = name.slice(0, 2).toUpperCase();
+                    const accountNumber = item?.beneficiary?.accountNumber;
+                    const isActive = (activeID || searchParams.get("to")) === accountNumber;
+
+                    return (
+                      <button
+                        key={item?.id || accountNumber}
+                        type="button"
+                        onClick={() => {
+                          router.replace(pathname, { scroll: false });
+
+                          if (accountNumber) {
+                            setForm((prev) => ({ ...prev, account: accountNumber }));
+                            setActiveID(accountNumber);
+                          }
+                        }}
+                        className={`flex items-center gap-2 border text-xs py-1.5 px-3 rounded-full transition-all shrink-0 cursor-pointer group ${
+                        isActive 
+                            ? "bg-[#E6F0FA] border-[#03457c]"
+                            : "bg-[#F4F8FC] hover:bg-[#E6F0FA] border-slate-200"
+                        }`}
+                      >
+                        <span
+                          style={bricolage.style}
+                          className="uppercase bg-[#03457c] rounded-full w-5 h-5 flex items-center justify-center text-[#fff] text-[10px] font-bold"
+                        >
+                          {initials}
+                        </span>
+                        <span style={quicksand.style} className="text-[#03457c] font-semibold group-hover:text-[#022f54]">
+                          {name}
+                        </span>
+                      </button>
+                    );
+                  })}
+
+                  {/* + New Button */}
+                  <button
+                    onClick={() => {
+                      document.getElementById("beneficiary-modal").showModal();
+                    }}
+                    style={quicksand.style}
+                    className="flex items-center gap-1.5 bg-white border border-dashed border-[#03457c] text-[#03457c] hover:bg-[#E6F0FA]/50 text-xs py-1.5 px-3 rounded-full transition-all shrink-0 font-medium cursor-pointer"
+                  >
+                    <span className="bg-[#03457c]/10 rounded-full w-4 h-4 flex items-center justify-center text-[#03457c]">
+                      <Plus className="w-3 h-3" />
+                    </span>
+                    <span>New</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </article>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleTransfer();
             }}
-            className="mt-6 space-y-4"
+            className="mt-4 space-y-4"
           >
             {/* Account Number Input */}
             <div>
@@ -132,8 +215,10 @@ export default function TransferPage() {
                   maxLength={10}
                   minLength={10}
                   value={form.account}
-                  onChange={(e) =>
+                  onChange={(e) =>{
+                    setActiveID(e.target.value)
                     setForm({ ...form, account: e.target.value.replace(/\D/g, "") })
+                  }
                   }
                   style={quicksand.style}
                   className="input bg-white w-full placeholder:opacity-65 mt-1 text-[13px] rounded-xl border border-black font-mono tracking-wider pr-10"
@@ -200,7 +285,7 @@ export default function TransferPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     style={quicksand.style}
-                    className="validation-hint text-[11px] text-rose-600 mt-1.5 font-medium flex items-center gap-1"
+                    className=" text-[11px] text-rose-600 mt-1.5 font-medium flex items-center gap-1"
                   >
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                     <span>{amountError}</span>
@@ -226,7 +311,7 @@ export default function TransferPage() {
             {/* Submit Button */}
             <button
               disabled={!form.recipient || isLookupLoading || !!amountError || !form.amount}
-              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 text-sm rounded-full w-full mt-2 transition-all flex items-center justify-center gap-1"
+              className="btn border-none outline-none shadow-sm bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 text-sm rounded-full w-full mt-2 transition-all flex items-center justify-center gap-1 cursor-pointer"
               type="submit"
               style={bricolage.style}
             >
@@ -244,7 +329,29 @@ export default function TransferPage() {
       >
         <AddOns balance={user?.balance} />
       </motion.div>
-      <PinModal id={"my-modal-4"} formData={form} setForm={setForm} type="transfer" />
+
+      <PinModal 
+      id={"my-modal-4"} 
+      formData={
+       { accountNumber: form.account,
+        accountName: `${form?.recipient?.firstName?.toUpperCase()} ${form?.recipient?.lastName?.toUpperCase()}`,
+        amount:form.amount,
+        narration:form?.note
+       }
+      } 
+      setForm={setForm} type="transfer" />
+      <AddBeneficiaryModal id="beneficiary-modal" />
     </div>
+  );
+}
+
+
+export default function TransferPage() {
+  return (
+    <Suspense
+      fallback={null}
+    >
+      <TransferFormContent />
+    </Suspense>
   );
 }

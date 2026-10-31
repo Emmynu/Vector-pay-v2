@@ -7,57 +7,75 @@ import { useEffect, useState } from "react";
 import { useTransfer } from "@/app/dashboard/api/transfer";
 import { useWithdraw } from "@/app/dashboard/api/withdraw";
 import CustomOTPInput from "../custom/custom-otp-input";
+import { useRequestsAction } from "@/app/dashboard/api/request/requests-action";
+import { useQueryClient } from "@tanstack/react-query";
 
-export function PinModal({ id, formData, setForm, type }) {
+export function PinModal({ id = "my-modal-4", formData, setForm, type }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const { transfer, isTransferLoading } = useTransfer();
   const { isProcessing, withdraw } = useWithdraw();
+  const { action, isLoading:isPending } = useRequestsAction()
+  const queryClient = useQueryClient()
 
+
+  const isLoading = isProcessing || isTransferLoading || isPending
 
   async function handlePayment() {
-    if (!pin || isTransferLoading || isProcessing) return;
+    if (!pin || isLoading) return;
 
     setError("");
     let response;
 
+    const payload = {
+        account_number: formData?.accountNumber,
+        amount: parseInt(formData?.amount),
+        narration: formData?.narration || null,
+        pin: pin,
+      };
+
+
     try {
       if (type === "transfer") {
-        const transferPayload = {
-          recipient_account_number: formData?.account,
-          amount: parseInt(formData?.amount),
-          narration: formData?.note || null,
-          pin: pin,
-        };
-        response = await transfer(transferPayload);
+        response = await transfer(payload);
       }
 
       if (type === "withdraw") {
+
         const withdrawPayload = {
-          account_number: formData?.accountNumber,
+          ...payload,
           bank_code: formData?.code,
-          amount: formData?.amount,
-          narration: formData.note || null,
-          pin: pin,
         };
+
         response = await withdraw(withdrawPayload);
       }
 
+      if(type === "request"){
+        response = await action({ actionType: formData?.actionType, requestId: formData?.requestId, data: { pin } })   
+      }
+
       if (response?.status === 200 ) {
-        setForm({});
-        setPin("");
-        window.location = "/dashboard";
+
+          if(type !== "request"){
+            setForm({});
+            window.location = "/dashboard";
+          }
+
+          queryClient.refetchQueries({ queryKey: ["get-requests"] })
+          closeModal()
       } else {
-        setPin("");
         setError(
           response?.msg ||
             "Transaction failed. Please check your PIN and try again."
         );
       }
     } catch (err) {
-      setPin("");
       setError(err?.message || "An unexpected error occurred. Please try again.");
+    }finally{
+      setPin(""); 
     }
+
+    
   }
 
   useEffect(() => {
@@ -67,7 +85,7 @@ export function PinModal({ id, formData, setForm, type }) {
   }, [pin]);
 
   const closeModal = () => {
-    if (isTransferLoading || isProcessing) return;
+    if (isLoading) return;
     setError("");
     setPin("");
     document.getElementById(id)?.close();
@@ -79,10 +97,10 @@ export function PinModal({ id, formData, setForm, type }) {
         <button
           type="button"
           onClick={closeModal}
-          disabled={isTransferLoading || isProcessing}
-          className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors absolute right-4 top-4 cursor-pointer disabled:opacity-50 !outline-none !border-none"
+          disabled={isLoading}
+          className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-blue-50/50 transition-colors absolute right-4 top-4 cursor-pointer disabled:opacity-50 !outline-none !border-none"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4.5 h-4.5" />
         </button>
 
         <div className="text-center">
@@ -116,11 +134,7 @@ export function PinModal({ id, formData, setForm, type }) {
             To:
           </span>
           <span className="font-medium text-slate-800 text-[10px]" style={bricolage.style}>
-            {type === "transfer"
-              ? `${formData?.recipient?.firstName?.toUpperCase() || ""} ${
-                  formData?.recipient?.lastName?.toUpperCase() || ""
-                } • ${formData?.account || ""}`
-              : `${formData?.accountName || ""} • ${formData?.accountNumber || ""}`}
+            {`${formData?.accountName || ""} • ${formData?.accountNumber || ""}`}
           </span>
         </div>
 
@@ -139,12 +153,12 @@ export function PinModal({ id, formData, setForm, type }) {
 
         <button
           type="button"
-          disabled={isTransferLoading || isProcessing || pin.length < 4}
+          disabled={isLoading || pin.length < 4}
           style={bricolage.style}
           className="btn border-none outline-none bg-[#03457C] text-white hover:bg-[#02335c] disabled:opacity-60 rounded-full w-full mt-2 shadow-md shadow-[#03457C]/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
           onClick={handlePayment}
         >
-          {isTransferLoading || isProcessing ? (
+          {isLoading ? (
             <>
               <span className="loading loading-spinner loading-xs"></span>
               Processing...
@@ -156,7 +170,7 @@ export function PinModal({ id, formData, setForm, type }) {
       </div>
 
       <form method="dialog" className="modal-backdrop">
-        <button disabled={isTransferLoading || isProcessing} onClick={closeModal}>
+        <button disabled={isLoading} onClick={closeModal}>
           close
         </button>
       </form>
